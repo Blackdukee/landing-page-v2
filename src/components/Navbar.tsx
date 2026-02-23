@@ -9,7 +9,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const totalItems = useCartStore((s) => s.totalItems);
+  const itemCount = useCartStore((s) => s.totalItems());
 
   useEffect(() => {
     setMounted(true);
@@ -18,7 +18,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const itemCount = mounted ? totalItems() : 0;
+  const displayCount = mounted ? itemCount : 0;
 
   return (
     <header
@@ -59,9 +59,9 @@ export default function Navbar() {
           >
             <ShoppingBag className="h-4 w-4" />
             <span>Cart</span>
-            {itemCount > 0 && (
+            {displayCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-primary text-[11px] font-bold shadow-md">
-                {itemCount}
+                {displayCount}
               </span>
             )}
           </Link>
@@ -71,9 +71,9 @@ export default function Navbar() {
         <div className="flex items-center gap-3 md:hidden">
           <Link href="/cart" className="relative p-2 text-foreground">
             <ShoppingBag className="h-5 w-5" />
-            {itemCount > 0 && (
+            {displayCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                {itemCount}
+                {displayCount}
               </span>
             )}
           </Link>

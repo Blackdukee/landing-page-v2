@@ -41,7 +41,6 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
     fetch(`/api/products/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error("Product not found");

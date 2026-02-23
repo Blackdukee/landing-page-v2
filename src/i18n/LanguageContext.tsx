@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import en, { type TranslationKey } from "@/i18n/en";
@@ -24,16 +25,18 @@ const translations: Record<Locale, Record<string, string>> = { en, ar };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+function readSavedLocale(): Locale {
+  const saved = localStorage.getItem("locale");
+  return saved === "ar" ? "ar" : "en";
+}
 
-  // Read saved preference on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("locale") as Locale | null;
-    if (saved === "en" || saved === "ar") {
-      setLocaleState(saved);
-    }
-  }, []);
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const initialLocale = useSyncExternalStore(
+    () => () => {},
+    readSavedLocale,
+    () => "en" as Locale
+  );
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   // Sync html attributes + persist preference
   useEffect(() => {

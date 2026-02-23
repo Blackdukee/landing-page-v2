@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Search, SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -42,6 +42,7 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const { t } = useTranslation();
+  const abortRef = useRef<AbortController | null>(null);
 
   const priceRanges = useMemo(
     () => [
@@ -66,14 +67,17 @@ export default function ProductsPage() {
       .catch(console.error);
   }, []);
 
-  const fetchProducts = useCallback(() => {
-    setLoading(true);
+  useEffect(() => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     const params = new URLSearchParams();
     if (activeCategory !== "All") params.set("category", activeCategory);
     params.set("page", String(currentPage));
     params.set("limit", String(PRODUCTS_PER_PAGE));
 
-    fetch(`/api/products?${params.toString()}`)
+    fetch(`/api/products?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products)) {
@@ -83,19 +87,17 @@ export default function ProductsPage() {
           setProducts(data);
           setPagination(null);
         }
+        setLoading(false);
       })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error(err);
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
   }, [activeCategory, currentPage]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  // Reset page when category changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory]);
 
   // Client-side filtering for search, price, and sorting
   const filteredProducts = useMemo(() => {
@@ -135,14 +137,22 @@ export default function ProductsPage() {
 
   const clearAllFilters = () => {
     setSearch("");
+    setLoading(true);
     setActiveCategory("All");
     setActivePriceRange(0);
     setSortBy("default");
     setCurrentPage(1);
   };
 
+  const handleCategoryChange = (cat: string) => {
+    setLoading(true);
+    setActiveCategory(cat);
+    setCurrentPage(1);
+  };
+
   const goToPage = (page: number) => {
     if (pagination && page >= 1 && page <= pagination.totalPages) {
+      setLoading(true);
       setCurrentPage(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -245,7 +255,7 @@ export default function ProductsPage() {
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => handleCategoryChange(cat)}
                   className={`rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${
                     activeCategory === cat
                       ? "bg-gradient-to-r from-primary to-purple-500 text-white shadow-md shadow-primary/20"

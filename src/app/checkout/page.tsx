@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/cart";
@@ -14,13 +14,15 @@ import {
   FileText,
   CheckCircle2,
 } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
+  const { t, dir } = useTranslation();
 
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -29,8 +31,6 @@ export default function CheckoutPage() {
     email: "",
     notes: "",
   });
-
-  useEffect(() => setMounted(true), []);
 
   if (!mounted) {
     return (
@@ -47,15 +47,15 @@ export default function CheckoutPage() {
     return (
       <div className="pt-28 pb-20 mx-auto max-w-4xl px-6 text-center">
         <div className="py-24">
-          <h1 className="text-2xl font-bold mb-3">Nothing to checkout</h1>
+          <h1 className="text-2xl font-bold mb-3">{t("checkout.emptyTitle")}</h1>
           <p className="text-sm text-muted mb-6">
-            Add items to your cart first.
+            {t("checkout.emptyDesc")}
           </p>
           <Link
             href="/products"
             className="rounded-full bg-gradient-to-r from-primary to-purple-500 text-white px-6 py-3 text-sm font-semibold"
           >
-            Browse Products
+            {t("checkout.browseProducts")}
           </Link>
         </div>
       </div>
@@ -69,16 +69,15 @@ export default function CheckoutPage() {
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 mb-6">
             <CheckCircle2 className="h-8 w-8 text-success" />
           </div>
-          <h1 className="text-2xl font-bold mb-3">Order Sent!</h1>
+          <h1 className="text-2xl font-bold mb-3">{t("checkout.successTitle")}</h1>
           <p className="text-sm text-muted mb-8 leading-relaxed max-w-sm mx-auto">
-            Your order has been sent via WhatsApp. We&apos;ll confirm your order
-            and get back to you shortly.
+            {t("checkout.successDesc")}
           </p>
           <Link
             href="/"
             className="rounded-full bg-gradient-to-r from-primary to-purple-500 text-white px-6 py-3 text-sm font-semibold"
           >
-            Back to Home
+            {t("checkout.backToHome")}
           </Link>
         </div>
       </div>
@@ -99,7 +98,7 @@ export default function CheckoutPage() {
       )
       .join("\n");
 
-    const message = `🛒 *New Order from NovaShop*
+    const message = `${t("checkout.whatsappMessage")}
 
 *Customer Info:*
 Name: ${form.name}
@@ -146,7 +145,7 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
   const isValid = form.name && form.address && form.phone;
 
   const inputClass =
-    "w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
+    "w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
 
   return (
     <div className="pt-28 pb-20">
@@ -155,11 +154,11 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
           href="/cart"
           className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors mb-8"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to cart
+          <ArrowLeft className={dir === "rtl" ? "rotate-180 h-4 w-4" : "h-4 w-4"} />
+          {t("checkout.backToCart")}
         </Link>
 
-        <h1 className="text-3xl font-bold tracking-tight mb-10">Checkout</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-10">{t("checkout.title")}</h1>
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -167,14 +166,14 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
             <div className="lg:col-span-2 space-y-6">
               <div className="rounded-2xl border border-border bg-card p-6">
                 <h2 className="font-semibold text-base mb-6 text-foreground">
-                  Customer Information
+                  {t("checkout.customerInfo")}
                 </h2>
                 <div className="space-y-4">
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                    <User className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                     <input
                       type="text"
-                      placeholder="Full Name *"
+                      placeholder={t("checkout.fullName")}
                       required
                       value={form.name}
                       onChange={(e) => updateField("name", e.target.value)}
@@ -182,10 +181,10 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
                     />
                   </div>
                   <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                    <Phone className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                     <input
                       type="tel"
-                      placeholder="Phone Number *"
+                      placeholder={t("checkout.phone")}
                       required
                       value={form.phone}
                       onChange={(e) => updateField("phone", e.target.value)}
@@ -193,34 +192,34 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
                     />
                   </div>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                    <Mail className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                     <input
                       type="email"
-                      placeholder="Email (optional)"
+                      placeholder={t("checkout.email")}
                       value={form.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       className={inputClass}
                     />
                   </div>
                   <div className="relative">
-                    <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-muted" />
+                    <MapPin className="absolute start-3.5 top-3 h-4 w-4 text-muted" />
                     <textarea
-                      placeholder="Delivery Address *"
+                      placeholder={t("checkout.address")}
                       required
                       rows={3}
                       value={form.address}
                       onChange={(e) => updateField("address", e.target.value)}
-                      className="w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all resize-none"
+                      className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all resize-none"
                     />
                   </div>
                   <div className="relative">
-                    <FileText className="absolute left-3.5 top-3 h-4 w-4 text-muted" />
+                    <FileText className="absolute start-3.5 top-3 h-4 w-4 text-muted" />
                     <textarea
-                      placeholder="Order notes (optional)"
+                      placeholder={t("checkout.notes")}
                       rows={2}
                       value={form.notes}
                       onChange={(e) => updateField("notes", e.target.value)}
-                      className="w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all resize-none"
+                      className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all resize-none"
                     />
                   </div>
                 </div>
@@ -230,7 +229,7 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-28 rounded-2xl border border-border bg-card p-6">
-                <h2 className="font-semibold text-base mb-5 text-foreground">Order Summary</h2>
+                <h2 className="font-semibold text-base mb-5 text-foreground">{t("checkout.orderSummary")}</h2>
 
                 <div className="space-y-3 mb-5">
                   {items.map((item) => (
@@ -249,7 +248,7 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
                           {item.name}
                         </p>
                         <p className="text-[11px] text-muted">
-                          Qty: {item.quantity}
+                          {t("checkout.qty", { count: item.quantity })}
                         </p>
                       </div>
                       <span className="text-xs font-medium text-foreground">
@@ -261,21 +260,21 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
 
                 <div className="space-y-2 text-sm border-t border-border pt-4">
                   <div className="flex justify-between">
-                    <span className="text-muted">Subtotal</span>
+                    <span className="text-muted">{t("checkout.subtotal")}</span>
                     <span className="text-foreground">${totalPrice().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted">Shipping</span>
+                    <span className="text-muted">{t("checkout.shipping")}</span>
                     <span>
                       {shipping === 0 ? (
-                        <span className="text-success">Free</span>
+                        <span className="text-success">{t("checkout.free")}</span>
                       ) : (
                         `$${shipping.toFixed(2)}`
                       )}
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-border pt-2 mt-2">
-                    <span className="font-semibold text-foreground">Total</span>
+                    <span className="font-semibold text-foreground">{t("checkout.total")}</span>
                     <span className="font-bold gradient-text">${total.toFixed(2)}</span>
                   </div>
                 </div>
@@ -286,12 +285,11 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
                   className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-green-600 text-white py-3.5 text-sm font-semibold transition-all hover:bg-green-700 hover:shadow-lg hover:shadow-green-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  Complete Order via WhatsApp
+                  {t("checkout.completeOrder")}
                 </button>
 
                 <p className="text-[11px] text-center text-muted mt-3 leading-relaxed">
-                  You&apos;ll be redirected to WhatsApp to confirm your order with
-                  our team.
+                  {t("checkout.whatsappRedirect")}
                 </p>
               </div>
             </div>

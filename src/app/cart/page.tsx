@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCartStore } from "@/store/cart";
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
@@ -13,9 +14,9 @@ export default function CartPage() {
   const clearCart = useCartStore((s) => s.clearCart);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const totalItems = useCartStore((s) => s.totalItems);
+  const { t, dir } = useTranslation();
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
 
   if (!mounted) {
     return (
@@ -36,17 +37,16 @@ export default function CartPage() {
           <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-surface mb-6">
             <ShoppingBag className="h-8 w-8 text-muted" />
           </div>
-          <h1 className="text-2xl font-bold mb-3">Your cart is empty</h1>
+          <h1 className="text-2xl font-bold mb-3">{t("cart.emptyTitle")}</h1>
           <p className="text-sm text-muted mb-8 max-w-sm mx-auto">
-            Looks like you haven&apos;t added anything yet. Browse our collection
-            to find something you love.
+            {t("cart.emptyDesc")}
           </p>
           <Link
             href="/products"
             className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white px-7 py-3 text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25"
           >
-            Continue Shopping
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            {t("cart.continueShopping")}
+            <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
           </Link>
         </div>
       </div>
@@ -61,16 +61,16 @@ export default function CartPage() {
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Shopping Cart</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("cart.title")}</h1>
             <p className="text-sm text-muted mt-1">
-              {totalItems()} item{totalItems() !== 1 ? "s" : ""} in your cart
+              {t("cart.itemCount", { count: totalItems(), s: totalItems() !== 1 ? "s" : "" })}
             </p>
           </div>
           <button
             onClick={clearCart}
             className="text-xs font-medium text-muted hover:text-danger transition-colors"
           >
-            Clear all
+            {t("cart.clearAll")}
           </button>
         </div>
 
@@ -95,7 +95,7 @@ export default function CartPage() {
                   <div>
                     <h3 className="font-semibold text-sm truncate text-foreground">{item.name}</h3>
                     <p className="text-xs text-muted mt-0.5">
-                      ${item.price.toFixed(2)} each
+                      ${item.price.toFixed(2)} {t("cart.each")}
                     </p>
                   </div>
                   <div className="flex items-center justify-between mt-3">
@@ -140,18 +140,18 @@ export default function CartPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="sticky top-28 rounded-2xl border border-border bg-card p-6">
-              <h2 className="font-semibold text-base mb-5 text-foreground">Order Summary</h2>
+              <h2 className="font-semibold text-base mb-5 text-foreground">{t("cart.orderSummary")}</h2>
 
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted">Subtotal</span>
+                  <span className="text-muted">{t("cart.subtotal")}</span>
                   <span className="font-medium text-foreground">${totalPrice().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted">Shipping</span>
+                  <span className="text-muted">{t("cart.shipping")}</span>
                   <span className="font-medium">
                     {shipping === 0 ? (
-                      <span className="text-success">Free</span>
+                      <span className="text-success">{t("cart.free")}</span>
                     ) : (
                       `$${shipping.toFixed(2)}`
                     )}
@@ -159,11 +159,11 @@ export default function CartPage() {
                 </div>
                 {shipping > 0 && (
                   <p className="text-[11px] text-primary-light">
-                    Add ${(99 - totalPrice()).toFixed(2)} more for free shipping
+                    {t("cart.freeShippingHint", { amount: (99 - totalPrice()).toFixed(2) })}
                   </p>
                 )}
                 <div className="border-t border-border pt-3 flex justify-between">
-                  <span className="font-semibold text-foreground">Total</span>
+                  <span className="font-semibold text-foreground">{t("cart.total")}</span>
                   <span className="font-bold text-lg gradient-text">${total.toFixed(2)}</span>
                 </div>
               </div>
@@ -172,15 +172,15 @@ export default function CartPage() {
                 href="/checkout"
                 className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white py-3.5 text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25"
               >
-                Proceed to Checkout
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                {t("cart.proceedToCheckout")}
+                <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
               </Link>
 
               <Link
                 href="/products"
                 className="mt-3 flex w-full items-center justify-center text-xs font-medium text-muted hover:text-foreground transition-colors"
               >
-                Continue Shopping
+                {t("cart.continueShopping")}
               </Link>
             </div>
           </div>

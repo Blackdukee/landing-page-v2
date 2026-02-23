@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { Sparkles, Instagram, Twitter, Mail } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export default function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="border-t border-border bg-surface">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
@@ -13,12 +18,11 @@ export default function Footer() {
                 <Sparkles className="h-4 w-4" />
               </div>
               <span className="text-lg font-bold tracking-tight">
-                Nova<span className="text-primary">Shop</span>
+                Quesna<span className="text-primary">Shop</span>
               </span>
             </Link>
             <p className="text-sm text-muted max-w-sm leading-relaxed">
-              Your modern destination for quality products. We curate the best
-              items across every category, delivered right to your door.
+              {t("footer.tagline")}
             </p>
             <div className="flex gap-4 mt-6">
               <a href="#" className="text-muted hover:text-primary transition-colors duration-200">
@@ -36,27 +40,27 @@ export default function Footer() {
           {/* Links */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-light mb-4">
-              Shop
+              {t("footer.shop")}
             </h3>
             <ul className="space-y-3">
               <li>
                 <Link href="/products" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  All Products
+                  {t("footer.allProducts")}
                 </Link>
               </li>
               <li>
                 <Link href="/products?category=Electronics" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  Electronics
+                  {t("footer.electronics")}
                 </Link>
               </li>
               <li>
                 <Link href="/products?category=Fashion" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  Fashion
+                  {t("footer.fashion")}
                 </Link>
               </li>
               <li>
                 <Link href="/products?category=Home" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  Home & Living
+                  {t("footer.homeLiving")}
                 </Link>
               </li>
             </ul>
@@ -64,22 +68,22 @@ export default function Footer() {
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-light mb-4">
-              Company
+              {t("footer.company")}
             </h3>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  About Us
+                  {t("footer.aboutUs")}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  Shipping & Returns
+                  {t("footer.shippingReturns")}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  Contact
+                  {t("footer.contact")}
                 </a>
               </li>
             </ul>
@@ -88,10 +92,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted">
-            &copy; {new Date().getFullYear()} NovaShop. All rights reserved.
+            {t("footer.copyright", { year: String(new Date().getFullYear()) })}
           </p>
           <p className="text-xs text-muted">
-            Modern shopping &middot; Shipped worldwide
+            {t("footer.bottomText")}
           </p>
         </div>
       </div>

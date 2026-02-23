@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ShoppingBag, Plus } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useState } from "react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface ProductCardProps {
   id: string;
@@ -26,6 +28,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
+  const { t } = useTranslation();
 
   const handleAdd = () => {
     addItem({ productId: id, name, price, image });
@@ -34,42 +37,43 @@ export default function ProductCard({
   };
 
   return (
-    <article className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
-      {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-surface">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        />
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <Link href={`/products/${id}`} className="block">
+      <article className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
+        {/* Image */}
+        <div className="relative aspect-square overflow-hidden bg-surface">
+          <Image
+            src={image}
+            alt={name}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-        {/* Quick Add button */}
-        <button
-          onClick={handleAdd}
-          disabled={stock === 0}
-          className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-primary/90 backdrop-blur-sm px-3.5 py-2 text-xs font-medium text-white shadow-lg shadow-primary/20 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+          {/* Quick Add button */}
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(); }}
+            disabled={stock === 0}
+            className="absolute bottom-3 end-3 flex items-center gap-1.5 rounded-full bg-primary/90 backdrop-blur-sm px-3.5 py-2 text-xs font-medium text-white shadow-lg shadow-primary/20 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
           {added ? (
             <>
               <ShoppingBag className="h-3.5 w-3.5" />
-              Added!
+              {t("card.added")}
             </>
           ) : stock === 0 ? (
-            "Sold out"
+            t("card.soldOut")
           ) : (
             <>
               <Plus className="h-3.5 w-3.5" />
-              Add to cart
+              {t("card.addToCart")}
             </>
           )}
         </button>
 
         {/* Category badge */}
-        <span className="absolute top-3 left-3 rounded-full glass-strong px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
+        <span className="absolute top-3 start-3 rounded-full glass-strong px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
           {category}
         </span>
       </div>
@@ -90,11 +94,12 @@ export default function ProductCard({
           </span>
           {stock > 0 && stock <= 5 && (
             <span className="text-[10px] font-medium text-primary-light">
-              Only {stock} left
+              {t("card.onlyLeft", { count: stock })}
             </span>
           )}
         </div>
       </div>
     </article>
+    </Link>
   );
 }

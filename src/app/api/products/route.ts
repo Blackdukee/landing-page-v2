@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
     const featured = searchParams.get("featured");
     const category = searchParams.get("category");
     const search = searchParams.get("search");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "0"); // 0 = no limit (backward compat)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: any = {};
@@ -16,8 +18,31 @@ export async function GET(req: NextRequest) {
     if (category) filter.category = category;
     if (search) filter.name = { $regex: search, $options: "i" };
 
-    const products = await Product.find(filter).sort({ createdAt: -1 });
-    return NextResponse.json(products);
+    // If no limit requested, return all (for admin, landing page etc.)
+    if (!limit) {
+      const products = await Product.find(filter).sort({ createdAt: -1 });
+      return NextResponse.json(products);
+    }
+
+    // Paginated response
+    const total = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(total / limit);
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    return NextResponse.json({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("GET /api/products error:", error);
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });

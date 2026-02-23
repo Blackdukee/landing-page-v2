@@ -23,6 +23,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Arabic font override */
+html[lang="ar"] {
+  --font-sans: var(--font-cairo);
+}
+
 * {
   border-color: var(--color-border);
 }

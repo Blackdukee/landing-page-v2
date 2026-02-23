@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import {
   Plus,
@@ -11,6 +11,10 @@ import {
   Save,
   Package,
   ImageIcon,
+  ChevronDown,
+  ArrowUpDown,
+  Upload,
+  Loader2,
 } from "lucide-react";
 
 interface Product {
@@ -22,6 +26,12 @@ interface Product {
   stock: number;
   category: string;
   featured: boolean;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
 }
 
 const emptyProduct = {
@@ -36,13 +46,19 @@ const emptyProduct = {
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("default");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [dragOver, setDragOver] = useState(false);
 
   const fetchProducts = () => {
     setLoading(true);
@@ -57,11 +73,52 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCategories(data);
+      })
+      .catch(console.error);
   }, []);
+
+  const categoryNames = useMemo(
+    () => categories.map((c) => c.name),
+    [categories]
+  );
+
+  const filtered = useMemo(() => {
+    let result = products;
+
+    // Search
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((p) => p.name.toLowerCase().includes(q));
+    }
+
+    // Category filter
+    if (filterCategory !== "All") {
+      result = result.filter((p) => p.category === filterCategory);
+    }
+
+    // Sort
+    if (sortBy === "name-asc") {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "name-desc") {
+      result = [...result].sort((a, b) => b.name.localeCompare(a.name));
+    } else if (sortBy === "price-asc") {
+      result = [...result].sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price-desc") {
+      result = [...result].sort((a, b) => b.price - a.price);
+    }
+
+    return result;
+  }, [products, search, filterCategory, sortBy]);
 
   const openCreate = () => {
     setEditing(null);
     setForm(emptyProduct);
+    setUploadError("");
+    setDragOver(false);
     setShowModal(true);
   };
 
@@ -76,11 +133,17 @@ export default function AdminProductsPage() {
       category: product.category,
       featured: product.featured,
     });
+    setUploadError("");
+    setDragOver(false);
     setShowModal(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.image) {
+      setUploadError("Please upload a product image");
+      return;
+    }
     setSaving(true);
 
     try {
@@ -119,12 +182,50 @@ export default function AdminProductsPage() {
     }
   };
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // filtered is now computed via useMemo above
 
   const updateField = (field: string, value: string | number | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setUploadError("");
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setUploadError(data.error || "Upload failed");
+        return;
+      }
+
+      updateField("image", data.url);
+    } catch {
+      setUploadError("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleImageUpload(file);
+    e.target.value = "";
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) handleImageUpload(file);
   };
 
   return (
@@ -145,16 +246,47 @@ export default function AdminProductsPage() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-sm mb-6">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-        />
+      {/* Search, Filter & Sort */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+          />
+        </div>
+        <div className="relative">
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="appearance-none rounded-xl border border-border bg-surface text-foreground px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all capitalize"
+          >
+            <option value="All">All Categories</option>
+            {categoryNames.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+        </div>
+        <div className="relative">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="appearance-none rounded-xl border border-border bg-surface text-foreground px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+          >
+            <option value="default">Sort: Default</option>
+            <option value="name-asc">Name A → Z</option>
+            <option value="name-desc">Name Z → A</option>
+            <option value="price-asc">Price Low → High</option>
+            <option value="price-desc">Price High → Low</option>
+          </select>
+          <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+        </div>
       </div>
 
       {/* Products Table */}
@@ -355,7 +487,8 @@ export default function AdminProductsPage() {
                   onChange={(e) => updateField("category", e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
                 >
-                  {["General", "Kitchen", "Decor", "Lighting", "Textiles", "Furniture", "Garden"].map(
+                  <option value="General">General</option>
+                  {categoryNames.map(
                     (cat) => (
                       <option key={cat} value={cat}>
                         {cat}
@@ -367,32 +500,97 @@ export default function AdminProductsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-muted mb-1.5">
-                  Image URL
+                  Product Image
                 </label>
-                <div className="flex gap-3">
-                  <div className="relative flex-1">
-                    <ImageIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-                    <input
-                      type="url"
-                      required
-                      value={form.image}
-                      onChange={(e) => updateField("image", e.target.value)}
-                      placeholder="https://..."
-                      className="w-full rounded-xl border border-border bg-background pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-                    />
-                  </div>
-                  {form.image && (
-                    <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-surface shrink-0">
-                      <Image
-                        src={form.image}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                        sizes="40px"
+
+                {/* Image preview + editable URL */}
+                {form.image && (
+                  <div className="space-y-2 mb-3">
+                    <div className="relative rounded-xl overflow-hidden border border-border bg-background group">
+                      <div className="relative h-44 w-full">
+                        <Image
+                          src={form.image}
+                          alt="Preview"
+                          fill
+                          className="object-contain"
+                          sizes="400px"
+                        />
+                      </div>
+                      <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById("product-image-input")?.click()}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-white/80 hover:bg-primary hover:text-white transition-colors"
+                          title="Re-upload image"
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateField("image", "")}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-white/80 hover:bg-red-500 hover:text-white transition-colors"
+                          title="Remove image"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* Editable URL */}
+                    <div className="relative">
+                      <ImageIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                      <input
+                        type="url"
+                        value={form.image}
+                        onChange={(e) => updateField("image", e.target.value)}
+                        placeholder="https://..."
+                        className="w-full rounded-xl border border-border bg-background pl-10 pr-4 py-2 text-xs text-muted focus:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all font-mono"
                       />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Hidden file input (always in DOM for re-upload) */}
+                <input
+                  id="product-image-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+                  onChange={onFileSelect}
+                  className="hidden"
+                />
+
+                {/* Upload area */}
+                {!form.image && (
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={onDrop}
+                    className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-8 px-4 transition-all cursor-pointer ${
+                      dragOver
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40 hover:bg-card-hover"
+                    } ${uploading ? "pointer-events-none opacity-60" : ""}`}
+                    onClick={() => document.getElementById("product-image-input")?.click()}
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
+                        <p className="text-sm text-muted">Uploading...</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-3">
+                          <Upload className="h-5 w-5 text-primary" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground mb-1">Click to upload or drag & drop</p>
+                        <p className="text-xs text-muted">JPEG, PNG, WebP, GIF, SVG — Max 5MB</p>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {uploadError && (
+                  <p className="text-xs text-red-400 mt-1.5">{uploadError}</p>
+                )}
               </div>
 
               <label className="flex items-center gap-2 cursor-pointer">

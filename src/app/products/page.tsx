@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { Search, SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface Product {
   _id: string;
@@ -15,45 +16,91 @@ interface Product {
   featured: boolean;
 }
 
-const categories = ["All", "Kitchen", "Decor", "Lighting", "Textiles", "Furniture", "Garden", "Electronics", "Fashion"];
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
-const priceRanges = [
-  { label: "All Prices", min: 0, max: Infinity },
-  { label: "Under $25", min: 0, max: 25 },
-  { label: "$25 - $50", min: 25, max: 50 },
-  { label: "$50 - $100", min: 50, max: 100 },
-  { label: "$100 - $200", min: 100, max: 200 },
-  { label: "$200+", min: 200, max: Infinity },
-];
+interface CategoryItem {
+  _id: string;
+  name: string;
+}
+
+const PRODUCTS_PER_PAGE = 8;
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [activePriceRange, setActivePriceRange] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState("default");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const { t } = useTranslation();
+
+  const priceRanges = useMemo(
+    () => [
+      { label: t("products.allPrices"), min: 0, max: Infinity },
+      { label: t("products.under25"), min: 0, max: 25 },
+      { label: t("products.price25_50"), min: 25, max: 50 },
+      { label: t("products.price50_100"), min: 50, max: 100 },
+      { label: t("products.price100_200"), min: 100, max: 200 },
+      { label: t("products.price200plus"), min: 200, max: Infinity },
+    ],
+    [t]
+  );
 
   useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCategories(["All", ...data.map((c: CategoryItem) => c.name)]);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  const fetchProducts = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (activeCategory !== "All") params.set("category", activeCategory);
+    params.set("page", String(currentPage));
+    params.set("limit", String(PRODUCTS_PER_PAGE));
 
     fetch(`/api/products?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setProducts(data);
+        if (data.products && Array.isArray(data.products)) {
+          setProducts(data.products);
+          setPagination(data.pagination);
+        } else if (Array.isArray(data)) {
+          setProducts(data);
+          setPagination(null);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+  }, [activeCategory, currentPage]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Reset page when category changes
+  useEffect(() => {
+    setCurrentPage(1);
   }, [activeCategory]);
 
   // Client-side filtering for search, price, and sorting
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
-    // Search filter
     if (search) {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(
@@ -63,7 +110,6 @@ export default function ProductsPage() {
       );
     }
 
-    // Price range filter
     const range = priceRanges[activePriceRange];
     if (range && activePriceRange !== 0) {
       filtered = filtered.filter(
@@ -71,7 +117,6 @@ export default function ProductsPage() {
       );
     }
 
-    // Sorting
     if (sortBy === "price-asc") {
       filtered = [...filtered].sort((a, b) => a.price - b.price);
     } else if (sortBy === "price-desc") {
@@ -81,7 +126,7 @@ export default function ProductsPage() {
     }
 
     return filtered;
-  }, [products, search, activePriceRange, sortBy]);
+  }, [products, search, activePriceRange, sortBy, priceRanges]);
 
   const activeFiltersCount =
     (activeCategory !== "All" ? 1 : 0) +
@@ -93,7 +138,38 @@ export default function ProductsPage() {
     setActiveCategory("All");
     setActivePriceRange(0);
     setSortBy("default");
+    setCurrentPage(1);
   };
+
+  const goToPage = (page: number) => {
+    if (pagination && page >= 1 && page <= pagination.totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const getPageNumbers = () => {
+    if (!pagination) return [];
+    const { totalPages } = pagination;
+    const pages: (number | "...")[] = [];
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
+  const getCategoryLabel = (cat: string) =>
+    cat === "All" ? t("products.all") : cat;
 
   return (
     <div className="pt-24 pb-20">
@@ -101,29 +177,28 @@ export default function ProductsPage() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3">
-            Shop
+            {t("products.title")}
           </h1>
           <p className="text-muted text-sm max-w-lg">
-            Browse our curated collection of quality products. Filter by category,
-            price range, or search to find exactly what you need.
+            {t("products.subtitle")}
           </p>
         </div>
 
         {/* Search & Sort Bar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+            <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t("products.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+              className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -131,28 +206,26 @@ export default function ProductsPage() {
           </div>
 
           <div className="flex gap-3">
-            {/* Sort dropdown */}
             <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none rounded-xl border border-border bg-surface px-4 py-2.5 pr-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                className="appearance-none rounded-xl border border-border bg-surface px-4 py-2.5 pe-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
               >
-                <option value="default">Sort by</option>
-                <option value="price-asc">Price: Low → High</option>
-                <option value="price-desc">Price: High → Low</option>
-                <option value="name">Name: A → Z</option>
+                <option value="default">{t("products.sortBy")}</option>
+                <option value="price-asc">{t("products.priceLowHigh")}</option>
+                <option value="price-desc">{t("products.priceHighLow")}</option>
+                <option value="name">{t("products.nameAZ")}</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+              <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
             </div>
 
-            {/* Mobile filters toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="sm:hidden inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground hover:bg-card-hover transition-colors"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Filters
+              {t("products.filters")}
               {activeFiltersCount > 0 && (
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                   {activeFiltersCount}
@@ -164,10 +237,9 @@ export default function ProductsPage() {
 
         {/* Filters section */}
         <div className={`space-y-6 mb-10 ${showFilters ? "block" : "hidden sm:block"}`}>
-          {/* Category pills */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
-              Category
+              {t("products.category")}
             </h3>
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
@@ -180,16 +252,15 @@ export default function ProductsPage() {
                       : "glass text-muted hover:text-foreground hover:border-primary/30"
                   }`}
                 >
-                  {cat}
+                  {getCategoryLabel(cat)}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Price range pills */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
-              Price Range
+              {t("products.priceRange")}
             </h3>
             <div className="flex flex-wrap gap-2">
               {priceRanges.map((range, idx) => (
@@ -213,9 +284,18 @@ export default function ProductsPage() {
         {!loading && (
           <div className="flex items-center justify-between mb-6">
             <p className="text-xs text-muted">
-              {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""} found
-              {activeCategory !== "All" && ` in ${activeCategory}`}
-              {search && ` matching "${search}"`}
+              {pagination
+                ? t("products.showing", {
+                    start: Math.min((currentPage - 1) * PRODUCTS_PER_PAGE + 1, pagination.total),
+                    end: Math.min(currentPage * PRODUCTS_PER_PAGE, pagination.total),
+                    total: pagination.total,
+                  })
+                : t("products.productsFound", {
+                    count: filteredProducts.length,
+                    s: filteredProducts.length !== 1 ? "s" : "",
+                  })}
+              {activeCategory !== "All" && ` ${t("products.inCategory", { category: activeCategory })}`}
+              {search && ` ${t("products.matching", { search })}`}
               {activePriceRange !== 0 && ` · ${priceRanges[activePriceRange].label}`}
             </p>
             {activeFiltersCount > 0 && (
@@ -223,7 +303,7 @@ export default function ProductsPage() {
                 onClick={clearAllFilters}
                 className="text-xs font-medium text-primary hover:text-primary-light transition-colors"
               >
-                Clear all filters
+                {t("products.clearAllFilters")}
               </button>
             )}
           </div>
@@ -259,17 +339,82 @@ export default function ProductsPage() {
             <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-surface mb-4">
               <Search className="h-8 w-8 text-muted" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No products found</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("products.noProductsFound")}</h3>
             <p className="text-sm text-muted mb-6">
-              Try adjusting your search or filters to find what you&apos;re looking
-              for.
+              {t("products.noProductsDesc")}
             </p>
             <button
               onClick={clearAllFilters}
               className="rounded-full glass px-5 py-2 text-sm font-medium text-foreground hover:border-primary/30 transition-all"
             >
-              Clear filters
+              {t("products.clearFilters")}
             </button>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && !loading && (
+          <div className="mt-12 flex items-center justify-center">
+            <nav className="inline-flex items-center gap-1 rounded-2xl bg-card border border-border p-1.5">
+              <button
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title={t("products.firstPage")}
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title={t("products.previousPage")}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              {getPageNumbers().map((pageNum, idx) =>
+                pageNum === "..." ? (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="flex h-9 w-9 items-center justify-center text-xs text-muted"
+                  >
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={pageNum}
+                    onClick={() => goToPage(pageNum as number)}
+                    className={`flex h-9 min-w-[2.25rem] items-center justify-center rounded-xl px-2 text-xs font-medium transition-all ${
+                      currentPage === pageNum
+                        ? "bg-gradient-to-r from-primary to-purple-500 text-white shadow-md shadow-primary/20"
+                        : "text-muted hover:bg-card-hover hover:text-foreground"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              )}
+
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === pagination.totalPages}
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title={t("products.nextPage")}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => goToPage(pagination.totalPages)}
+                disabled={currentPage === pagination.totalPages}
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title={t("products.lastPage")}
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </button>
+            </nav>
           </div>
         )}
       </div>

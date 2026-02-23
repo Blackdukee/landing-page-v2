@@ -119,6 +119,57 @@ const sampleProducts = [
   },
 ];
 
+const CategorySchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true },
+    description: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+const Category =
+  mongoose.models.Category || mongoose.model("Category", CategorySchema);
+
+  const sampleCategories = [
+    {
+      name: "Lighting",
+      slug: "lighting",
+      description: "Elegant and functional lighting solutions for every space.",
+    },
+    {
+      name: "Decor",
+      slug: "decor",
+      description: "Unique decorative pieces to add character to your home.",
+    },
+    {
+      name: "Kitchen",
+      slug: "kitchen",
+      description: "High-quality kitchenware for cooking and entertaining.",
+    },
+    {
+      name: "Textiles",
+      slug: "textiles",
+      description: "Soft and stylish textiles for comfort and design.",
+    },
+    {
+      name: "Garden",
+      slug: "garden",
+      description: "Durable and stylish products for your outdoor spaces.",
+    },
+    {
+      name: "Furniture",
+      slug: "furniture",
+      description: "Timeless furniture pieces crafted with care and quality.",
+    },
+    {
+      name: "General",
+      slug: "general",
+      description: "A variety of products that don't fit into other categories.",
+    },
+  ];
+
+
 async function seed() {
   console.log("Connecting to MongoDB Atlas...");
   console.log("URI:", MONGODB_URI?.replace(/\/\/.*@/, "//***:***@"));
@@ -134,7 +185,14 @@ async function seed() {
     console.log(`Seeded ${products.length} products:`);
     products.forEach((p) => console.log(`  - ${p.name} ($${p.price})`));
 
-    console.log("\nDone! Products are now in your Atlas database.");
+    await Category.deleteMany({});
+    console.log("Cleared existing categories.");
+
+    const categories = await Category.insertMany(sampleCategories);
+    console.log(`Seeded ${categories.length} categories:`);
+    categories.forEach((c) => console.log(`  - ${c.name}`));
+
+    console.log("\nDone! Products and categories are now in your Atlas database.");
   } catch (error) {
     console.error("Seed failed:", error.message);
   } finally {

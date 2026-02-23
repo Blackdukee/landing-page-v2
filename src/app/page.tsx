@@ -15,6 +15,7 @@ import {
   Package,
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface Product {
   _id: string;
@@ -30,6 +31,7 @@ interface Product {
 export default function HomePage() {
   const [featured, setFeatured] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t, dir } = useTranslation();
 
   useEffect(() => {
     fetch("/api/products?featured=true")
@@ -59,21 +61,19 @@ export default function HomePage() {
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-xs font-medium text-primary-light mb-8">
                 <Sparkles className="h-3.5 w-3.5" />
-                New Collection 2025
+                {t("home.badge")}
               </span>
 
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-[1.05] tracking-tight mb-6">
-                Experience
+                {t("home.heroLine1")}
                 <br />
-                <span className="gradient-text">modern</span> shopping
+                <span className="gradient-text">{t("home.heroLine2")}</span> {t("home.heroLine3")}
                 <br />
-                today
+                {t("home.heroLine4")}
               </h1>
 
               <p className="text-lg text-muted max-w-lg leading-relaxed mb-10">
-                Discover premium products across every category. From tech to
-                fashion, find everything you need in one place with unbeatable
-                quality and fast delivery.
+                {t("home.heroDesc")}
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -81,23 +81,23 @@ export default function HomePage() {
                   href="/products"
                   className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Explore Collection
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  {t("home.explore")}
+                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
                 </Link>
                 <a
                   href="#featured"
                   className="inline-flex items-center gap-2 rounded-full glass px-8 py-4 text-sm font-medium text-foreground transition-all hover:bg-glass-border"
                 >
-                  See Featured
+                  {t("home.seeFeatured")}
                 </a>
               </div>
 
               {/* Trust badges */}
               <div className="flex flex-wrap gap-8 mt-14 pt-8 border-t border-border">
                 {[
-                  { icon: Truck, text: "Free Delivery", sub: "On orders $99+" },
-                  { icon: ShieldCheck, text: "Easy Returns", sub: "30-day policy" },
-                  { icon: Headphones, text: "24/7 Support", sub: "Always here" },
+                  { icon: Truck, text: t("home.freeDelivery"), sub: t("home.freeDeliverySub") },
+                  { icon: ShieldCheck, text: t("home.easyReturns"), sub: t("home.easyReturnsSub") },
+                  { icon: Headphones, text: t("home.support"), sub: t("home.supportSub") },
                 ].map(({ icon: Icon, text, sub }) => (
                   <div key={text} className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -113,9 +113,9 @@ export default function HomePage() {
             </div>
 
             {/* Right - Featured product showcase */}
-            <div className="relative hidden lg:flex items-center justify-center">
+            <div className="relative hidden lg:flex items-center justify-center ">
               {/* Large floating card */}
-              <div className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 hover:rotate-0 transition-transform duration-700">
+              <div className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 hover:rotate-0 transition-transform duration-700 -top-16">
                 <Image
                   src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop"
                   alt="Featured product"
@@ -126,10 +126,10 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <span className="inline-block rounded-full bg-primary/80 backdrop-blur-sm px-3 py-1 text-[10px] font-semibold text-white mb-3">
-                    TRENDING NOW
+                    {t("home.trendingNow")}
                   </span>
-                  <h3 className="text-xl font-bold text-white mb-1">Best Sellers</h3>
-                  <p className="text-sm text-white/70">Shop our top rated items</p>
+                  <h3 className="text-xl font-bold text-white mb-1">{t("home.bestSellers")}</h3>
+                  <p className="text-sm text-white/70">{t("home.shopTopRated")}</p>
                 </div>
               </div>
 
@@ -140,23 +140,10 @@ export default function HomePage() {
                     <Zap className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">Free Delivery</p>
-                    <p className="text-[11px] text-muted">On your first order</p>
+                    <p className="text-sm font-bold text-foreground">{t("home.freeDeliveryCard")}</p>
+                    <p className="text-[11px] text-muted">{t("home.onFirstOrder")}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Star rating card */}
-              <div className="absolute -top-2 -right-4 glass-strong rounded-2xl p-3 px-4 shadow-xl">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <span className="text-xs font-semibold text-foreground">4.9</span>
-                </div>
-                <p className="text-[10px] text-muted mt-0.5">2k+ Reviews</p>
               </div>
             </div>
           </div>
@@ -166,7 +153,7 @@ export default function HomePage() {
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
           <div className="flex flex-col items-center gap-2 animate-bounce">
             <span className="text-[10px] uppercase tracking-widest text-muted">
-              Scroll
+              {t("home.scroll")}
             </span>
             <div className="h-8 w-px bg-gradient-to-b from-primary/40 to-transparent" />
           </div>
@@ -179,18 +166,18 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
             <div>
               <span className="text-xs font-semibold uppercase tracking-widest text-primary mb-2 block">
-                Handpicked
+                {t("home.handpicked")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                Featured Products
+                {t("home.featuredProducts")}
               </h2>
             </div>
             <Link
               href="/products"
               className="group inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-primary transition-colors"
             >
-              View all
-              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              {t("home.viewAll")}
+              <ChevronRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
             </Link>
           </div>
 
@@ -221,7 +208,7 @@ export default function HomePage() {
           ) : (
             <div className="text-center py-20">
               <p className="text-muted mb-4">
-                No products yet. Seed the database to get started.
+                {t("home.noProducts")}
               </p>
               <SeedButton />
             </div>
@@ -234,11 +221,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Why Choose <span className="gradient-text">NovaShop</span>?
+              {t("home.whyChoose")} <span className="gradient-text">{t("home.whyChooseBrand")}</span>{t("home.whyChooseSuffix")}
             </h2>
             <p className="text-muted max-w-2xl mx-auto text-sm leading-relaxed">
-              We&apos;re committed to providing you with the best shopping experience.
-              Here&apos;s what sets us apart.
+              {t("home.whyChooseDesc")}
             </p>
           </div>
 
@@ -246,18 +232,18 @@ export default function HomePage() {
             {[
               {
                 icon: Star,
-                title: "Premium Quality",
-                desc: "Every product is carefully vetted to ensure it meets our high standards of quality and durability.",
+                title: t("home.premiumQuality"),
+                desc: t("home.premiumQualityDesc"),
               },
               {
                 icon: Package,
-                title: "Fast Shipping",
-                desc: "Get your orders delivered quickly with our efficient shipping network. Free shipping on orders over $99.",
+                title: t("home.fastShipping"),
+                desc: t("home.fastShippingDesc"),
               },
               {
                 icon: ShieldCheck,
-                title: "Secure Shopping",
-                desc: "Shop with confidence. Easy returns, buyer protection, and 24/7 customer support for peace of mind.",
+                title: t("home.secureShopping"),
+                desc: t("home.secureShoppingDesc"),
               },
             ].map(({ icon: Icon, title, desc }) => (
               <div
@@ -286,23 +272,22 @@ export default function HomePage() {
               height={600}
               className="w-full h-64 sm:h-80 lg:h-96 object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent flex items-center">
+            <div className={`absolute inset-0 ${dir === "rtl" ? "bg-gradient-to-l" : "bg-gradient-to-r"} from-background/95 via-background/70 to-transparent flex items-center`}>
               <div className="px-8 sm:px-14 max-w-lg">
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
-                  Start your
+                  {t("home.ctaLine1")}
                   <br />
-                  <span className="gradient-text">shopping journey</span> today
+                  <span className="gradient-text">{t("home.ctaLine2")}</span> {t("home.ctaLine3")}
                 </h2>
                 <p className="text-sm text-muted mb-6 leading-relaxed">
-                  Browse our full catalog and discover something amazing.
-                  Free shipping on orders over $99.
+                  {t("home.ctaDesc")}
                 </p>
                 <Link
                   href="/products"
                   className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-primary/25"
                 >
-                  Shop Now
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  {t("home.shopNow")}
+                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
                 </Link>
               </div>
             </div>
@@ -316,6 +301,7 @@ export default function HomePage() {
 function SeedButton() {
   const [seeding, setSeeding] = useState(false);
   const [done, setDone] = useState(false);
+  const { t } = useTranslation();
 
   const seed = async () => {
     setSeeding(true);
@@ -330,7 +316,7 @@ function SeedButton() {
     }
   };
 
-  if (done) return <p className="text-success text-sm">Database seeded! Refreshing...</p>;
+  if (done) return <p className="text-success text-sm">{t("home.seedDone")}</p>;
 
   return (
     <button
@@ -338,7 +324,7 @@ function SeedButton() {
       disabled={seeding}
       className="rounded-full bg-gradient-to-r from-primary to-purple-500 text-white px-6 py-2.5 text-sm font-medium hover:shadow-lg hover:shadow-primary/25 transition-all disabled:opacity-50"
     >
-      {seeding ? "Seeding..." : "Seed Sample Products"}
+      {seeding ? t("home.seeding") : t("home.seedButton")}
     </button>
   );
 }

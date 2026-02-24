@@ -9,6 +9,8 @@ import {
   ChevronDown,
   Trash2,
 } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
+import type { TranslationKey } from "@/i18n/en";
 
 interface OrderItem {
   productId: string;
@@ -43,6 +45,7 @@ const statusColor: Record<string, string> = {
 };
 
 export default function AdminOrdersPage() {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -93,7 +96,7 @@ export default function AdminOrdersPage() {
   };
 
   const handleDelete = async (orderId: string) => {
-    if (!confirm("Are you sure you want to delete this order?")) return;
+    if (!confirm(t("admin.orders.deleteConfirm" as TranslationKey))) return;
     try {
       await fetch(`/api/orders/${orderId}`, { method: "DELETE" });
       fetchOrders();
@@ -114,9 +117,9 @@ export default function AdminOrdersPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Orders</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("admin.orders.title" as TranslationKey)}</h1>
         <p className="text-sm text-muted mt-1">
-          Track and manage customer orders
+          {t("admin.orders.subtitle" as TranslationKey)}
         </p>
       </div>
 
@@ -126,7 +129,7 @@ export default function AdminOrdersPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
           <input
             type="text"
-            placeholder="Search by customer or order ID..."
+            placeholder={t("admin.orders.searchPlaceholder" as TranslationKey)}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
@@ -138,10 +141,10 @@ export default function AdminOrdersPage() {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="appearance-none rounded-xl border border-border bg-surface text-foreground px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all capitalize"
           >
-            <option value="all">All Statuses</option>
+            <option value="all">{t("admin.orders.allStatuses" as TranslationKey)}</option>
             {statusOptions.map((s) => (
               <option key={s} value={s} className="capitalize">
-                {s}
+                {t(`admin.status.${s}` as TranslationKey)}
               </option>
             ))}
           </select>
@@ -162,8 +165,8 @@ export default function AdminOrdersPage() {
             <ClipboardList className="h-10 w-10 text-muted mx-auto mb-3" />
             <p className="text-sm text-muted">
               {search || filterStatus !== "all"
-                ? "No orders match your filters"
-                : "No orders yet"}
+                ? t("admin.orders.noMatch" as TranslationKey)
+                : t("admin.orders.noOrders" as TranslationKey)}
             </p>
           </div>
         ) : (
@@ -171,26 +174,26 @@ export default function AdminOrdersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface/50">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Order
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.orders.order" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Customer
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.orders.customer" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Items
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.orders.items" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Total
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.orders.total" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Status
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.orders.status" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Date
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.orders.date" as TranslationKey)}
                   </th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Actions
+                  <th className="text-end px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.orders.actions" as TranslationKey)}
                   </th>
                 </tr>
               </thead>
@@ -213,8 +216,7 @@ export default function AdminOrdersPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-muted">
-                      {order.items?.length || 0} item
-                      {(order.items?.length || 0) !== 1 ? "s" : ""}
+                      {order.items?.length || 0} {(order.items?.length || 0) !== 1 ? t("admin.orders.itemPlural" as TranslationKey) : t("admin.orders.item" as TranslationKey)}
                     </td>
                     <td className="px-5 py-3.5 font-medium text-foreground">
                       ${order.totalPrice?.toFixed(2)}
@@ -233,7 +235,7 @@ export default function AdminOrdersPage() {
                         >
                           {statusOptions.map((s) => (
                             <option key={s} value={s} className="capitalize">
-                              {s}
+                              {t(`admin.status.${s}` as TranslationKey)}
                             </option>
                           ))}
                         </select>
@@ -273,7 +275,7 @@ export default function AdminOrdersPage() {
           <div className="w-full max-w-lg rounded-2xl bg-surface border border-border shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="font-semibold text-base text-foreground">
-                Order #{selectedOrder._id.slice(-6)}
+                {t("admin.orders.orderDetail" as TranslationKey)} #{selectedOrder._id.slice(-6)}
               </h2>
               <button
                 onClick={() => setSelectedOrder(null)}
@@ -287,21 +289,21 @@ export default function AdminOrdersPage() {
               {/* Status */}
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                  Status
+                  {t("admin.orders.statusLabel" as TranslationKey)}
                 </h3>
                 <span
                   className={`inline-block rounded-full border px-3 py-1 text-[11px] font-medium capitalize ${
                     statusColor[selectedOrder.status] || ""
                   }`}
                 >
-                  {selectedOrder.status}
+                  {t(`admin.status.${selectedOrder.status}` as TranslationKey)}
                 </span>
               </div>
 
               {/* Customer */}
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                  Customer
+                  {t("admin.orders.customerLabel" as TranslationKey)}
                 </h3>
                 <div className="text-sm space-y-1">
                   <p className="font-medium text-foreground">{selectedOrder.customerInfo?.name}</p>
@@ -312,7 +314,7 @@ export default function AdminOrdersPage() {
                   <p className="text-muted">{selectedOrder.customerInfo?.address}</p>
                   {selectedOrder.customerInfo?.notes && (
                     <p className="text-xs text-muted italic mt-2">
-                      Notes: {selectedOrder.customerInfo.notes}
+                      {t("admin.orders.notes" as TranslationKey)}: {selectedOrder.customerInfo.notes}
                     </p>
                   )}
                 </div>
@@ -321,7 +323,7 @@ export default function AdminOrdersPage() {
               {/* Items */}
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                  Items
+                  {t("admin.orders.itemsLabel" as TranslationKey)}
                 </h3>
                 <div className="space-y-2">
                   {selectedOrder.items?.map((item, idx) => (
@@ -332,7 +334,7 @@ export default function AdminOrdersPage() {
                       <div>
                         <p className="font-medium text-foreground">{item.name}</p>
                         <p className="text-xs text-muted">
-                          Qty: {item.quantity} &times; ${item.price.toFixed(2)}
+                          {t("admin.orders.qty" as TranslationKey)}: {item.quantity} &times; ${item.price.toFixed(2)}
                         </p>
                       </div>
                       <p className="font-medium text-foreground">
@@ -345,7 +347,7 @@ export default function AdminOrdersPage() {
 
               {/* Total */}
               <div className="flex justify-between items-center pt-2 border-t border-border">
-                <span className="font-semibold text-foreground">Total</span>
+                <span className="font-semibold text-foreground">{t("admin.orders.totalLabel" as TranslationKey)}</span>
                 <span className="text-lg font-bold text-foreground">
                   ${selectedOrder.totalPrice?.toFixed(2)}
                 </span>
@@ -353,7 +355,7 @@ export default function AdminOrdersPage() {
 
               {/* Date */}
               <p className="text-xs text-muted">
-                Ordered: {new Date(selectedOrder.createdAt).toLocaleString()}
+                {t("admin.orders.ordered" as TranslationKey)}: {new Date(selectedOrder.createdAt).toLocaleString()}
               </p>
             </div>
           </div>

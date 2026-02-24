@@ -12,20 +12,33 @@ import {
   Menu,
   X,
   ExternalLink,
+  Globe,
 } from "lucide-react";
+import { LanguageProvider, useTranslation } from "@/i18n/LanguageContext";
+import type { TranslationKey } from "@/i18n/en";
 
 interface AdminUser {
   email: string;
   role: string;
 }
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AdminLanguageSwitcher() {
+  const { locale, setLocale } = useTranslation();
+  return (
+    <button
+      onClick={() => setLocale(locale === "en" ? "ar" : "en")}
+      className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-muted hover:bg-card-hover hover:text-foreground transition-all"
+    >
+      <Globe className="h-4 w-4" />
+      {locale === "en" ? "العربية" : "English"}
+    </button>
+  );
+}
+
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t, dir } = useTranslation();
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,7 +65,7 @@ export default function AdminLayout({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-sm text-muted">Loading...</div>
+        <div className="animate-pulse text-sm text-muted">{t("admin.loading" as TranslationKey)}</div>
       </div>
     );
   }
@@ -65,9 +78,9 @@ export default function AdminLayout({
   };
 
   const navItems = [
-    { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/admin/products", icon: Package, label: "Products" },
-    { href: "/admin/orders", icon: ClipboardList, label: "Orders" },
+    { href: "/admin", icon: LayoutDashboard, label: t("admin.nav.dashboard" as TranslationKey) },
+    { href: "/admin/products", icon: Package, label: t("admin.nav.products" as TranslationKey) },
+    { href: "/admin/orders", icon: ClipboardList, label: t("admin.nav.orders" as TranslationKey) },
   ];
 
   const isActive = (href: string) => {
@@ -76,7 +89,7 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={dir}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -87,8 +100,8 @@ export default function AdminLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-surface border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 ${dir === "rtl" ? "right-0" : "left-0"} z-50 h-full w-64 bg-surface border-${dir === "rtl" ? "l" : "r"} border-border flex flex-col transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : dir === "rtl" ? "translate-x-full" : "-translate-x-full"
         }`}
       >
         {/* Logo */}
@@ -99,10 +112,10 @@ export default function AdminLayout({
             </div>
             <div>
               <span className="text-sm font-semibold block leading-tight text-foreground">
-                NovaShop
+                {t("admin.brandName" as TranslationKey)}
               </span>
               <span className="text-[10px] text-primary-light uppercase tracking-wider">
-                Admin
+                {t("admin.admin" as TranslationKey)}
               </span>
             </div>
           </Link>
@@ -139,8 +152,9 @@ export default function AdminLayout({
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted hover:bg-card-hover hover:text-foreground transition-all"
             >
               <ExternalLink className="h-4 w-4" />
-              View Store
+              {t("admin.nav.viewStore" as TranslationKey)}
             </Link>
+            <AdminLanguageSwitcher />
           </div>
         </nav>
 
@@ -157,7 +171,7 @@ export default function AdminLayout({
             <button
               onClick={handleLogout}
               className="text-muted hover:text-danger transition-colors"
-              title="Sign out"
+              title={t("admin.signOut" as TranslationKey)}
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -166,8 +180,8 @@ export default function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar */}
+      <div className={dir === "rtl" ? "lg:pr-64" : "lg:pl-64"}>
+        {/* Top bar - mobile */}
         <div className="sticky top-0 z-30 flex items-center gap-4 border-b border-border bg-surface/80 backdrop-blur-xl px-6 py-3 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -175,11 +189,23 @@ export default function AdminLayout({
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="text-sm font-semibold text-foreground">NovaShop Admin</span>
+          <span className="text-sm font-semibold text-foreground">{t("admin.brandName" as TranslationKey)} {t("admin.admin" as TranslationKey)}</span>
         </div>
 
         <div className="p-6 lg:p-8">{children}</div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <LanguageProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </LanguageProvider>
   );
 }

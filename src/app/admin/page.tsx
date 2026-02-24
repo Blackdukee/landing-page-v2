@@ -14,6 +14,8 @@ import {
   Save,
   Check,
 } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
+import type { TranslationKey } from "@/i18n/en";
 
 interface Stats {
   totalProducts: number;
@@ -38,6 +40,7 @@ interface Category {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<Stats>({
     totalProducts: 0,
     totalOrders: 0,
@@ -153,7 +156,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm("Delete this category? Products using it will keep their current category text."))
+    if (!confirm(t("admin.dashboard.deleteCatConfirm" as TranslationKey)))
       return;
     setDeletingCat(id);
     try {
@@ -168,25 +171,25 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      label: "Total Products",
+      label: t("admin.dashboard.totalProducts" as TranslationKey),
       value: stats.totalProducts,
       icon: Package,
       color: "bg-blue-500/10 text-blue-400",
     },
     {
-      label: "Total Orders",
+      label: t("admin.dashboard.totalOrders" as TranslationKey),
       value: stats.totalOrders,
       icon: ClipboardList,
       color: "bg-green-500/10 text-green-400",
     },
     {
-      label: "Revenue",
+      label: t("admin.dashboard.revenue" as TranslationKey),
       value: `$${stats.totalRevenue.toFixed(2)}`,
       icon: DollarSign,
       color: "bg-amber-500/10 text-amber-400",
     },
     {
-      label: "Pending Orders",
+      label: t("admin.dashboard.pendingOrders" as TranslationKey),
       value: stats.pendingOrders,
       icon: TrendingUp,
       color: "bg-purple-500/10 text-purple-400",
@@ -204,9 +207,9 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("admin.dashboard.title" as TranslationKey)}</h1>
         <p className="text-sm text-muted mt-1">
-          Overview of your store performance
+          {t("admin.dashboard.subtitle" as TranslationKey)}
         </p>
       </div>
 
@@ -248,7 +251,7 @@ export default function AdminDashboard() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Tag className="h-3.5 w-3.5" />
             </div>
-            <h2 className="font-semibold text-sm text-foreground">Categories</h2>
+            <h2 className="font-semibold text-sm text-foreground">{t("admin.dashboard.categories" as TranslationKey)}</h2>
             <span className="text-xs text-muted">({categories.length})</span>
           </div>
         </div>
@@ -260,7 +263,7 @@ export default function AdminDashboard() {
               <div className="relative flex-1 max-w-xs">
                 <input
                   type="text"
-                  placeholder="New category name..."
+                  placeholder={t("admin.dashboard.newCatPlaceholder" as TranslationKey)}
                   value={newCatName}
                   onChange={(e) => {
                     setNewCatName(e.target.value);
@@ -275,13 +278,13 @@ export default function AdminDashboard() {
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-4 py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
               >
                 <Plus className="h-4 w-4" />
-                {addingCat ? "Adding..." : "Add"}
+                {addingCat ? t("admin.dashboard.adding" as TranslationKey) : t("admin.dashboard.add" as TranslationKey)}
               </button>
             </div>
             <div className="max-w-md">
               <input
                 type="text"
-                placeholder="Description (optional)..."
+                placeholder={t("admin.dashboard.descPlaceholder" as TranslationKey)}
                 value={newCatDesc}
                 onChange={(e) => setNewCatDesc(e.target.value)}
                 className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
@@ -302,7 +305,7 @@ export default function AdminDashboard() {
             </div>
           ) : categories.length === 0 ? (
             <p className="text-sm text-muted text-center py-8">
-              No categories yet. Add one above to get started.
+              {t("admin.dashboard.noCategoriesYet" as TranslationKey)}
             </p>
           ) : (
             <div className="space-y-2">
@@ -323,7 +326,7 @@ export default function AdminDashboard() {
                             if (e.key === "Escape") setEditingCat(null);
                           }}
                           autoFocus
-                          placeholder="Category name"
+                          placeholder={t("admin.dashboard.catNamePlaceholder" as TranslationKey)}
                           className="flex-1 rounded-lg border border-primary/30 bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                         />
                         <button
@@ -348,7 +351,7 @@ export default function AdminDashboard() {
                           if (e.key === "Enter") handleUpdateCategory(cat._id);
                           if (e.key === "Escape") setEditingCat(null);
                         }}
-                        placeholder="Description (optional)"
+                        placeholder={t("admin.dashboard.catDescPlaceholder" as TranslationKey)}
                         className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                       />
                     </div>
@@ -399,7 +402,7 @@ export default function AdminDashboard() {
       {/* Recent Orders */}
       <div className="rounded-2xl bg-card border border-border">
         <div className="px-6 py-5 border-b border-border">
-          <h2 className="font-semibold text-sm text-foreground">Recent Orders</h2>
+          <h2 className="font-semibold text-sm text-foreground">{t("admin.dashboard.recentOrders" as TranslationKey)}</h2>
         </div>
         {loading ? (
           <div className="p-6 space-y-4">
@@ -409,24 +412,24 @@ export default function AdminDashboard() {
           </div>
         ) : recentOrders.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted">
-            No orders yet
+            {t("admin.dashboard.noOrdersYet" as TranslationKey)}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Customer
+                  <th className="text-start px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.dashboard.customer" as TranslationKey)}
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Total
+                  <th className="text-start px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.dashboard.total" as TranslationKey)}
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Status
+                  <th className="text-start px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.dashboard.status" as TranslationKey)}
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Date
+                  <th className="text-start px-6 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.dashboard.date" as TranslationKey)}
                   </th>
                 </tr>
               </thead>

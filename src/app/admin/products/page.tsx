@@ -16,6 +16,8 @@ import {
   Upload,
   Loader2,
 } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
+import type { TranslationKey } from "@/i18n/en";
 
 interface Product {
   _id: string;
@@ -45,6 +47,7 @@ const emptyProduct = {
 };
 
 export default function AdminProductsPage() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,7 +144,7 @@ export default function AdminProductsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.image) {
-      setUploadError("Please upload a product image");
+      setUploadError(t("admin.products.uploadImage" as TranslationKey));
       return;
     }
     setSaving(true);
@@ -170,7 +173,7 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (!confirm(t("admin.products.deleteConfirm" as TranslationKey))) return;
     setDeleting(id);
     try {
       await fetch(`/api/products/${id}`, { method: "DELETE" });
@@ -232,9 +235,9 @@ export default function AdminProductsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Products</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("admin.products.title" as TranslationKey)}</h1>
           <p className="text-sm text-muted mt-1">
-            Manage your product catalog
+            {t("admin.products.subtitle" as TranslationKey)}
           </p>
         </div>
         <button
@@ -242,7 +245,7 @@ export default function AdminProductsPage() {
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 shadow-lg shadow-primary/20"
         >
           <Plus className="h-4 w-4" />
-          Add Product
+          {t("admin.products.addProduct" as TranslationKey)}
         </button>
       </div>
 
@@ -252,7 +255,7 @@ export default function AdminProductsPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder={t("admin.products.searchPlaceholder" as TranslationKey)}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-border bg-surface pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
@@ -264,7 +267,7 @@ export default function AdminProductsPage() {
             onChange={(e) => setFilterCategory(e.target.value)}
             className="appearance-none rounded-xl border border-border bg-surface text-foreground px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all capitalize"
           >
-            <option value="All">All Categories</option>
+            <option value="All">{t("admin.products.allCategories" as TranslationKey)}</option>
             {categoryNames.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
@@ -279,11 +282,11 @@ export default function AdminProductsPage() {
             onChange={(e) => setSortBy(e.target.value)}
             className="appearance-none rounded-xl border border-border bg-surface text-foreground px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
           >
-            <option value="default">Sort: Default</option>
-            <option value="name-asc">Name A → Z</option>
-            <option value="name-desc">Name Z → A</option>
-            <option value="price-asc">Price Low → High</option>
-            <option value="price-desc">Price High → Low</option>
+            <option value="default">{t("admin.products.sortDefault" as TranslationKey)}</option>
+            <option value="name-asc">{t("admin.products.sortNameAZ" as TranslationKey)}</option>
+            <option value="name-desc">{t("admin.products.sortNameZA" as TranslationKey)}</option>
+            <option value="price-asc">{t("admin.products.sortPriceLow" as TranslationKey)}</option>
+            <option value="price-desc">{t("admin.products.sortPriceHigh" as TranslationKey)}</option>
           </select>
           <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
         </div>
@@ -301,7 +304,7 @@ export default function AdminProductsPage() {
           <div className="p-16 text-center">
             <Package className="h-10 w-10 text-muted mx-auto mb-3" />
             <p className="text-sm text-muted">
-              {search ? "No products match your search" : "No products yet"}
+              {search ? t("admin.products.noMatch" as TranslationKey) : t("admin.products.noProducts" as TranslationKey)}
             </p>
           </div>
         ) : (
@@ -309,23 +312,23 @@ export default function AdminProductsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface/50">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Product
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.products.product" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Category
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.products.category" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Price
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.products.price" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Stock
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.products.stock" as TranslationKey)}
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Featured
+                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.products.featured" as TranslationKey)}
                   </th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    Actions
+                  <th className="text-end px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                    {t("admin.products.actions" as TranslationKey)}
                   </th>
                 </tr>
               </thead>
@@ -377,7 +380,7 @@ export default function AdminProductsPage() {
                             : "bg-gray-500/10 text-gray-400"
                         }`}
                       >
-                        {product.featured ? "Yes" : "No"}
+                        {product.featured ? t("admin.products.yes" as TranslationKey) : t("admin.products.no" as TranslationKey)}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
@@ -411,7 +414,7 @@ export default function AdminProductsPage() {
           <div className="w-full max-w-lg rounded-2xl bg-surface border border-border shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="font-semibold text-base text-foreground">
-                {editing ? "Edit Product" : "New Product"}
+                {editing ? t("admin.products.editProduct" as TranslationKey) : t("admin.products.newProduct" as TranslationKey)}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -424,7 +427,7 @@ export default function AdminProductsPage() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-muted mb-1.5">
-                  Product Name
+                  {t("admin.products.productName" as TranslationKey)}
                 </label>
                 <input
                   type="text"
@@ -437,7 +440,7 @@ export default function AdminProductsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-muted mb-1.5">
-                  Description
+                  {t("admin.products.description" as TranslationKey)}
                 </label>
                 <textarea
                   required
@@ -451,7 +454,7 @@ export default function AdminProductsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-muted mb-1.5">
-                    Price ($)
+                    {t("admin.products.priceLabel" as TranslationKey)}
                   </label>
                   <input
                     type="number"
@@ -465,7 +468,7 @@ export default function AdminProductsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-muted mb-1.5">
-                    Stock
+                    {t("admin.products.stockLabel" as TranslationKey)}
                   </label>
                   <input
                     type="number"
@@ -480,14 +483,14 @@ export default function AdminProductsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-muted mb-1.5">
-                  Category
+                  {t("admin.products.categoryLabel" as TranslationKey)}
                 </label>
                 <select
                   value={form.category}
                   onChange={(e) => updateField("category", e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
                 >
-                  <option value="General">General</option>
+                  <option value="General">{t("admin.products.general" as TranslationKey)}</option>
                   {categoryNames.map(
                     (cat) => (
                       <option key={cat} value={cat}>
@@ -500,7 +503,7 @@ export default function AdminProductsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-muted mb-1.5">
-                  Product Image
+                  {t("admin.products.productImage" as TranslationKey)}
                 </label>
 
                 {/* Image preview + editable URL */}
@@ -574,15 +577,15 @@ export default function AdminProductsPage() {
                     {uploading ? (
                       <>
                         <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
-                        <p className="text-sm text-muted">Uploading...</p>
+                        <p className="text-sm text-muted">{t("admin.products.uploading" as TranslationKey)}</p>
                       </>
                     ) : (
                       <>
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-3">
                           <Upload className="h-5 w-5 text-primary" />
                         </div>
-                        <p className="text-sm font-medium text-foreground mb-1">Click to upload or drag & drop</p>
-                        <p className="text-xs text-muted">JPEG, PNG, WebP, GIF, SVG — Max 5MB</p>
+                        <p className="text-sm font-medium text-foreground mb-1">{t("admin.products.clickToUpload" as TranslationKey)}</p>
+                        <p className="text-xs text-muted">{t("admin.products.imageFormats" as TranslationKey)}</p>
                       </>
                     )}
                   </div>
@@ -600,7 +603,7 @@ export default function AdminProductsPage() {
                   onChange={(e) => updateField("featured", e.target.checked)}
                   className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
                 />
-                <span className="text-sm">Featured product</span>
+                <span className="text-sm">{t("admin.products.featuredProduct" as TranslationKey)}</span>
               </label>
 
               <div className="flex gap-3 pt-2">
@@ -609,7 +612,7 @@ export default function AdminProductsPage() {
                   onClick={() => setShowModal(false)}
                   className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-card-hover transition-colors"
                 >
-                  Cancel
+                  {t("admin.products.cancel" as TranslationKey)}
                 </button>
                 <button
                   type="submit"
@@ -617,7 +620,7 @@ export default function AdminProductsPage() {
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50"
                 >
                   <Save className="h-4 w-4" />
-                  {saving ? "Saving..." : editing ? "Update" : "Create"}
+                  {saving ? t("admin.products.saving" as TranslationKey) : editing ? t("admin.products.update" as TranslationKey) : t("admin.products.create" as TranslationKey)}
                 </button>
               </div>
             </form>

@@ -63,7 +63,7 @@ const en = {
     "Every product is carefully vetted to ensure it meets our high standards of quality and durability.",
   "home.fastShipping": "Fast Shipping",
   "home.fastShippingDesc":
-    "Get your orders delivered quickly with our efficient shipping network. Free shipping on orders over EGP 99.",
+    "Get your orders delivered quickly with our efficient shipping network. Free shipping on orders over EGP {price}.",
   "home.secureShopping": "Secure Shopping",
   "home.secureShoppingDesc":
     "Shop with confidence. Easy returns, buyer protection, and 24/7 customer support for peace of mind.",
@@ -73,7 +73,7 @@ const en = {
   "home.ctaLine2": "shopping journey",
   "home.ctaLine3": "today",
   "home.ctaDesc":
-    "Browse our full catalog and discover something amazing. Free shipping on orders over EGP 99.",
+    "Browse our full catalog and discover something amazing. Free shipping on orders over EGP {price}.",
   "home.shopNow": "Shop Now",
 
   // ── Home – Seed ──
@@ -128,11 +128,11 @@ const en = {
   "detail.addedToCart": "Added to Cart!",
   "detail.addToCart": "Add to Cart — EGP {price}",
   "detail.freeShipping": "Free Shipping",
-  "detail.freeShippingSub": "On orders over EGP 50",
+  "detail.freeShippingSub": "On orders over EGP {price}",
   "detail.secureCheckout": "Secure Checkout",
   "detail.secureCheckoutSub": "100% encrypted",
   "detail.easyReturns": "Easy Returns",
-  "detail.easyReturnsSub": "30-day policy",
+  "detail.easyReturnsSub": "{days}-day policy",
 
   // ── Product Card ──
   "card.added": "Added!",

@@ -6,6 +6,7 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useSyncExternalStore } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
@@ -15,6 +16,7 @@ export default function CartPage() {
   const totalPrice = useCartStore((s) => s.totalPrice);
   const totalItems = useCartStore((s) => s.totalItems);
   const { t, dir } = useTranslation();
+  const { freeDeliveryMinPrice } = useSiteSettings();
 
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
 
@@ -53,7 +55,7 @@ export default function CartPage() {
     );
   }
 
-  const shipping = totalPrice() >= 99 ? 0 : 9.99;
+  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : 9.99;
   const total = totalPrice() + shipping;
 
   return (
@@ -159,7 +161,7 @@ export default function CartPage() {
                 </div>
                 {shipping > 0 && (
                   <p className="text-[11px] text-primary-light">
-                    {t("cart.freeShippingHint", { amount: (99 - totalPrice()).toFixed(2) })}
+                    {t("cart.freeShippingHint", { amount: (freeDeliveryMinPrice - totalPrice()).toFixed(2) })}
                   </p>
                 )}
                 <div className="border-t border-border pt-3 flex justify-between">

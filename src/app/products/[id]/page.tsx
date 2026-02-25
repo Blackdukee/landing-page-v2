@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 import ImageCarousel from "@/components/ImageCarousel";
 
 interface Product {
@@ -39,6 +40,7 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
   const { t, dir } = useTranslation();
+  const { freeDeliveryMinPrice, returnDays } = useSiteSettings();
 
   useEffect(() => {
     if (!id) return;
@@ -240,7 +242,7 @@ export default function ProductDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-foreground">{t("detail.freeShipping")}</p>
-                  <p className="text-[11px] text-muted mt-0.5">{t("detail.freeShippingSub")}</p>
+                  <p className="text-[11px] text-muted mt-0.5">{t("detail.freeShippingSub", { price: String(freeDeliveryMinPrice) })}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
@@ -258,7 +260,7 @@ export default function ProductDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-foreground">{t("detail.easyReturns")}</p>
-                  <p className="text-[11px] text-muted mt-0.5">{t("detail.easyReturnsSub")}</p>
+                  <p className="text-[11px] text-muted mt-0.5">{t("detail.easyReturnsSub", { days: String(returnDays) })}</p>
                 </div>
               </div>
             </div>

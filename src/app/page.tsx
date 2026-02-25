@@ -200,7 +200,7 @@ export default function HomePage() {
               {
                 icon: Package,
                 title: t("home.fastShipping"),
-                desc: t("home.fastShippingDesc"),
+                desc: t("home.fastShippingDesc", { price: String(freeDeliveryMinPrice) }),
               },
               {
                 icon: ShieldCheck,
@@ -242,7 +242,7 @@ export default function HomePage() {
                   <span className="gradient-text">{t("home.ctaLine2")}</span> {t("home.ctaLine3")}
                 </h2>
                 <p className="text-sm text-muted mb-6 leading-relaxed">
-                  {t("home.ctaDesc")}
+                  {t("home.ctaDesc", { price: String(freeDeliveryMinPrice) })}
                 </p>
                 <Link
                   href="/products"

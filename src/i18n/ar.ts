@@ -63,7 +63,7 @@ const ar: Record<string, string> = {
     "يتم فحص كل منتج بعناية لضمان استيفائه لمعايير الجودة والمتانة العالية لدينا.",
   "home.fastShipping": "شحن سريع",
   "home.fastShippingDesc":
-    "احصل على طلباتك بسرعة مع شبكة الشحن الفعالة لدينا. شحن مجاني للطلبات فوق 99EGP.",
+    "احصل على طلباتك بسرعة مع شبكة الشحن الفعالة لدينا. شحن مجاني للطلبات فوق {price}EGP.",
   "home.secureShopping": "تسوق آمن",
   "home.secureShoppingDesc":
     "تسوق بثقة. إرجاع سهل وحماية المشتري ودعم عملاء على مدار الساعة لراحة بالك.",
@@ -73,7 +73,7 @@ const ar: Record<string, string> = {
   "home.ctaLine2": "رحلة التسوق",
   "home.ctaLine3": "اليوم",
   "home.ctaDesc":
-    "تصفح كتالوجنا الكامل واكتشف شيئًا مذهلاً. شحن مجاني للطلبات فوق 99EGP.",
+    "تصفح كتالوجنا الكامل واكتشف شيئًا مذهلاً. شحن مجاني للطلبات فوق {price}EGP.",
   "home.shopNow": "تسوق الآن",
 
   // ── الصفحة الرئيسية – Seed ──
@@ -128,11 +128,11 @@ const ar: Record<string, string> = {
   "detail.addedToCart": "تمت الإضافة!",
   "detail.addToCart": "أضف للسلة — EGP {price}",
   "detail.freeShipping": "شحن مجاني",
-  "detail.freeShippingSub": "للطلبات فوق 50 EGP",
+  "detail.freeShippingSub": "للطلبات فوق {price} EGP",
   "detail.secureCheckout": "دفع آمن",
   "detail.secureCheckoutSub": "مشفر 100%",
   "detail.easyReturns": "إرجاع سهل",
-  "detail.easyReturnsSub": "سياسة 30 يوم",
+  "detail.easyReturnsSub": "سياسة {days} يوم",
 
   // ── بطاقة المنتج ──
   "card.added": "تمت الإضافة!",

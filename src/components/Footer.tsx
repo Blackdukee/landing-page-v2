@@ -7,7 +7,9 @@ import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function Footer() {
   const { t } = useTranslation();
-  const { websiteName } = useSiteSettings();
+  const { websiteName, socialLinks } = useSiteSettings();
+
+  const hasAnySocial = socialLinks.instagram || socialLinks.twitter || socialLinks.email;
 
   return (
     <footer className="border-t border-border bg-surface">
@@ -26,17 +28,25 @@ export default function Footer() {
             <p className="text-sm text-muted max-w-sm leading-relaxed">
               {t("footer.tagline")}
             </p>
-            <div className="flex gap-4 mt-6">
-              <a href="#" className="text-muted hover:text-primary transition-colors duration-200">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted hover:text-primary transition-colors duration-200">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted hover:text-primary transition-colors duration-200">
-                <Mail className="h-5 w-5" />
-              </a>
-            </div>
+            {hasAnySocial && (
+              <div className="flex gap-4 mt-6">
+                {socialLinks.instagram && (
+                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-primary transition-colors duration-200">
+                    <Instagram className="h-5 w-5" />
+                  </a>
+                )}
+                {socialLinks.twitter && (
+                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-primary transition-colors duration-200">
+                    <Twitter className="h-5 w-5" />
+                  </a>
+                )}
+                {socialLinks.email && (
+                  <a href={`mailto:${socialLinks.email}`} className="text-muted hover:text-primary transition-colors duration-200">
+                    <Mail className="h-5 w-5" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Links */}

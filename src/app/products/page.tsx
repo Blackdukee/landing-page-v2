@@ -139,14 +139,18 @@ export default function ProductsPage() {
 
   const clearAllFilters = () => {
     setSearch("");
-    setLoading(true);
-    setActiveCategory("All");
     setActivePriceRange(0);
     setSortBy("default");
-    setCurrentPage(1);
+    // Only show loading skeleton if a new fetch will actually fire
+    if (activeCategory !== "All" || currentPage !== 1) {
+      setLoading(true);
+      setActiveCategory("All");
+      setCurrentPage(1);
+    }
   };
 
   const handleCategoryChange = (cat: string) => {
+    if (cat === activeCategory && currentPage === 1) return;
     setLoading(true);
     setActiveCategory(cat);
     setCurrentPage(1);

@@ -7,11 +7,18 @@ export interface IPriceRange {
   max: number | null; // null means Infinity
 }
 
+export interface ISocialLinks {
+  instagram: string;
+  twitter: string;
+  email: string;
+}
+
 export interface ISiteSettings extends Document {
   websiteName: string;
   whatsappNumber: string;
   priceRangeFilters: IPriceRange[];
   heroProduct: string | null; // Product _id to feature in hero section
+  socialLinks: ISocialLinks;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,11 +33,21 @@ const PriceRangeSchema = new Schema<IPriceRange>(
   { _id: false }
 );
 
+const SocialLinksSchema = new Schema(
+  {
+    instagram: { type: String, default: "" },
+    twitter: { type: String, default: "" },
+    email: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
 const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
     websiteName: { type: String, default: "QuesnaShop" },
     whatsappNumber: { type: String, default: "+201025571092" },
     heroProduct: { type: String, default: null },
+    socialLinks: { type: SocialLinksSchema, default: () => ({}) },
     priceRangeFilters: {
       type: [PriceRangeSchema],
       default: [

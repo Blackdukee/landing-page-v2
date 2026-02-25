@@ -26,7 +26,7 @@ const en = {
   "home.heroLine3": "shopping",
   "home.heroLine4": "today",
   "home.heroDesc":
-    "Discover premium products across every category. From tech to fashion, find everything you need in one place with unbeatable quality and fast delivery.",
+    "Discover premium products across every category. From tech to hand tools, find everything you need in one place with unbeatable quality and fast delivery.",
   "home.explore": "Explore Collection",
   "home.seeFeatured": "See Featured",
 
@@ -189,7 +189,7 @@ const en = {
   "lang.ar": "AR",
 
   // ── Admin – General ──
-  "admin.brandName": "NovaShop",
+  "admin.brandName": "Shop",
   "admin.admin": "Admin",
   "admin.loading": "Loading...",
   "admin.signOut": "Sign out",

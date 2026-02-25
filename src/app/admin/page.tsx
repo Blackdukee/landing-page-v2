@@ -22,6 +22,8 @@ import {
   AlertTriangle,
   Star,
   Search,
+  Instagram,
+  Twitter,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
@@ -96,6 +98,9 @@ export default function AdminDashboard() {
   // Site settings state
   const [siteName, setSiteName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [socialInstagram, setSocialInstagram] = useState("");
+  const [socialTwitter, setSocialTwitter] = useState("");
+  const [socialEmail, setSocialEmail] = useState("");
   const [savingSiteSettings, setSavingSiteSettings] = useState(false);
   const [siteSettingsMsg, setSiteSettingsMsg] = useState("");
 
@@ -126,6 +131,9 @@ export default function AdminDashboard() {
     if (!siteSettings.loading) {
       setSiteName(siteSettings.websiteName);
       setWhatsapp(siteSettings.whatsappNumber);
+      setSocialInstagram(siteSettings.socialLinks?.instagram || "");
+      setSocialTwitter(siteSettings.socialLinks?.twitter || "");
+      setSocialEmail(siteSettings.socialLinks?.email || "");
       setPriceRanges(siteSettings.priceRangeFilters.map((f) => ({ ...f })));
       if (!heroInitialized) {
         setHeroProductId(siteSettings.heroProduct);
@@ -256,7 +264,15 @@ export default function AdminDashboard() {
       const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ websiteName: siteName, whatsappNumber: whatsapp }),
+        body: JSON.stringify({
+          websiteName: siteName,
+          whatsappNumber: whatsapp,
+          socialLinks: {
+            instagram: socialInstagram,
+            twitter: socialTwitter,
+            email: socialEmail,
+          },
+        }),
       });
       if (res.ok) {
         setSiteSettingsMsg(t("admin.dashboard.settingsSaved" as TranslationKey));
@@ -696,6 +712,60 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+          {/* Social Contact Links */}
+          <div className="pt-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
+              {t("admin.dashboard.socialLinks" as TranslationKey) || "Social Links (optional)"}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  Instagram
+                </label>
+                <div className="relative">
+                  <Instagram className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                  <input
+                    type="text"
+                    value={socialInstagram}
+                    onChange={(e) => setSocialInstagram(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                    placeholder="https://instagram.com/..."
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  Twitter / X
+                </label>
+                <div className="relative">
+                  <Twitter className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                  <input
+                    type="text"
+                    value={socialTwitter}
+                    onChange={(e) => setSocialTwitter(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                    placeholder="https://twitter.com/..."
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                  <input
+                    type="email"
+                    value={socialEmail}
+                    onChange={(e) => setSocialEmail(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                    placeholder="contact@example.com"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {siteSettingsMsg && (
             <p className="text-xs text-green-400">{siteSettingsMsg}</p>
           )}

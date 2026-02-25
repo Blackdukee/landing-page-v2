@@ -16,11 +16,18 @@ export interface PriceRangeFilter {
   max: number | null;
 }
 
+export interface SocialLinks {
+  instagram: string;
+  twitter: string;
+  email: string;
+}
+
 interface SiteSettings {
   websiteName: string;
   whatsappNumber: string;
   priceRangeFilters: PriceRangeFilter[];
   heroProduct: string | null;
+  socialLinks: SocialLinks;
 }
 
 interface SiteSettingsContextValue extends SiteSettings {
@@ -28,11 +35,14 @@ interface SiteSettingsContextValue extends SiteSettings {
   refresh: () => void;
 }
 
+const defaultSocialLinks: SocialLinks = { instagram: "", twitter: "", email: "" };
+
 const defaultSettings: SiteSettings = {
   websiteName: "QuesnaShop",
   whatsappNumber: "+201025571092",
   priceRangeFilters: [],
   heroProduct: null,
+  socialLinks: defaultSocialLinks,
 };
 
 const SiteSettingsContext = createContext<SiteSettingsContextValue>({
@@ -57,6 +67,13 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
               ? data.priceRangeFilters
               : defaultSettings.priceRangeFilters,
             heroProduct: data.heroProduct || null,
+            socialLinks: data.socialLinks
+              ? {
+                  instagram: data.socialLinks.instagram || "",
+                  twitter: data.socialLinks.twitter || "",
+                  email: data.socialLinks.email || "",
+                }
+              : defaultSocialLinks,
           });
         }
       })

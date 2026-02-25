@@ -16,7 +16,7 @@ const ar: Record<string, string> = {
   "footer.aboutUs": "من نحن",
   "footer.shippingReturns": "الشحن والإرجاع",
   "footer.contact": "اتصل بنا",
-  "footer.copyright": "© {year} كويسنا شوب. جميع الحقوق محفوظة.",
+  "footer.copyright": "© {year} محمد عصام شوب. جميع الحقوق محفوظة.",
   "footer.bottomText": "تسوق عصري · شحن عالمي",
 
   // ── الصفحة الرئيسية – البطل ──
@@ -26,7 +26,7 @@ const ar: Record<string, string> = {
   "home.heroLine3": "العصري",
   "home.heroLine4": "اليوم",
   "home.heroDesc":
-    "اكتشف منتجات مميزة في كل فئة. من التكنولوجيا إلى الأزياء، جد كل ما تحتاجه في مكان واحد بجودة لا تُضاهى وتوصيل سريع.",
+    "اكتشف منتجات مميزة في كل فئة. من التكنولوجيا إلى الادوات اليدوية، جد كل ما تحتاجه في مكان واحد بجودة لا تُضاهى وتوصيل سريع.",
   "home.explore": "استكشف المجموعة",
   "home.seeFeatured": "المنتجات المميزة",
 
@@ -54,7 +54,7 @@ const ar: Record<string, string> = {
 
   // ── الصفحة الرئيسية – قسم المزايا ──
   "home.whyChoose": "لماذا تختار",
-  "home.whyChooseBrand": "كويسنا شوب",
+  "home.whyChooseBrand": "محمد عصام شوب",
   "home.whyChooseSuffix": "؟",
   "home.whyChooseDesc":
     "نحن ملتزمون بتقديم أفضل تجربة تسوق لك. إليك ما يميزنا.",
@@ -182,14 +182,14 @@ const ar: Record<string, string> = {
   "checkout.completeOrder": "إتمام الطلب عبر واتساب",
   "checkout.whatsappRedirect":
     "سيتم إعادة توجيهك إلى واتساب لتأكيد طلبك مع فريقنا.",
-  "checkout.whatsappMessage": "🛒 *طلب جديد من كويسنا شوب*",
+  "checkout.whatsappMessage": "🛒 *طلب جديد من محمد عصام شوب*",
 
   // ── مفتاح اللغة ──
   "lang.en": "EN",
   "lang.ar": "AR",
 
   // ── الإدارة – عام ──
-  "admin.brandName": "نوفا شوب",
+  "admin.brandName": "متجر",
   "admin.admin": "الإدارة",
   "admin.loading": "جاري التحميل...",
   "admin.signOut": "تسجيل الخروج",

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
+import { logError } from "@/lib/apiError";
 
 // Helper to get or create the singleton settings document (returns plain object)
 async function getSettings() {
@@ -19,9 +20,9 @@ export async function GET() {
     const settings = await getSettings();
     return NextResponse.json(settings);
   } catch (error) {
-    console.error("GET /api/settings error:", error);
+    const details = logError("GET /api/settings", error);
     return NextResponse.json(
-      { error: "Failed to fetch settings" },
+      { error: "Failed to fetch settings", details },
       { status: 500 }
     );
   }
@@ -88,9 +89,9 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(settings);
   } catch (error) {
-    console.error("PUT /api/settings error:", error);
+    const details = logError("PUT /api/settings", error);
     return NextResponse.json(
-      { error: "Failed to update settings" },
+      { error: "Failed to update settings", details },
       { status: 500 }
     );
   }

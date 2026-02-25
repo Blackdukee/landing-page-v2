@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
+import { logError } from "@/lib/apiError";
 
 export async function GET(
   _req: NextRequest,
@@ -15,8 +16,8 @@ export async function GET(
     }
     return NextResponse.json(order);
   } catch (error) {
-    console.error("GET /api/orders/[id] error:", error);
-    return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
+    const details = logError("GET /api/orders/[id]", error);
+    return NextResponse.json({ error: "Failed to fetch order", details }, { status: 500 });
   }
 }
 
@@ -34,8 +35,8 @@ export async function PUT(
     }
     return NextResponse.json(order);
   } catch (error) {
-    console.error("PUT /api/orders/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+    const details = logError("PUT /api/orders/[id]", error);
+    return NextResponse.json({ error: "Failed to update order", details }, { status: 500 });
   }
 }
 
@@ -52,7 +53,7 @@ export async function DELETE(
     }
     return NextResponse.json({ message: "Order deleted" });
   } catch (error) {
-    console.error("DELETE /api/orders/[id] error:", error);
-    return NextResponse.json({ error: "Failed to delete order" }, { status: 500 });
+    const details = logError("DELETE /api/orders/[id]", error);
+    return NextResponse.json({ error: "Failed to delete order", details }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Category from "@/models/Category";
+import { logError } from "@/lib/apiError";
 
 // GET all categories
 export async function GET() {
@@ -9,8 +10,8 @@ export async function GET() {
     const categories = await Category.find().sort({ name: 1 });
     return NextResponse.json(categories);
   } catch (error) {
-    console.error("GET /api/categories error:", error);
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+    const details = logError("GET /api/categories", error);
+    return NextResponse.json({ error: "Failed to fetch categories", details }, { status: 500 });
   }
 }
 
@@ -26,10 +27,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
 
-    const slug = name
+    let slug = name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
       .replace(/^-|-$/g, "");
+
+    if (!slug) {
+      slug = `category-${Date.now()}`;
+    }
 
     const existing = await Category.findOne({ slug });
     if (existing) {
@@ -39,7 +44,7 @@ export async function POST(req: NextRequest) {
     const category = await Category.create({ name, slug, description });
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
-    console.error("POST /api/categories error:", error);
-    return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+    const details = logError("POST /api/categories", error);
+    return NextResponse.json({ error: "Failed to create category", details }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
+import { logError } from "@/lib/apiError";
 
 export async function PUT(req: NextRequest) {
   try {
@@ -99,9 +100,9 @@ export async function PUT(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("PUT /api/auth/update error:", error);
+    const details = logError("PUT /api/auth/update", error);
     return NextResponse.json(
-      { error: "Failed to update account" },
+      { error: "Failed to update account", details },
       { status: 500 }
     );
   }

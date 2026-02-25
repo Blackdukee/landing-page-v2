@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
+import { logError } from "@/lib/apiError";
 
 const sampleProducts = [
   {
@@ -95,7 +96,7 @@ export async function POST() {
       products,
     });
   } catch (error) {
-    console.error("Seed error:", error);
-    return NextResponse.json({ error: "Failed to seed products" }, { status: 500 });
+    const details = logError("POST /api/seed", error);
+    return NextResponse.json({ error: "Failed to seed products", details }, { status: 500 });
   }
 }

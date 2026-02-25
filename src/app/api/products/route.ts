@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
+import { logError } from "@/lib/apiError";
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,8 +45,8 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("GET /api/products error:", error);
-    return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
+    const details = logError("GET /api/products", error);
+    return NextResponse.json({ error: "Failed to fetch products", details }, { status: 500 });
   }
 }
 
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     const product = await Product.create(body);
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error("POST /api/products error:", error);
-    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+    const details = logError("POST /api/products", error);
+    return NextResponse.json({ error: "Failed to create product", details }, { status: 500 });
   }
 }

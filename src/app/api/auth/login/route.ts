@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
+import { logError } from "@/lib/apiError";
 
 export async function POST(req: NextRequest) {
   try {
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("POST /api/auth/login error:", error);
-    return NextResponse.json({ error: "Login failed" }, { status: 500 });
+    const details = logError("POST /api/auth/login", error);
+    return NextResponse.json({ error: "Login failed", details }, { status: 500 });
   }
 }

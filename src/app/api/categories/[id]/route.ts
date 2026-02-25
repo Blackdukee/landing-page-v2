@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Category from "@/models/Category";
 import Product from "@/models/Product";
+import { logError } from "@/lib/apiError";
 
 // PUT update a category
 export async function PUT(
@@ -19,10 +20,14 @@ export async function PUT(
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
 
-    const slug = name
+    let slug = name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
       .replace(/^-|-$/g, "");
+
+    if (!slug) {
+      slug = `category-${Date.now()}`;
+    }
 
     // Check if another category already has this slug
     const existing = await Category.findOne({ slug, _id: { $ne: id } });
@@ -51,8 +56,8 @@ export async function PUT(
 
     return NextResponse.json(category);
   } catch (error) {
-    console.error("PUT /api/categories/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
+    const details = logError("PUT /api/categories/[id]", error);
+    return NextResponse.json({ error: "Failed to update category", details }, { status: 500 });
   }
 }
 
@@ -88,7 +93,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("DELETE /api/categories/[id] error:", error);
-    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
+    const details = logError("DELETE /api/categories/[id]", error);
+    return NextResponse.json({ error: "Failed to delete category", details }, { status: 500 });
   }
 }

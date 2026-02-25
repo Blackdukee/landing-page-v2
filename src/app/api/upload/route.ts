@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import ImageKit from "@imagekit/nodejs";
 import type { File as ImageKitFile } from "@imagekit/nodejs/resources/files/files";
 import { createHash } from "crypto";
+import { logError } from "@/lib/apiError";
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
@@ -84,9 +85,9 @@ export async function POST(req: Request) {
       height: result.height,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    const details = logError("POST /api/upload", error);
     return NextResponse.json(
-      { error: "Upload failed. Please try again." },
+      { error: "Upload failed. Please try again.", details },
       { status: 500 }
     );
   }
@@ -109,9 +110,9 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ deleted, failed });
   } catch (error) {
-    console.error("Delete error:", error);
+    const details = logError("DELETE /api/upload", error);
     return NextResponse.json(
-      { error: "Delete failed." },
+      { error: "Delete failed.", details },
       { status: 500 }
     );
   }

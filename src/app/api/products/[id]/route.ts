@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 import Category from "@/models/Category";
+import { logError } from "@/lib/apiError";
 
 export async function GET(
   _req: NextRequest,
@@ -16,8 +17,8 @@ export async function GET(
     }
     return NextResponse.json(product);
   } catch (error) {
-    console.error("GET /api/products/[id] error:", error);
-    return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
+    const details = logError("GET /api/products/[id]", error);
+    return NextResponse.json({ error: "Failed to fetch product", details }, { status: 500 });
   }
 }
 
@@ -46,18 +47,19 @@ export async function PUT(
     if (body.category) {
       const existingCat = await Category.findOne({ name: body.category });
       if (!existingCat) {
-        const slug = body.category
+        let slug = body.category
           .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/[^\p{L}\p{N}]+/gu, "-")
           .replace(/^-|-$/g, "");
+        if (!slug) slug = `category-${Date.now()}`;
         await Category.create({ name: body.category, slug, description: "" });
       }
     }
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error("PUT /api/products/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    const details = logError("PUT /api/products/[id]", error);
+    return NextResponse.json({ error: "Failed to update product", details }, { status: 500 });
   }
 }
 
@@ -74,7 +76,7 @@ export async function DELETE(
     }
     return NextResponse.json({ message: "Product deleted" });
   } catch (error) {
-    console.error("DELETE /api/products/[id] error:", error);
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+    const details = logError("DELETE /api/products/[id]", error);
+    return NextResponse.json({ error: "Failed to delete product", details }, { status: 500 });
   }
 }

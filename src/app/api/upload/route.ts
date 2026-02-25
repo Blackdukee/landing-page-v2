@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import ImageKit from "@imagekit/nodejs";
+import type { File as ImageKitFile } from "@imagekit/nodejs/resources/files/files";
 import { createHash } from "crypto";
 
 const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
 });
 
 export async function POST(req: Request) {
@@ -47,13 +46,13 @@ export async function POST(req: Request) {
     // Check if an image with this hash already exists in ImageKit
     try {
       const existing = await imagekit.assets.list({
-        tags: contentHash,
+        searchQuery: `tags IN ["${contentHash}"]`,
         path: "/novashop/products",
         limit: 1,
       });
 
       if (Array.isArray(existing) && existing.length > 0) {
-        const found = existing[0];
+        const found = existing[0] as ImageKitFile;
         const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-maintain_ratio,fo-auto,f-auto,q-auto${found.filePath}`;
         return NextResponse.json({
           url: optimizedUrl,

@@ -9,7 +9,8 @@
 ## Website
 
 - [ ] change the website color scheme with the following colors: 
-- Primary: #AD8B73
-- Secondary: #CEAB93
-- Accent: #E3CAA5
-- Background: #FFFBE9
+    - Primary: #FF6F61 (a vibrant coral)
+    - Secondary: #6B5B95 (a rich purple)
+    - Accent: #88B04B (a fresh green)
+    - Background: #F7CAC9 (a soft pink)
+    - Text: #333333 (dark gray for readability)

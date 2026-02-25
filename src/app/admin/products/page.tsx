@@ -311,7 +311,7 @@ export default function AdminProductsPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 shadow-lg shadow-primary/20"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 shadow-lg shadow-primary/20"
         >
           <Plus className="h-4 w-4" />
           {t("admin.products.addProduct" as TranslationKey)}

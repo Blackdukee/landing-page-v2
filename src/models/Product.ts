@@ -30,13 +30,12 @@ const ProductSchema = new Schema<IProduct>(
 // Keep `image` in sync: when saving, if images array has entries but image is
 // empty, populate image from the first element; conversely if image is set but
 // images is empty, seed images from image.
-ProductSchema.pre("save", function (next) {
+ProductSchema.pre("save", function () {
   if (this.images.length > 0 && !this.image) {
     this.image = this.images[0];
   } else if (this.image && this.images.length === 0) {
     this.images = [this.image];
   }
-  next();
 });
 
 const Product: Model<IProduct> =

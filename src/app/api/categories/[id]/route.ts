@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Category from "@/models/Category";
+import Product from "@/models/Product";
 
 // PUT update a category
 export async function PUT(
@@ -29,6 +30,10 @@ export async function PUT(
       return NextResponse.json({ error: "A category with this name already exists" }, { status: 409 });
     }
 
+    // Get old category name before update
+    const oldCategory = await Category.findById(id);
+    const oldName = oldCategory?.name;
+
     const category = await Category.findByIdAndUpdate(
       id,
       { name, slug, description },
@@ -37,6 +42,11 @@ export async function PUT(
 
     if (!category) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    // Cascade: update all products that had the old category name
+    if (oldName && oldName !== name) {
+      await Product.updateMany({ category: oldName }, { category: name });
     }
 
     return NextResponse.json(category);
@@ -48,16 +58,32 @@ export async function PUT(
 
 // DELETE a category
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
     const { id } = await params;
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action") || "reassign"; // "reassign" or "delete"
+
     const category = await Category.findByIdAndDelete(id);
 
     if (!category) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    // Handle orphaned products
+    if (action === "delete") {
+      await Product.deleteMany({ category: category.name });
+    } else {
+      // Default: reassign to "General"
+      await Product.updateMany({ category: category.name }, { category: "General" });
+      // Ensure "General" category exists
+      const generalExists = await Category.findOne({ slug: "general" });
+      if (!generalExists) {
+        await Category.create({ name: "General", slug: "general", description: "" });
+      }
     }
 
     return NextResponse.json({ success: true });

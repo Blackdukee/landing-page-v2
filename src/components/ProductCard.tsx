@@ -46,16 +46,16 @@ export default function ProductCard({
             alt={name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
           />
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* Quick Add button */}
+          {/* Quick Add button — desktop only (hover) */}
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(); }}
             disabled={stock === 0}
-            className="absolute bottom-3 end-3 flex items-center gap-1.5 rounded-full bg-primary/90 backdrop-blur-sm px-3.5 py-2 text-xs font-medium text-white shadow-lg shadow-primary/20 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className="hidden sm:flex absolute bottom-3 end-3 items-center gap-1.5 rounded-full bg-primary/90 backdrop-blur-sm px-3.5 py-2 text-xs font-medium text-white shadow-lg shadow-primary/20 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
           {added ? (
             <>
@@ -79,7 +79,7 @@ export default function ProductCard({
       </div>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col justify-between p-5">
+      <div className="flex flex-1 flex-col justify-between p-3 sm:p-5">
         <div>
           <h3 className="font-semibold text-sm leading-snug mb-1 line-clamp-1 text-foreground">
             {name}
@@ -98,6 +98,27 @@ export default function ProductCard({
             </span>
           )}
         </div>
+
+        {/* Mobile Add to Cart button */}
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(); }}
+          disabled={stock === 0}
+          className="sm:hidden flex w-full items-center justify-center gap-1.5 rounded-full bg-primary/90 px-3 py-1.5 mt-2 text-[11px] font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {added ? (
+            <>
+              <ShoppingBag className="h-3 w-3" />
+              {t("card.added")}
+            </>
+          ) : stock === 0 ? (
+            t("card.soldOut")
+          ) : (
+            <>
+              <Plus className="h-3 w-3" />
+              {t("card.addToCart")}
+            </>
+          )}
+        </button>
       </div>
     </article>
     </Link>

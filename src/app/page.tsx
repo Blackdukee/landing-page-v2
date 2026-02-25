@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 interface Product {
   _id: string;
@@ -30,8 +31,11 @@ interface Product {
 
 export default function HomePage() {
   const [featured, setFeatured] = useState<Product[]>([]);
+  const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop");
+  const [heroLink, setHeroLink] = useState("/products");
   const [loading, setLoading] = useState(true);
   const { t, dir } = useTranslation();
+  const { heroProduct: heroProductId } = useSiteSettings();
 
   useEffect(() => {
     fetch("/api/products?featured=true")
@@ -42,6 +46,24 @@ export default function HomePage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  // Fetch the hero product image when the setting is available
+  useEffect(() => {
+    if (!heroProductId) {
+      setHeroImage("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop");
+      setHeroLink("/products");
+      return;
+    }
+    fetch(`/api/products/${heroProductId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data._id) {
+          setHeroImage(data.image);
+          setHeroLink(`/products/${data._id}`);
+        }
+      })
+      .catch(console.error);
+  }, [heroProductId]);
 
   return (
     <>
@@ -115,9 +137,9 @@ export default function HomePage() {
             {/* Right - Featured product showcase */}
             <div className="relative hidden lg:flex items-center justify-center ">
               {/* Large floating card */}
-              <div className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 hover:rotate-0 transition-transform duration-700 -top-16">
+              <Link href={heroLink} className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 hover:rotate-0 transition-transform duration-700 -top-16 block">
                 <Image
-                  src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop"
+                  src={heroImage}
                   alt="Featured product"
                   fill
                   className="object-cover"
@@ -131,7 +153,7 @@ export default function HomePage() {
                   <h3 className="text-xl font-bold text-white mb-1">{t("home.bestSellers")}</h3>
                   <p className="text-sm text-white/70">{t("home.shopTopRated")}</p>
                 </div>
-              </div>
+              </Link>
 
               {/* Floating stats card */}
               <div className="absolute -bottom-4 -left-8 glass-strong rounded-2xl p-4 shadow-xl">
@@ -182,7 +204,7 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
@@ -191,7 +213,7 @@ export default function HomePage() {
               ))}
             </div>
           ) : featured.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {featured.map((p) => (
                 <ProductCard
                   key={p._id}
@@ -207,10 +229,9 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="text-center py-20">
-              <p className="text-muted mb-4">
+              <p className="text-muted">
                 {t("home.noProducts")}
               </p>
-              <SeedButton />
             </div>
           )}
         </div>
@@ -295,36 +316,5 @@ export default function HomePage() {
         </div>
       </section>
     </>
-  );
-}
-
-function SeedButton() {
-  const [seeding, setSeeding] = useState(false);
-  const [done, setDone] = useState(false);
-  const { t } = useTranslation();
-
-  const seed = async () => {
-    setSeeding(true);
-    try {
-      await fetch("/api/seed", { method: "POST" });
-      setDone(true);
-      window.location.reload();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSeeding(false);
-    }
-  };
-
-  if (done) return <p className="text-success text-sm">{t("home.seedDone")}</p>;
-
-  return (
-    <button
-      onClick={seed}
-      disabled={seeding}
-      className="rounded-full bg-gradient-to-r from-primary to-purple-500 text-white px-6 py-2.5 text-sm font-medium hover:shadow-lg hover:shadow-primary/25 transition-all disabled:opacity-50"
-    >
-      {seeding ? t("home.seeding") : t("home.seedButton")}
-    </button>
   );
 }

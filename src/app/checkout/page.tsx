@@ -15,12 +15,14 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
   const { t, dir } = useTranslation();
+  const { whatsappNumber: settingsWhatsapp } = useSiteSettings();
 
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [submitted, setSubmitted] = useState(false);
@@ -90,7 +92,7 @@ export default function CheckoutPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+201025571092";
+    const whatsappNumber = settingsWhatsapp || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+201025571092";
     const itemLines = items
       .map(
         (item) =>

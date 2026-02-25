@@ -50,7 +50,7 @@ const en = {
   "home.handpicked": "Handpicked",
   "home.featuredProducts": "Featured Products",
   "home.viewAll": "View all",
-  "home.noProducts": "No products yet. Seed the database to get started.",
+  "home.noProducts": "No products available yet.",
 
   // ── Home – Values section ──
   "home.whyChoose": "Why Choose",
@@ -224,13 +224,59 @@ const en = {
   "admin.dashboard.noCategoriesYet": "No categories yet. Add one above to get started.",
   "admin.dashboard.catNamePlaceholder": "Category name",
   "admin.dashboard.catDescPlaceholder": "Description (optional)",
-  "admin.dashboard.deleteCatConfirm": "Delete this category? Products using it will keep their current category text.",
+  "admin.dashboard.deleteCatConfirm": "Delete this category?",
   "admin.dashboard.recentOrders": "Recent Orders",
   "admin.dashboard.customer": "Customer",
   "admin.dashboard.total": "Total",
   "admin.dashboard.status": "Status",
   "admin.dashboard.date": "Date",
   "admin.dashboard.noOrdersYet": "No orders yet",
+
+  // ── Admin – Dashboard: Delete Category Dialog ──
+  "admin.dashboard.deleteCategoryTitle": "Delete Category",
+  "admin.dashboard.deleteCategoryDesc": "What should happen to products in the \"{name}\" category?",
+  "admin.dashboard.deleteCategoryReassign": "Move products to \"General\" category",
+  "admin.dashboard.deleteCategoryDeleteProducts": "Delete all products in this category",
+  "admin.dashboard.cancel": "Cancel",
+
+  // ── Admin – Dashboard: Site Settings ──
+  "admin.dashboard.siteSettings": "Site Settings",
+  "admin.dashboard.websiteName": "Website Name",
+  "admin.dashboard.whatsappNumber": "WhatsApp Number",
+  "admin.dashboard.saveSiteSettings": "Save Settings",
+  "admin.dashboard.saving": "Saving...",
+  "admin.dashboard.settingsSaved": "Settings saved successfully!",
+
+  // ── Admin – Dashboard: Hero Product ──
+  "admin.dashboard.heroProduct": "Hero Product",
+  "admin.dashboard.heroProductDesc": "Select a product to showcase in the landing page hero section.",
+  "admin.dashboard.noHeroProduct": "No hero product selected — default image will be shown.",
+  "admin.dashboard.searchProducts": "Search products...",
+  "admin.dashboard.noProductsFound": "No products found.",
+  "admin.dashboard.saveHeroProduct": "Save Hero Product",
+
+  // ── Admin – Dashboard: Price Range Filters ──
+  "admin.dashboard.priceRanges": "Price Range Filters",
+  "admin.dashboard.noPriceRanges": "No price range filters. Add one below.",
+  "admin.dashboard.labelEn": "Label (EN)",
+  "admin.dashboard.labelAr": "Label (AR)",
+  "admin.dashboard.min": "Min ($)",
+  "admin.dashboard.max": "Max ($)",
+  "admin.dashboard.addRange": "Add Range",
+  "admin.dashboard.saveRanges": "Save Ranges",
+
+  // ── Admin – Dashboard: Account Settings ──
+  "admin.dashboard.accountSettings": "Account Settings",
+  "admin.dashboard.currentPassword": "Current Password",
+  "admin.dashboard.newEmail": "New Email",
+  "admin.dashboard.newEmailPlaceholder": "Enter new email...",
+  "admin.dashboard.newPassword": "New Password",
+  "admin.dashboard.confirmPassword": "Confirm Password",
+  "admin.dashboard.saveAccount": "Update Account",
+  "admin.dashboard.currentPasswordRequired": "Current password is required",
+  "admin.dashboard.passwordsMismatch": "Passwords do not match",
+  "admin.dashboard.passwordTooShort": "Password must be at least 6 characters",
+  "admin.dashboard.accountUpdated": "Account updated successfully!",
 
   // ── Admin – Products ──
   "admin.products.title": "Products",

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
+import Category from "@/models/Category";
 
 export async function GET(
   _req: NextRequest,
@@ -32,6 +33,19 @@ export async function PUT(
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
+
+    // Sync: ensure the category exists in the Category collection
+    if (body.category) {
+      const existingCat = await Category.findOne({ name: body.category });
+      if (!existingCat) {
+        const slug = body.category
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+        await Category.create({ name: body.category, slug, description: "" });
+      }
+    }
+
     return NextResponse.json(product);
   } catch (error) {
     console.error("PUT /api/products/[id] error:", error);

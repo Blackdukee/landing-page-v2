@@ -50,7 +50,7 @@ const ar: Record<string, string> = {
   "home.handpicked": "مختارة بعناية",
   "home.featuredProducts": "منتجات مميزة",
   "home.viewAll": "عرض الكل",
-  "home.noProducts": "لا توجد منتجات بعد. قم بتهيئة قاعدة البيانات للبدء.",
+  "home.noProducts": "لا توجد منتجات متاحة حتى الآن.",
 
   // ── الصفحة الرئيسية – قسم المزايا ──
   "home.whyChoose": "لماذا تختار",
@@ -224,13 +224,59 @@ const ar: Record<string, string> = {
   "admin.dashboard.noCategoriesYet": "لا توجد فئات بعد. أضف واحدة أعلاه للبدء.",
   "admin.dashboard.catNamePlaceholder": "اسم الفئة",
   "admin.dashboard.catDescPlaceholder": "الوصف (اختياري)",
-  "admin.dashboard.deleteCatConfirm": "حذف هذه الفئة؟ المنتجات المرتبطة بها ستحتفظ بنص الفئة الحالي.",
+  "admin.dashboard.deleteCatConfirm": "حذف هذه الفئة؟",
   "admin.dashboard.recentOrders": "أحدث الطلبات",
   "admin.dashboard.customer": "العميل",
   "admin.dashboard.total": "المجموع",
   "admin.dashboard.status": "الحالة",
   "admin.dashboard.date": "التاريخ",
   "admin.dashboard.noOrdersYet": "لا توجد طلبات بعد",
+
+  // ── الإدارة – لوحة التحكم: حذف الفئة ──
+  "admin.dashboard.deleteCategoryTitle": "حذف الفئة",
+  "admin.dashboard.deleteCategoryDesc": "ماذا يجب أن يحدث للمنتجات في فئة \"{name}\"؟",
+  "admin.dashboard.deleteCategoryReassign": "نقل المنتجات إلى فئة \"عام\"",
+  "admin.dashboard.deleteCategoryDeleteProducts": "حذف جميع المنتجات في هذه الفئة",
+  "admin.dashboard.cancel": "إلغاء",
+
+  // ── الإدارة – لوحة التحكم: إعدادات الموقع ──
+  "admin.dashboard.siteSettings": "إعدادات الموقع",
+  "admin.dashboard.websiteName": "اسم الموقع",
+  "admin.dashboard.whatsappNumber": "رقم واتساب",
+  "admin.dashboard.saveSiteSettings": "حفظ الإعدادات",
+  "admin.dashboard.saving": "جاري الحفظ...",
+  "admin.dashboard.settingsSaved": "تم حفظ الإعدادات بنجاح!",
+
+  // ── الإدارة – لوحة التحكم: المنتج المميز ──
+  "admin.dashboard.heroProduct": "المنتج المميز",
+  "admin.dashboard.heroProductDesc": "اختر المنتج الذي سيظهر في القسم الرئيسي بالصفحة الرئيسية.",
+  "admin.dashboard.noHeroProduct": "لم يتم اختيار منتج مميز — ستظهر الصورة الافتراضية.",
+  "admin.dashboard.searchProducts": "ابحث عن المنتجات...",
+  "admin.dashboard.noProductsFound": "لا توجد منتجات.",
+  "admin.dashboard.saveHeroProduct": "حفظ المنتج المميز",
+
+  // ── الإدارة – لوحة التحكم: فلاتر النطاق السعري ──
+  "admin.dashboard.priceRanges": "فلاتر النطاق السعري",
+  "admin.dashboard.noPriceRanges": "لا توجد فلاتر نطاق سعري. أضف واحدة أدناه.",
+  "admin.dashboard.labelEn": "التسمية (EN)",
+  "admin.dashboard.labelAr": "التسمية (AR)",
+  "admin.dashboard.min": "الحد الأدنى ($)",
+  "admin.dashboard.max": "الحد الأقصى ($)",
+  "admin.dashboard.addRange": "إضافة نطاق",
+  "admin.dashboard.saveRanges": "حفظ النطاقات",
+
+  // ── الإدارة – لوحة التحكم: إعدادات الحساب ──
+  "admin.dashboard.accountSettings": "إعدادات الحساب",
+  "admin.dashboard.currentPassword": "كلمة المرور الحالية",
+  "admin.dashboard.newEmail": "البريد الإلكتروني الجديد",
+  "admin.dashboard.newEmailPlaceholder": "أدخل البريد الإلكتروني الجديد...",
+  "admin.dashboard.newPassword": "كلمة المرور الجديدة",
+  "admin.dashboard.confirmPassword": "تأكيد كلمة المرور",
+  "admin.dashboard.saveAccount": "تحديث الحساب",
+  "admin.dashboard.currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
+  "admin.dashboard.passwordsMismatch": "كلمتا المرور غير متطابقتين",
+  "admin.dashboard.passwordTooShort": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+  "admin.dashboard.accountUpdated": "تم تحديث الحساب بنجاح!",
 
   // ── الإدارة – المنتجات ──
   "admin.products.title": "المنتجات",

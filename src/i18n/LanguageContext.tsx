@@ -27,14 +27,14 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 function readSavedLocale(): Locale {
   const saved = localStorage.getItem("locale");
-  return saved === "ar" ? "ar" : "en";
+  return saved === "en" ? "en" : "ar";
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const initialLocale = useSyncExternalStore(
     () => () => {},
     readSavedLocale,
-    () => "en" as Locale
+    () => "ar" as Locale
   );
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
 

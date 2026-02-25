@@ -15,6 +15,7 @@ import {
   Globe,
 } from "lucide-react";
 import { LanguageProvider, useTranslation } from "@/i18n/LanguageContext";
+import { SiteSettingsProvider } from "@/lib/SiteSettingsContext";
 import type { TranslationKey } from "@/i18n/en";
 
 interface AdminUser {
@@ -205,7 +206,9 @@ export default function AdminLayout({
 }) {
   return (
     <LanguageProvider>
-      <AdminLayoutInner>{children}</AdminLayoutInner>
+      <SiteSettingsProvider>
+        <AdminLayoutInner>{children}</AdminLayoutInner>
+      </SiteSettingsProvider>
     </LanguageProvider>
   );
 }

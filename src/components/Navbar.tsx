@@ -5,6 +5,7 @@ import { useState, useEffect, useSyncExternalStore } from "react";
 import { ShoppingBag, Menu, X, Sparkles, Globe } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -12,6 +13,7 @@ export default function Navbar() {
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const itemCount = useCartStore((s) => s.totalItems());
   const { locale, setLocale, t } = useTranslation();
+  const { websiteName } = useSiteSettings();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -37,7 +39,7 @@ export default function Navbar() {
             <Sparkles className="h-4.5 w-4.5" />
           </div>
           <span className="text-lg font-bold tracking-tight text-foreground">
-            Quesna<span className="text-primary">Shop</span>
+            {websiteName}
           </span>
         </Link>
 

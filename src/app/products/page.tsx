@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { Search, SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 interface Product {
   _id: string;
@@ -41,19 +42,20 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { priceRangeFilters } = useSiteSettings();
   const abortRef = useRef<AbortController | null>(null);
 
   const priceRanges = useMemo(
     () => [
       { label: t("products.allPrices"), min: 0, max: Infinity },
-      { label: t("products.under25"), min: 0, max: 25 },
-      { label: t("products.price25_50"), min: 25, max: 50 },
-      { label: t("products.price50_100"), min: 50, max: 100 },
-      { label: t("products.price100_200"), min: 100, max: 200 },
-      { label: t("products.price200plus"), min: 200, max: Infinity },
+      ...priceRangeFilters.map((f) => ({
+        label: locale === "ar" ? f.labelAr : f.label,
+        min: f.min,
+        max: f.max === null ? Infinity : f.max,
+      })),
     ],
-    [t]
+    [t, locale, priceRangeFilters]
   );
 
   useEffect(() => {
@@ -321,7 +323,7 @@ export default function ProductsPage() {
 
         {/* Product Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
@@ -330,7 +332,7 @@ export default function ProductsPage() {
             ))}
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filteredProducts.map((p) => (
               <ProductCard
                 key={p._id}

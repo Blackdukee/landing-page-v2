@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { Sparkles, Instagram, Twitter, Mail } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function Footer() {
   const { t } = useTranslation();
+  const { websiteName } = useSiteSettings();
 
   return (
     <footer className="border-t border-border bg-surface">
@@ -18,7 +20,7 @@ export default function Footer() {
                 <Sparkles className="h-4 w-4" />
               </div>
               <span className="text-lg font-bold tracking-tight">
-                Quesna<span className="text-primary">Shop</span>
+                {websiteName}
               </span>
             </Link>
             <p className="text-sm text-muted max-w-sm leading-relaxed">

@@ -5,6 +5,7 @@ export interface IProduct extends Document {
   description: string;
   price: number;
   image: string;
+  images: string[];
   stock: number;
   category: string;
   featured: boolean;
@@ -17,13 +18,26 @@ const ProductSchema = new Schema<IProduct>(
     name: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    image: { type: String, required: true },
+    image: { type: String, default: "" },
+    images: { type: [String], default: [] },
     stock: { type: Number, required: true, default: 0 },
     category: { type: String, required: true, default: "General" },
     featured: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+// Keep `image` in sync: when saving, if images array has entries but image is
+// empty, populate image from the first element; conversely if image is set but
+// images is empty, seed images from image.
+ProductSchema.pre("save", function (next) {
+  if (this.images.length > 0 && !this.image) {
+    this.image = this.images[0];
+  } else if (this.image && this.images.length === 0) {
+    this.images = [this.image];
+  }
+  next();
+});
 
 const Product: Model<IProduct> =
   mongoose.models.Product || mongoose.model<IProduct>("Product", ProductSchema);

@@ -25,6 +25,7 @@ interface Product {
   description: string;
   price: number;
   image: string;
+  images: string[];
   stock: number;
   category: string;
   featured: boolean;
@@ -41,6 +42,7 @@ const emptyProduct = {
   description: "",
   price: 0,
   image: "",
+  images: [] as string[],
   stock: 0,
   category: "General",
   featured: false,
@@ -132,6 +134,7 @@ export default function AdminProductsPage() {
       description: product.description,
       price: product.price,
       image: product.image,
+      images: product.images || (product.image ? [product.image] : []),
       stock: product.stock,
       category: product.category,
       featured: product.featured,
@@ -143,7 +146,7 @@ export default function AdminProductsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.image) {
+    if (form.images.length === 0) {
       setUploadError(t("admin.products.uploadImage" as TranslationKey));
       return;
     }
@@ -158,7 +161,10 @@ export default function AdminProductsPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          image: form.images[0] || form.image,
+        }),
       });
 
       if (res.ok) {
@@ -195,12 +201,12 @@ export default function AdminProductsPage() {
     setUploadError("");
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      const fd = new FormData();
+      fd.append("file", file);
 
       const res = await fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        body: fd,
       });
 
       const data = await res.json();
@@ -210,7 +216,10 @@ export default function AdminProductsPage() {
         return;
       }
 
-      updateField("image", data.url);
+      setForm((prev) => {
+        const newImages = [...prev.images, data.url];
+        return { ...prev, images: newImages, image: newImages[0] };
+      });
     } catch {
       setUploadError("Upload failed. Please try again.");
     } finally {
@@ -218,17 +227,30 @@ export default function AdminProductsPage() {
     }
   };
 
+  const removeImage = (index: number) => {
+    setForm((prev) => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      return { ...prev, images: newImages, image: newImages[0] || "" };
+    });
+  };
+
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleImageUpload(file);
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach((file) => handleImageUpload(file));
+    }
     e.target.value = "";
   };
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) handleImageUpload(file);
+    const files = e.dataTransfer.files;
+    if (files) {
+      Array.from(files)
+        .filter((f) => f.type.startsWith("image/"))
+        .forEach((file) => handleImageUpload(file));
+    }
   };
 
   return (
@@ -506,49 +528,33 @@ export default function AdminProductsPage() {
                   {t("admin.products.productImage" as TranslationKey)}
                 </label>
 
-                {/* Image preview + editable URL */}
-                {form.image && (
-                  <div className="space-y-2 mb-3">
-                    <div className="relative rounded-xl overflow-hidden border border-border bg-background group">
-                      <div className="relative h-44 w-full">
+                {/* Image thumbnails grid */}
+                {form.images.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {form.images.map((img, idx) => (
+                      <div key={idx} className="relative rounded-xl overflow-hidden border border-border bg-background group aspect-square">
                         <Image
-                          src={form.image}
-                          alt="Preview"
+                          src={img}
+                          alt={`Image ${idx + 1}`}
                           fill
-                          className="object-contain"
-                          sizes="400px"
+                          className="object-cover"
+                          sizes="150px"
                         />
-                      </div>
-                      <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {idx === 0 && (
+                          <span className="absolute top-1.5 start-1.5 rounded-full bg-primary/80 px-2 py-0.5 text-[9px] font-semibold text-white">
+                            Main
+                          </span>
+                        )}
                         <button
                           type="button"
-                          onClick={() => document.getElementById("product-image-input")?.click()}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-white/80 hover:bg-primary hover:text-white transition-colors"
-                          title="Re-upload image"
-                        >
-                          <Upload className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateField("image", "")}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-white/80 hover:bg-red-500 hover:text-white transition-colors"
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-1.5 end-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white/80 hover:bg-red-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                           title="Remove image"
                         >
-                          <X className="h-3.5 w-3.5" />
+                          <X className="h-3 w-3" />
                         </button>
                       </div>
-                    </div>
-                    {/* Editable URL */}
-                    <div className="relative">
-                      <ImageIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-                      <input
-                        type="url"
-                        value={form.image}
-                        onChange={(e) => updateField("image", e.target.value)}
-                        placeholder="https://..."
-                        className="w-full rounded-xl border border-border bg-background pl-10 pr-4 py-2 text-xs text-muted focus:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all font-mono"
-                      />
-                    </div>
+                    ))}
                   </div>
                 )}
 
@@ -557,39 +563,40 @@ export default function AdminProductsPage() {
                   id="product-image-input"
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+                  multiple
                   onChange={onFileSelect}
                   className="hidden"
                 />
 
-                {/* Upload area */}
-                {!form.image && (
-                  <div
-                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={onDrop}
-                    className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-8 px-4 transition-all cursor-pointer ${
-                      dragOver
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/40 hover:bg-card-hover"
-                    } ${uploading ? "pointer-events-none opacity-60" : ""}`}
-                    onClick={() => document.getElementById("product-image-input")?.click()}
-                  >
-                    {uploading ? (
-                      <>
-                        <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
-                        <p className="text-sm text-muted">{t("admin.products.uploading" as TranslationKey)}</p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-3">
-                          <Upload className="h-5 w-5 text-primary" />
-                        </div>
-                        <p className="text-sm font-medium text-foreground mb-1">{t("admin.products.clickToUpload" as TranslationKey)}</p>
-                        <p className="text-xs text-muted">{t("admin.products.imageFormats" as TranslationKey)}</p>
-                      </>
-                    )}
-                  </div>
-                )}
+                {/* Upload area — always visible to allow adding more */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={onDrop}
+                  className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-6 px-4 transition-all cursor-pointer ${
+                    dragOver
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40 hover:bg-card-hover"
+                  } ${uploading ? "pointer-events-none opacity-60" : ""}`}
+                  onClick={() => document.getElementById("product-image-input")?.click()}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
+                      <p className="text-sm text-muted">{t("admin.products.uploading" as TranslationKey)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 mb-2">
+                        <Upload className="h-4 w-4 text-primary" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground mb-0.5">
+                        {form.images.length > 0 ? "Add more images" : t("admin.products.clickToUpload" as TranslationKey)}
+                      </p>
+                      <p className="text-xs text-muted">{t("admin.products.imageFormats" as TranslationKey)}</p>
+                    </>
+                  )}
+                </div>
 
                 {uploadError && (
                   <p className="text-xs text-red-400 mt-1.5">{uploadError}</p>

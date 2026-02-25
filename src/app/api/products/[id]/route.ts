@@ -29,6 +29,14 @@ export async function PUT(
     await dbConnect();
     const { id } = await params;
     const body = await req.json();
+
+    // Keep image in sync with images array
+    if (body.images && body.images.length > 0 && !body.image) {
+      body.image = body.images[0];
+    } else if (body.image && (!body.images || body.images.length === 0)) {
+      body.images = [body.image];
+    }
+
     const product = await Product.findByIdAndUpdate(id, body, { new: true });
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
+import ImageKit from "@imagekit/nodejs";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
 });
 
 export async function POST(req: Request) {
@@ -33,31 +33,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // Convert file to base64 data URI
+    // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64 = buffer.toString("base64");
-    const dataUri = `data:${file.type};base64,${base64}`;
 
-    // Upload raw image to Cloudinary
-    const result = await cloudinary.uploader.upload(dataUri, {
-      folder: "novashop/products",
-      resource_type: "image",
+    // Upload image to ImageKit
+    const result = await imagekit.files.upload({
+      file: base64,
+      fileName: file.name || "upload.jpg",
+      folder: "/novashop/products",
     });
 
     // Build optimized delivery URL (auto format + auto quality + 600x600)
-    const optimizedUrl = cloudinary.url(result.public_id, {
-      secure: true,
-      resource_type: "image",
-      transformation: [
-        { width: 600, height: 600, crop: "fill", gravity: "auto" },
-        { fetch_format: "auto", quality: "auto" },
-      ],
-    });
+    const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT!.replace(/\/$/, "");
+    const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-maintain_ratio,fo-auto,f-auto,q-auto${result.filePath}`;
 
     return NextResponse.json({
       url: optimizedUrl,
-      public_id: result.public_id,
+      fileId: result.fileId,
       width: result.width,
       height: result.height,
     });

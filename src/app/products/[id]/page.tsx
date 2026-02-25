@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useTranslation } from "@/i18n/LanguageContext";
+import ImageCarousel from "@/components/ImageCarousel";
 
 interface Product {
   _id: string;
@@ -23,6 +23,7 @@ interface Product {
   description: string;
   price: number;
   image: string;
+  images: string[];
   stock: number;
   category: string;
   featured: boolean;
@@ -58,7 +59,7 @@ export default function ProductDetailPage() {
         productId: product._id,
         name: product.name,
         price: product.price,
-        image: product.image,
+        image: product.images?.[0] || product.image,
       });
     }
     setAdded(true);
@@ -125,18 +126,13 @@ export default function ProductDetailPage() {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Image */}
+          {/* Image Carousel */}
           <div className="relative">
             <div className="sticky top-28">
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-border">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  priority
-                />
+              <ImageCarousel
+                images={product.images?.length ? product.images : [product.image]}
+                alt={product.name}
+              >
                 {/* Category badge */}
                 <span className="absolute top-4 start-4 rounded-full glass-strong px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/90">
                   {product.category}
@@ -147,7 +143,7 @@ export default function ProductDetailPage() {
                     {t("detail.featured")}
                   </span>
                 )}
-              </div>
+              </ImageCarousel>
             </div>
           </div>
 

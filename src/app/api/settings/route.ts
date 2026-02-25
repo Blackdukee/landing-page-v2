@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
 
-// Helper to get or create the singleton settings document
+// Helper to get or create the singleton settings document (returns plain object)
 async function getSettings() {
-  let settings = await SiteSettings.findOne();
+  let settings = await SiteSettings.findOne().lean();
   if (!settings) {
-    settings = await SiteSettings.create({});
+    const doc = await SiteSettings.create({});
+    settings = doc.toObject();
   }
   return settings;
 }
@@ -77,11 +78,12 @@ export async function PUT(req: NextRequest) {
       update.priceRangeFilters = filters;
     }
 
-    let settings = await SiteSettings.findOne();
+    let settings = await SiteSettings.findOne().lean();
     if (!settings) {
-      settings = await SiteSettings.create(update);
+      const doc = await SiteSettings.create(update);
+      settings = doc.toObject();
     } else {
-      settings = await SiteSettings.findOneAndUpdate({}, { $set: update }, { new: true });
+      settings = await SiteSettings.findOneAndUpdate({}, { $set: update }, { new: true }).lean();
     }
 
     return NextResponse.json(settings);

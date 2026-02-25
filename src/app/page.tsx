@@ -33,9 +33,10 @@ export default function HomePage() {
   const [featured, setFeatured] = useState<Product[]>([]);
   const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop");
   const [heroLink, setHeroLink] = useState("/products");
+  const [heroLoading, setHeroLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const { t, dir } = useTranslation();
-  const { heroProduct: heroProductId } = useSiteSettings();
+  const { heroProduct: heroProductId, loading: settingsLoading } = useSiteSettings();
 
   useEffect(() => {
     fetch("/api/products?featured=true")
@@ -49,11 +50,14 @@ export default function HomePage() {
 
   // Fetch the hero product image when the setting is available
   useEffect(() => {
+    if (settingsLoading) return;
     if (!heroProductId) {
       setHeroImage("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop");
       setHeroLink("/products");
+      setHeroLoading(false);
       return;
     }
+    setHeroLoading(true);
     fetch(`/api/products/${heroProductId}`)
       .then((r) => r.json())
       .then((data) => {
@@ -62,8 +66,9 @@ export default function HomePage() {
           setHeroLink(`/products/${data._id}`);
         }
       })
-      .catch(console.error);
-  }, [heroProductId]);
+      .catch(console.error)
+      .finally(() => setHeroLoading(false));
+  }, [heroProductId, settingsLoading]);
 
   return (
     <>
@@ -137,23 +142,27 @@ export default function HomePage() {
             {/* Right - Featured product showcase */}
             <div className="relative hidden lg:flex items-center justify-center ">
               {/* Large floating card */}
-              <Link href={heroLink} className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 hover:rotate-0 transition-transform duration-700 -top-16 block">
-                <Image
-                  src={heroImage}
-                  alt="Featured product"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <span className="inline-block rounded-full bg-primary/80 backdrop-blur-sm px-3 py-1 text-[10px] font-semibold text-white mb-3">
-                    {t("home.trendingNow")}
-                  </span>
-                  <h3 className="text-xl font-bold text-white mb-1">{t("home.bestSellers")}</h3>
-                  <p className="text-sm text-white/70">{t("home.shopTopRated")}</p>
-                </div>
-              </Link>
+              {heroLoading ? (
+                <div className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 -top-16 bg-surface animate-pulse" />
+              ) : (
+                <Link href={heroLink} className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 hover:rotate-0 transition-transform duration-700 -top-16 block">
+                  <Image
+                    src={heroImage}
+                    alt="Featured product"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <span className="inline-block rounded-full bg-primary/80 backdrop-blur-sm px-3 py-1 text-[10px] font-semibold text-white mb-3">
+                      {t("home.trendingNow")}
+                    </span>
+                    <h3 className="text-xl font-bold text-white mb-1">{t("home.bestSellers")}</h3>
+                    <p className="text-sm text-white/70">{t("home.shopTopRated")}</p>
+                  </div>
+                </Link>
+              )}
 
               {/* Floating stats card */}
               <div className="absolute -bottom-4 -left-8 glass-strong rounded-2xl p-4 shadow-xl">

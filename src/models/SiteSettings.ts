@@ -45,12 +45,8 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
   { timestamps: true }
 );
 
-// Delete cached model to pick up schema changes during dev hot-reload
-if (mongoose.models.SiteSettings) {
-  delete mongoose.models.SiteSettings;
-}
-
 const SiteSettings: Model<ISiteSettings> =
+  mongoose.models.SiteSettings ||
   mongoose.model<ISiteSettings>("SiteSettings", SiteSettingsSchema);
 
 export default SiteSettings;

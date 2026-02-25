@@ -162,7 +162,7 @@ export default function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
               <span className="text-3xl font-bold gradient-text">
-                ${product.price.toFixed(2)}
+                EGP {product.price.toFixed(2)}
               </span>
               {product.stock > 0 ? (
                 <span className="text-xs font-medium text-green-400 bg-green-500/10 rounded-full px-2.5 py-1">

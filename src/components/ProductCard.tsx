@@ -90,7 +90,7 @@ export default function ProductCard({
         </div>
         <div className="flex items-center justify-between">
           <span className="text-base font-bold tracking-tight gradient-text">
-            ${price.toFixed(2)}
+            EGP {price.toFixed(2)}
           </span>
           {stock > 0 && stock <= 5 && (
             <span className="text-[10px] font-medium text-primary-light">

@@ -1,8 +1,15 @@
 ## Updates 
 
 ## Admin dashboard
-- [x] for admin he can add more than one image for the same product and the images will be shown in the product details page as a carousel
 
-## Product details page
-- [x] add a carousel to show the product images instead of showing only one image
+- [x] when admin cancel the edit for image after uploading it, the image should be deleted from imagekit to avoid unused images and save storage space.
 
+
+
+## Website
+
+- [ ] change the website color scheme with the following colors: 
+- Primary: #AD8B73
+- Secondary: #CEAB93
+- Accent: #E3CAA5
+- Background: #FFFBE9

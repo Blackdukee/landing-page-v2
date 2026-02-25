@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import ImageKit from "@imagekit/nodejs";
+import { createHash } from "crypto";
 
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
@@ -38,15 +39,43 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes);
     const base64 = buffer.toString("base64");
 
-    // Upload image to ImageKit
+    // Compute content hash for deduplication
+    const contentHash = createHash("md5").update(buffer).digest("hex");
+
+    const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT!.replace(/\/$/, "");
+
+    // Check if an image with this hash already exists in ImageKit
+    try {
+      const existing = await imagekit.assets.list({
+        tags: contentHash,
+        path: "/novashop/products",
+        limit: 1,
+      });
+
+      if (Array.isArray(existing) && existing.length > 0) {
+        const found = existing[0];
+        const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-maintain_ratio,fo-auto,f-auto,q-auto${found.filePath}`;
+        return NextResponse.json({
+          url: optimizedUrl,
+          fileId: found.fileId,
+          width: found.width,
+          height: found.height,
+          reused: true,
+        });
+      }
+    } catch {
+      // If search fails, proceed with upload
+    }
+
+    // Upload image to ImageKit with content hash as tag
     const result = await imagekit.files.upload({
       file: base64,
       fileName: file.name || "upload.jpg",
       folder: "/novashop/products",
+      tags: [contentHash],
     });
 
     // Build optimized delivery URL (auto format + auto quality + 600x600)
-    const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT!.replace(/\/$/, "");
     const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-maintain_ratio,fo-auto,f-auto,q-auto${result.filePath}`;
 
     return NextResponse.json({
@@ -59,6 +88,31 @@ export async function POST(req: Request) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "Upload failed. Please try again." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { fileIds } = await req.json();
+
+    if (!Array.isArray(fileIds) || fileIds.length === 0) {
+      return NextResponse.json({ error: "No fileIds provided" }, { status: 400 });
+    }
+
+    const results = await Promise.allSettled(
+      fileIds.map((id: string) => imagekit.files.delete(id))
+    );
+
+    const deleted = results.filter((r) => r.status === "fulfilled").length;
+    const failed = results.filter((r) => r.status === "rejected").length;
+
+    return NextResponse.json({ deleted, failed });
+  } catch (error) {
+    console.error("Delete error:", error);
+    return NextResponse.json(
+      { error: "Delete failed." },
       { status: 500 }
     );
   }

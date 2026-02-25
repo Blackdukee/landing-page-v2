@@ -401,7 +401,7 @@ export default function AdminDashboard() {
     },
     {
       label: t("admin.dashboard.revenue" as TranslationKey),
-      value: `$${stats.totalRevenue.toFixed(2)}`,
+      value: `EGP ${stats.totalRevenue.toFixed(2)}`,
       icon: DollarSign,
       color: "bg-amber-500/10 text-amber-400",
     },
@@ -729,7 +729,7 @@ export default function AdminDashboard() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{heroProduct.name}</p>
-                <p className="text-xs text-muted">{heroProduct.category} · ${heroProduct.price.toFixed(2)}</p>
+                <p className="text-xs text-muted">{heroProduct.category} · EGP {heroProduct.price.toFixed(2)}</p>
               </div>
               <button
                 onClick={() => setHeroProductId(null)}
@@ -773,7 +773,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
-                      <p className="text-[10px] text-muted">{p.category} · ${p.price.toFixed(2)}</p>
+                      <p className="text-[10px] text-muted">{p.category} · EGP {p.price.toFixed(2)}</p>
                     </div>
                     {heroProductId === p._id && (
                       <Check className="h-4 w-4 text-primary flex-shrink-0" />
@@ -1029,7 +1029,7 @@ export default function AdminDashboard() {
                       {order.customerInfo?.name || "Unknown"}
                     </td>
                     <td className="px-6 py-3.5 text-foreground">
-                      ${order.totalPrice?.toFixed(2)}
+                      EGP {order.totalPrice?.toFixed(2)}
                     </td>
                     <td className="px-6 py-3.5">
                       <span

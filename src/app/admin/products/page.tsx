@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
 import {
   Plus,
@@ -64,6 +64,9 @@ export default function AdminProductsPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  // Track newly uploaded fileIds for cleanup on cancel
+  const newUploadsRef = useRef<{ url: string; fileId: string }[]>([]);
+  const originalImagesRef = useRef<string[]>([]);
 
   const fetchProducts = () => {
     setLoading(true);
@@ -119,28 +122,60 @@ export default function AdminProductsPage() {
     return result;
   }, [products, search, filterCategory, sortBy]);
 
+  const cleanupUploads = useCallback(async (fileIds: string[]) => {
+    if (fileIds.length === 0) return;
+    try {
+      await fetch("/api/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileIds }),
+      });
+    } catch {
+      // best-effort cleanup
+    }
+  }, []);
+
+  const closeModal = useCallback(async (saved: boolean) => {
+    if (!saved) {
+      // Delete only newly uploaded images that are not part of the original product
+      const origSet = new Set(originalImagesRef.current);
+      const orphanIds = newUploadsRef.current
+        .filter((u) => !origSet.has(u.url))
+        .map((u) => u.fileId);
+      cleanupUploads(orphanIds);
+    }
+    newUploadsRef.current = [];
+    originalImagesRef.current = [];
+    setShowModal(false);
+  }, [cleanupUploads]);
+
   const openCreate = () => {
     setEditing(null);
     setForm(emptyProduct);
     setUploadError("");
     setDragOver(false);
+    newUploadsRef.current = [];
+    originalImagesRef.current = [];
     setShowModal(true);
   };
 
   const openEdit = (product: Product) => {
     setEditing(product);
+    const imgs = product.images || (product.image ? [product.image] : []);
     setForm({
       name: product.name,
       description: product.description,
       price: product.price,
       image: product.image,
-      images: product.images || (product.image ? [product.image] : []),
+      images: imgs,
       stock: product.stock,
       category: product.category,
       featured: product.featured,
     });
     setUploadError("");
     setDragOver(false);
+    newUploadsRef.current = [];
+    originalImagesRef.current = [...imgs];
     setShowModal(true);
   };
 
@@ -169,7 +204,7 @@ export default function AdminProductsPage() {
 
       if (res.ok) {
         fetchProducts();
-        setShowModal(false);
+        closeModal(true);
       }
     } catch (error) {
       console.error(error);
@@ -216,6 +251,11 @@ export default function AdminProductsPage() {
         return;
       }
 
+      // Track this upload for potential cleanup
+      if (data.fileId) {
+        newUploadsRef.current.push({ url: data.url, fileId: data.fileId });
+      }
+
       setForm((prev) => {
         const newImages = [...prev.images, data.url];
         return { ...prev, images: newImages, image: newImages[0] };
@@ -229,6 +269,13 @@ export default function AdminProductsPage() {
 
   const removeImage = (index: number) => {
     setForm((prev) => {
+      const removedUrl = prev.images[index];
+      // If this was a newly uploaded image, delete it from ImageKit immediately
+      const uploadEntry = newUploadsRef.current.find((u) => u.url === removedUrl);
+      if (uploadEntry) {
+        cleanupUploads([uploadEntry.fileId]);
+        newUploadsRef.current = newUploadsRef.current.filter((u) => u.url !== removedUrl);
+      }
       const newImages = prev.images.filter((_, i) => i !== index);
       return { ...prev, images: newImages, image: newImages[0] || "" };
     });
@@ -264,7 +311,7 @@ export default function AdminProductsPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 shadow-lg shadow-primary/20"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 shadow-lg shadow-primary/20"
         >
           <Plus className="h-4 w-4" />
           {t("admin.products.addProduct" as TranslationKey)}
@@ -379,7 +426,7 @@ export default function AdminProductsPage() {
                       <span className="text-xs text-muted">{product.category}</span>
                     </td>
                     <td className="px-5 py-3.5 font-medium text-foreground">
-                      ${product.price.toFixed(2)}
+                      EGP {product.price.toFixed(2)}
                     </td>
                     <td className="px-5 py-3.5">
                       <span
@@ -439,7 +486,7 @@ export default function AdminProductsPage() {
                 {editing ? t("admin.products.editProduct" as TranslationKey) : t("admin.products.newProduct" as TranslationKey)}
               </h2>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => closeModal(false)}
                 className="text-muted hover:text-foreground transition-colors"
               >
                 <X className="h-5 w-5" />
@@ -616,7 +663,7 @@ export default function AdminProductsPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => closeModal(false)}
                   className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-card-hover transition-colors"
                 >
                   {t("admin.products.cancel" as TranslationKey)}
@@ -624,7 +671,7 @@ export default function AdminProductsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50"
                 >
                   <Save className="h-4 w-4" />
                   {saving ? t("admin.products.saving" as TranslationKey) : editing ? t("admin.products.update" as TranslationKey) : t("admin.products.create" as TranslationKey)}

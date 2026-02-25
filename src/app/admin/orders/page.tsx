@@ -219,7 +219,7 @@ export default function AdminOrdersPage() {
                       {order.items?.length || 0} {(order.items?.length || 0) !== 1 ? t("admin.orders.itemPlural" as TranslationKey) : t("admin.orders.item" as TranslationKey)}
                     </td>
                     <td className="px-5 py-3.5 font-medium text-foreground">
-                      ${order.totalPrice?.toFixed(2)}
+                      EGP {order.totalPrice?.toFixed(2)}
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="relative inline-block">
@@ -334,11 +334,11 @@ export default function AdminOrdersPage() {
                       <div>
                         <p className="font-medium text-foreground">{item.name}</p>
                         <p className="text-xs text-muted">
-                          {t("admin.orders.qty" as TranslationKey)}: {item.quantity} &times; ${item.price.toFixed(2)}
+                          {t("admin.orders.qty" as TranslationKey)}: {item.quantity} &times; EGP {item.price.toFixed(2)}
                         </p>
                       </div>
                       <p className="font-medium text-foreground">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        EGP {(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   ))}
@@ -349,7 +349,7 @@ export default function AdminOrdersPage() {
               <div className="flex justify-between items-center pt-2 border-t border-border">
                 <span className="font-semibold text-foreground">{t("admin.orders.totalLabel" as TranslationKey)}</span>
                 <span className="text-lg font-bold text-foreground">
-                  ${selectedOrder.totalPrice?.toFixed(2)}
+                  EGP {selectedOrder.totalPrice?.toFixed(2)}
                 </span>
               </div>
 

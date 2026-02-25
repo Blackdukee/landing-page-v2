@@ -20,7 +20,7 @@ const en = {
   "footer.bottomText": "Modern shopping · Shipped worldwide",
 
   // ── Home – Hero ──
-  "home.badge": "New Collection 2025",
+  "home.badge": "New Collection 2026",
   "home.heroLine1": "Experience",
   "home.heroLine2": "modern",
   "home.heroLine3": "shopping",
@@ -32,7 +32,7 @@ const en = {
 
   // ── Home – Trust badges ──
   "home.freeDelivery": "Free Delivery",
-  "home.freeDeliverySub": "On orders $99+",
+  "home.freeDeliverySub": "On orders EGP 99+",
   "home.easyReturns": "Easy Returns",
   "home.easyReturnsSub": "30-day policy",
   "home.support": "24/7 Support",
@@ -63,7 +63,7 @@ const en = {
     "Every product is carefully vetted to ensure it meets our high standards of quality and durability.",
   "home.fastShipping": "Fast Shipping",
   "home.fastShippingDesc":
-    "Get your orders delivered quickly with our efficient shipping network. Free shipping on orders over $99.",
+    "Get your orders delivered quickly with our efficient shipping network. Free shipping on orders over EGP 99.",
   "home.secureShopping": "Secure Shopping",
   "home.secureShoppingDesc":
     "Shop with confidence. Easy returns, buyer protection, and 24/7 customer support for peace of mind.",
@@ -73,7 +73,7 @@ const en = {
   "home.ctaLine2": "shopping journey",
   "home.ctaLine3": "today",
   "home.ctaDesc":
-    "Browse our full catalog and discover something amazing. Free shipping on orders over $99.",
+    "Browse our full catalog and discover something amazing. Free shipping on orders over EGP 99.",
   "home.shopNow": "Shop Now",
 
   // ── Home – Seed ──
@@ -94,11 +94,11 @@ const en = {
   "products.category": "Category",
   "products.priceRange": "Price Range",
   "products.allPrices": "All Prices",
-  "products.under25": "Under $25",
-  "products.price25_50": "$25 - $50",
-  "products.price50_100": "$50 - $100",
-  "products.price100_200": "$100 - $200",
-  "products.price200plus": "$200+",
+  "products.under25": "Under EGP 25",
+  "products.price25_50": "EGP 25 - EGP 50",
+  "products.price50_100": "EGP 50 - EGP 100",
+  "products.price100_200": "EGP 100 - EGP 200",
+  "products.price200plus": "EGP 200+",
   "products.showing": "Showing {start}–{end} of {total}",
   "products.productsFound": "{count} product{s} found",
   "products.inCategory": "in {category}",
@@ -126,9 +126,9 @@ const en = {
   "detail.description": "Description",
   "detail.quantity": "Quantity",
   "detail.addedToCart": "Added to Cart!",
-  "detail.addToCart": "Add to Cart — ${price}",
+  "detail.addToCart": "Add to Cart — EGP {price}",
   "detail.freeShipping": "Free Shipping",
-  "detail.freeShippingSub": "On orders over $50",
+  "detail.freeShippingSub": "On orders over EGP 50",
   "detail.secureCheckout": "Secure Checkout",
   "detail.secureCheckoutSub": "100% encrypted",
   "detail.easyReturns": "Easy Returns",
@@ -153,7 +153,7 @@ const en = {
   "cart.subtotal": "Subtotal",
   "cart.shipping": "Shipping",
   "cart.free": "Free",
-  "cart.freeShippingHint": "Add ${amount} more for free shipping",
+  "cart.freeShippingHint": "Add EGP {amount} more for free shipping",
   "cart.total": "Total",
   "cart.proceedToCheckout": "Proceed to Checkout",
 
@@ -260,8 +260,8 @@ const en = {
   "admin.dashboard.noPriceRanges": "No price range filters. Add one below.",
   "admin.dashboard.labelEn": "Label (EN)",
   "admin.dashboard.labelAr": "Label (AR)",
-  "admin.dashboard.min": "Min ($)",
-  "admin.dashboard.max": "Max ($)",
+  "admin.dashboard.min": "Min (EGP)",
+  "admin.dashboard.max": "Max (EGP)",
   "admin.dashboard.addRange": "Add Range",
   "admin.dashboard.saveRanges": "Save Ranges",
 
@@ -303,7 +303,7 @@ const en = {
   "admin.products.newProduct": "New Product",
   "admin.products.productName": "Product Name",
   "admin.products.description": "Description",
-  "admin.products.priceLabel": "Price ($)",
+  "admin.products.priceLabel": "Price (EGP)",
   "admin.products.stockLabel": "Stock",
   "admin.products.categoryLabel": "Category",
   "admin.products.general": "General",

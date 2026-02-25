@@ -20,7 +20,7 @@ const ar: Record<string, string> = {
   "footer.bottomText": "تسوق عصري · شحن عالمي",
 
   // ── الصفحة الرئيسية – البطل ──
-  "home.badge": "مجموعة جديدة 2025",
+  "home.badge": "مجموعة جديدة 2026",
   "home.heroLine1": "استمتع",
   "home.heroLine2": "بالتسوق",
   "home.heroLine3": "العصري",
@@ -32,7 +32,7 @@ const ar: Record<string, string> = {
 
   // ── الصفحة الرئيسية – شارات الثقة ──
   "home.freeDelivery": "توصيل مجاني",
-  "home.freeDeliverySub": "للطلبات فوق 99$",
+  "home.freeDeliverySub": "للطلبات فوق 99EGP",
   "home.easyReturns": "إرجاع سهل",
   "home.easyReturnsSub": "سياسة 30 يوم",
   "home.support": "دعم 24/7",
@@ -63,7 +63,7 @@ const ar: Record<string, string> = {
     "يتم فحص كل منتج بعناية لضمان استيفائه لمعايير الجودة والمتانة العالية لدينا.",
   "home.fastShipping": "شحن سريع",
   "home.fastShippingDesc":
-    "احصل على طلباتك بسرعة مع شبكة الشحن الفعالة لدينا. شحن مجاني للطلبات فوق 99$.",
+    "احصل على طلباتك بسرعة مع شبكة الشحن الفعالة لدينا. شحن مجاني للطلبات فوق 99EGP.",
   "home.secureShopping": "تسوق آمن",
   "home.secureShoppingDesc":
     "تسوق بثقة. إرجاع سهل وحماية المشتري ودعم عملاء على مدار الساعة لراحة بالك.",
@@ -73,7 +73,7 @@ const ar: Record<string, string> = {
   "home.ctaLine2": "رحلة التسوق",
   "home.ctaLine3": "اليوم",
   "home.ctaDesc":
-    "تصفح كتالوجنا الكامل واكتشف شيئًا مذهلاً. شحن مجاني للطلبات فوق 99$.",
+    "تصفح كتالوجنا الكامل واكتشف شيئًا مذهلاً. شحن مجاني للطلبات فوق 99EGP.",
   "home.shopNow": "تسوق الآن",
 
   // ── الصفحة الرئيسية – Seed ──
@@ -94,11 +94,11 @@ const ar: Record<string, string> = {
   "products.category": "الفئة",
   "products.priceRange": "النطاق السعري",
   "products.allPrices": "جميع الأسعار",
-  "products.under25": "أقل من 25$",
-  "products.price25_50": "25$ - 50$",
-  "products.price50_100": "50$ - 100$",
-  "products.price100_200": "100$ - 200$",
-  "products.price200plus": "+200$",
+  "products.under25": "أقل من 25 EGP",
+  "products.price25_50": "25 EGP - 50 EGP",
+  "products.price50_100": "50 EGP - 100 EGP",
+  "products.price100_200": "100 EGP - 200 EGP",
+  "products.price200plus": "+200 EGP",
   "products.showing": "عرض {start}–{end} من {total}",
   "products.productsFound": "تم العثور على {count} منتج",
   "products.inCategory": "في {category}",
@@ -126,9 +126,9 @@ const ar: Record<string, string> = {
   "detail.description": "الوصف",
   "detail.quantity": "الكمية",
   "detail.addedToCart": "تمت الإضافة!",
-  "detail.addToCart": "أضف للسلة — {price}$",
+  "detail.addToCart": "أضف للسلة — EGP {price}",
   "detail.freeShipping": "شحن مجاني",
-  "detail.freeShippingSub": "للطلبات فوق 50$",
+  "detail.freeShippingSub": "للطلبات فوق 50 EGP",
   "detail.secureCheckout": "دفع آمن",
   "detail.secureCheckoutSub": "مشفر 100%",
   "detail.easyReturns": "إرجاع سهل",
@@ -153,7 +153,7 @@ const ar: Record<string, string> = {
   "cart.subtotal": "المجموع الفرعي",
   "cart.shipping": "الشحن",
   "cart.free": "مجاني",
-  "cart.freeShippingHint": "أضف {amount}$ للحصول على شحن مجاني",
+  "cart.freeShippingHint": "أضف EGP {amount} للحصول على شحن مجاني",
   "cart.total": "الإجمالي",
   "cart.proceedToCheckout": "المتابعة للدفع",
 
@@ -260,8 +260,8 @@ const ar: Record<string, string> = {
   "admin.dashboard.noPriceRanges": "لا توجد فلاتر نطاق سعري. أضف واحدة أدناه.",
   "admin.dashboard.labelEn": "التسمية (EN)",
   "admin.dashboard.labelAr": "التسمية (AR)",
-  "admin.dashboard.min": "الحد الأدنى ($)",
-  "admin.dashboard.max": "الحد الأقصى ($)",
+  "admin.dashboard.min": "الحد الأدنى (EGP)",
+  "admin.dashboard.max": "الحد الأقصى (EGP)",
   "admin.dashboard.addRange": "إضافة نطاق",
   "admin.dashboard.saveRanges": "حفظ النطاقات",
 
@@ -303,7 +303,7 @@ const ar: Record<string, string> = {
   "admin.products.newProduct": "منتج جديد",
   "admin.products.productName": "اسم المنتج",
   "admin.products.description": "الوصف",
-  "admin.products.priceLabel": "السعر ($)",
+  "admin.products.priceLabel": "السعر (EGP)",
   "admin.products.stockLabel": "المخزون",
   "admin.products.categoryLabel": "الفئة",
   "admin.products.general": "عام",

@@ -96,7 +96,7 @@ export default function CheckoutPage() {
     const itemLines = items
       .map(
         (item) =>
-          `• ${item.name} × ${item.quantity} — $${(item.price * item.quantity).toFixed(2)}`
+          `• ${item.name} × ${item.quantity} — EGP ${(item.price * item.quantity).toFixed(2)}`
       )
       .join("\n");
 
@@ -112,9 +112,9 @@ ${form.notes ? `Notes: ${form.notes}` : ""}
 *Order Items:*
 ${itemLines}
 
-Subtotal: $${totalPrice().toFixed(2)}
-Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
-*Total: $${total.toFixed(2)}*`;
+Subtotal: EGP ${totalPrice().toFixed(2)}
+Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
+*Total: EGP ${total.toFixed(2)}*`;
 
     const encoded = encodeURIComponent(message);
     const url = `https://wa.me/${whatsappNumber}?text=${encoded}`;
@@ -254,7 +254,7 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
                         </p>
                       </div>
                       <span className="text-xs font-medium text-foreground">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        EGP {(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -263,7 +263,7 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
                 <div className="space-y-2 text-sm border-t border-border pt-4">
                   <div className="flex justify-between">
                     <span className="text-muted">{t("checkout.subtotal")}</span>
-                    <span className="text-foreground">${totalPrice().toFixed(2)}</span>
+                    <span className="text-foreground">EGP {totalPrice().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted">{t("checkout.shipping")}</span>
@@ -271,13 +271,13 @@ Shipping: ${shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
                       {shipping === 0 ? (
                         <span className="text-success">{t("checkout.free")}</span>
                       ) : (
-                        `$${shipping.toFixed(2)}`
+                        `EGP ${shipping.toFixed(2)}`
                       )}
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-border pt-2 mt-2">
                     <span className="font-semibold text-foreground">{t("checkout.total")}</span>
-                    <span className="font-bold gradient-text">${total.toFixed(2)}</span>
+                    <span className="font-bold gradient-text">EGP {total.toFixed(2)}</span>
                   </div>
                 </div>
 

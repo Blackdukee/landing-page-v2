@@ -95,7 +95,7 @@ export default function CartPage() {
                   <div>
                     <h3 className="font-semibold text-sm truncate text-foreground">{item.name}</h3>
                     <p className="text-xs text-muted mt-0.5">
-                      ${item.price.toFixed(2)} {t("cart.each")}
+                      EGP {item.price.toFixed(2)} {t("cart.each")}
                     </p>
                   </div>
                   <div className="flex items-center justify-between mt-3">
@@ -122,7 +122,7 @@ export default function CartPage() {
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="font-semibold text-sm gradient-text">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        EGP {(item.price * item.quantity).toFixed(2)}
                       </span>
                       <button
                         onClick={() => removeItem(item.productId)}
@@ -145,7 +145,7 @@ export default function CartPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted">{t("cart.subtotal")}</span>
-                  <span className="font-medium text-foreground">${totalPrice().toFixed(2)}</span>
+                  <span className="font-medium text-foreground">EGP {totalPrice().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted">{t("cart.shipping")}</span>
@@ -153,7 +153,7 @@ export default function CartPage() {
                     {shipping === 0 ? (
                       <span className="text-success">{t("cart.free")}</span>
                     ) : (
-                      `$${shipping.toFixed(2)}`
+                      `EGP ${shipping.toFixed(2)}`
                     )}
                   </span>
                 </div>
@@ -164,7 +164,7 @@ export default function CartPage() {
                 )}
                 <div className="border-t border-border pt-3 flex justify-between">
                   <span className="font-semibold text-foreground">{t("cart.total")}</span>
-                  <span className="font-bold text-lg gradient-text">${total.toFixed(2)}</span>
+                  <span className="font-bold text-lg gradient-text">EGP {total.toFixed(2)}</span>
                 </div>
               </div>
 

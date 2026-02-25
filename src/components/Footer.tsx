@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Sparkles, Instagram, Twitter, Mail } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function Footer() {
   const { t } = useTranslation();
-  const { websiteName, socialLinks } = useSiteSettings();
+  const { websiteName, favicon, socialLinks } = useSiteSettings();
 
   const hasAnySocial = socialLinks.instagram || socialLinks.twitter || socialLinks.email;
 
@@ -18,8 +19,12 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-400 text-white">
-                <Sparkles className="h-4 w-4" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-400 text-white overflow-hidden">
+                {favicon ? (
+                  <Image src={favicon} alt={websiteName} width={32} height={32} className="h-full w-full object-cover" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
               </div>
               <span className="text-lg font-bold tracking-tight">
                 {websiteName}
@@ -104,7 +109,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted">
-            {t("footer.copyright", { year: String(new Date().getFullYear()) })}
+            {t("footer.copyright", { year: String(new Date().getFullYear()), shopName: websiteName })}
           </p>
           <p className="text-xs text-muted">
             {t("footer.bottomText")}

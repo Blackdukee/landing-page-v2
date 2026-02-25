@@ -15,7 +15,10 @@ export interface ISocialLinks {
 
 export interface ISiteSettings extends Document {
   websiteName: string;
+  favicon: string;
   whatsappNumber: string;
+  freeDeliveryMinPrice: number;
+  returnDays: number;
   priceRangeFilters: IPriceRange[];
   heroProduct: string | null; // Product _id to feature in hero section
   socialLinks: ISocialLinks;
@@ -45,7 +48,10 @@ const SocialLinksSchema = new Schema(
 const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
     websiteName: { type: String, default: "QuesnaShop" },
+    favicon: { type: String, default: "" },
     whatsappNumber: { type: String, default: "+201025571092" },
+    freeDeliveryMinPrice: { type: Number, default: 99 },
+    returnDays: { type: Number, default: 30 },
     heroProduct: { type: String, default: null },
     socialLinks: { type: SocialLinksSchema, default: () => ({}) },
     priceRangeFilters: {

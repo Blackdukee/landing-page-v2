@@ -287,7 +287,7 @@ export default function ProductsPage() {
                     activePriceRange === idx
                       ? "bg-gradient-to-r from-primary to-purple-500 text-white shadow-md shadow-primary/20"
                       : "glass text-muted hover:text-foreground hover:border-primary/30"
-                  }`}
+                  }`} 
                 >
                   {range.label}
                 </button>

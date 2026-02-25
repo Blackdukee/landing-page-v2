@@ -57,6 +57,18 @@ export async function PUT(req: NextRequest) {
       update.whatsappNumber = body.whatsappNumber.trim();
     }
 
+    if (typeof body.favicon === "string") {
+      update.favicon = body.favicon.trim();
+    }
+
+    if (typeof body.freeDeliveryMinPrice === "number" && body.freeDeliveryMinPrice >= 0) {
+      update.freeDeliveryMinPrice = body.freeDeliveryMinPrice;
+    }
+
+    if (typeof body.returnDays === "number" && body.returnDays >= 0) {
+      update.returnDays = Math.round(body.returnDays);
+    }
+
     if ("heroProduct" in body) {
       update.heroProduct = typeof body.heroProduct === "string" && body.heroProduct.trim()
         ? body.heroProduct.trim()

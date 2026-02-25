@@ -16,7 +16,7 @@ const en = {
   "footer.aboutUs": "About Us",
   "footer.shippingReturns": "Shipping & Returns",
   "footer.contact": "Contact",
-  "footer.copyright": "© {year} QuesnaShop. All rights reserved.",
+  "footer.copyright": "© {year} {shopName}. All rights reserved.",
   "footer.bottomText": "Modern shopping · Shipped worldwide",
 
   // ── Home – Hero ──
@@ -32,9 +32,9 @@ const en = {
 
   // ── Home – Trust badges ──
   "home.freeDelivery": "Free Delivery",
-  "home.freeDeliverySub": "On orders EGP 99+",
+  "home.freeDeliverySub": "On orders EGP {price}+",
   "home.easyReturns": "Easy Returns",
-  "home.easyReturnsSub": "30-day policy",
+  "home.easyReturnsSub": "{days}-day policy",
   "home.support": "24/7 Support",
   "home.supportSub": "Always here",
 
@@ -54,7 +54,7 @@ const en = {
 
   // ── Home – Values section ──
   "home.whyChoose": "Why Choose",
-  "home.whyChooseBrand": "QuesnaShop",
+  "home.whyChooseBrand": "{shopName}",
   "home.whyChooseSuffix": "?",
   "home.whyChooseDesc":
     "We're committed to providing you with the best shopping experience. Here's what sets us apart.",
@@ -182,7 +182,7 @@ const en = {
   "checkout.completeOrder": "Complete Order via WhatsApp",
   "checkout.whatsappRedirect":
     "You'll be redirected to WhatsApp to confirm your order with our team.",
-  "checkout.whatsappMessage": "🛒 *New Order from QuesnaShop*",
+  "checkout.whatsappMessage": "🛒 *New Order from {shopName}*",
 
   // ── Language switcher ──
   "lang.en": "EN",
@@ -246,6 +246,18 @@ const en = {
   "admin.dashboard.saveSiteSettings": "Save Settings",
   "admin.dashboard.saving": "Saving...",
   "admin.dashboard.settingsSaved": "Settings saved successfully!",
+  "admin.dashboard.favicon": "Website Icon (Favicon)",
+  "admin.dashboard.faviconUploading": "Uploading...",
+  "admin.dashboard.faviconChange": "Change Icon",
+  "admin.dashboard.faviconUpload": "Upload Icon",
+  "admin.dashboard.faviconRemove": "Remove",
+  "admin.dashboard.faviconHint": "PNG, SVG, or ICO recommended. Appears in browser tabs & navbar.",
+  "admin.dashboard.trustBadgeSettings": "Trust Badge Settings",
+  "admin.dashboard.freeDeliveryMinPrice": "Free Delivery Min Price (EGP)",
+  "admin.dashboard.freeDeliveryMinPriceHint": "Minimum order amount for free delivery",
+  "admin.dashboard.returnDays": "Return Policy Days",
+  "admin.dashboard.returnDaysHint": "Number of days for return policy",
+  "admin.dashboard.socialLinks": "Social Links (optional)",
 
   // ── Admin – Dashboard: Hero Product ──
   "admin.dashboard.heroProduct": "Hero Product",

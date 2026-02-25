@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: "QuesnaShop | Modern Online Store",
   description:
     "Discover trending products across electronics, fashion, home and more.",
+  verification: {
+    google: "korNU0jPHceVjjKsjIsJiIdtm7YGTU-V2-5_IPhz2Qs",
+  },
 };
 
 export default function RootLayout({

@@ -11,7 +11,6 @@ import {
   Star,
   ChevronRight,
   Sparkles,
-  Zap,
   Package,
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
@@ -31,12 +30,9 @@ interface Product {
 
 export default function HomePage() {
   const [featured, setFeatured] = useState<Product[]>([]);
-  const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop");
-  const [heroLink, setHeroLink] = useState("/products");
-  const [heroLoading, setHeroLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const { t, dir } = useTranslation();
-  const { heroProduct: heroProductId, loading: settingsLoading } = useSiteSettings();
+  const { websiteName, freeDeliveryMinPrice, returnDays } = useSiteSettings();
 
   useEffect(() => {
     fetch("/api/products?featured=true")
@@ -47,28 +43,6 @@ export default function HomePage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
-
-  // Fetch the hero product image when the setting is available
-  useEffect(() => {
-    if (settingsLoading) return;
-    if (!heroProductId) {
-      setHeroImage("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=800&fit=crop");
-      setHeroLink("/products");
-      setHeroLoading(false);
-      return;
-    }
-    setHeroLoading(true);
-    fetch(`/api/products/${heroProductId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data && data._id) {
-          setHeroImage(data.image);
-          setHeroLink(`/products/${data._id}`);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setHeroLoading(false));
-  }, [heroProductId, settingsLoading]);
 
   return (
     <>
@@ -83,9 +57,8 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-32 pb-20">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            {/* Left - Text content */}
-            <div className="max-w-2xl">
+          <div className="flex items-center justify-center">
+            <div className="max-w-2xl text-center">
               <span className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-xs font-medium text-primary-light mb-8">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("home.badge")}
@@ -99,11 +72,11 @@ export default function HomePage() {
                 {t("home.heroLine4")}
               </h1>
 
-              <p className="text-lg text-muted max-w-lg leading-relaxed mb-10">
+              <p className="text-lg text-muted max-w-lg leading-relaxed mb-10 mx-auto">
                 {t("home.heroDesc")}
               </p>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap justify-center gap-4">
                 <Link
                   href="/products"
                   className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
@@ -120,10 +93,10 @@ export default function HomePage() {
               </div>
 
               {/* Trust badges */}
-              <div className="flex flex-wrap gap-8 mt-14 pt-8 border-t border-border">
+              <div className="flex flex-wrap justify-center gap-8 mt-14 pt-8 border-t border-border">
                 {[
-                  { icon: Truck, text: t("home.freeDelivery"), sub: t("home.freeDeliverySub") },
-                  { icon: ShieldCheck, text: t("home.easyReturns"), sub: t("home.easyReturnsSub") },
+                  { icon: Truck, text: t("home.freeDelivery"), sub: t("home.freeDeliverySub", { price: String(freeDeliveryMinPrice) }) },
+                  { icon: ShieldCheck, text: t("home.easyReturns"), sub: t("home.easyReturnsSub", { days: String(returnDays) }) },
                   { icon: Headphones, text: t("home.support"), sub: t("home.supportSub") },
                 ].map(({ icon: Icon, text, sub }) => (
                   <div key={text} className="flex items-center gap-3">
@@ -138,50 +111,9 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-
-            {/* Right - Featured product showcase */}
-            <div className="relative hidden lg:flex items-center justify-center ">
-              {/* Large floating card */}
-              {heroLoading ? (
-                <div className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 -top-16 bg-surface animate-pulse" />
-              ) : (
-                <Link href={heroLink} className="relative w-[380px] h-[480px] rounded-3xl overflow-hidden border border-glass-border shadow-2xl shadow-primary/10 rotate-3 hover:rotate-0 transition-transform duration-700 -top-16 block">
-                  <Image
-                    src={heroImage}
-                    alt="Featured product"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <span className="inline-block rounded-full bg-primary/80 backdrop-blur-sm px-3 py-1 text-[10px] font-semibold text-white mb-3">
-                      {t("home.trendingNow")}
-                    </span>
-                    <h3 className="text-xl font-bold text-white mb-1">{t("home.bestSellers")}</h3>
-                    <p className="text-sm text-white/70">{t("home.shopTopRated")}</p>
-                  </div>
-                </Link>
-              )}
-
-              {/* Floating stats card */}
-              <div className="absolute -bottom-4 -left-8 glass-strong rounded-2xl p-4 shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/20 text-green-400">
-                    <Zap className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">{t("home.freeDeliveryCard")}</p>
-                    <p className="text-[11px] text-muted">{t("home.onFirstOrder")}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10">
           <div className="flex flex-col items-center gap-2 animate-bounce">
             <span className="text-[10px] uppercase tracking-widest text-muted">
               {t("home.scroll")}
@@ -251,7 +183,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              {t("home.whyChoose")} <span className="gradient-text">{t("home.whyChooseBrand")}</span>{t("home.whyChooseSuffix")}
+              {t("home.whyChoose")} <span className="gradient-text">{t("home.whyChooseBrand", { shopName: websiteName })}</span>{t("home.whyChooseSuffix")}
             </h2>
             <p className="text-muted max-w-2xl mx-auto text-sm leading-relaxed">
               {t("home.whyChooseDesc")}

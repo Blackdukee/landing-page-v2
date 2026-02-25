@@ -22,7 +22,7 @@ export default function CheckoutPage() {
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
   const { t, dir } = useTranslation();
-  const { whatsappNumber: settingsWhatsapp } = useSiteSettings();
+  const { whatsappNumber: settingsWhatsapp, websiteName } = useSiteSettings();
 
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [submitted, setSubmitted] = useState(false);
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
       )
       .join("\n");
 
-    const message = `${t("checkout.whatsappMessage")}
+    const message = `${t("checkout.whatsappMessage", { shopName: websiteName })}
 
 *Customer Info:*
 Name: ${form.name}

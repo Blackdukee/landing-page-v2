@@ -24,7 +24,10 @@ export interface SocialLinks {
 
 interface SiteSettings {
   websiteName: string;
+  favicon: string;
   whatsappNumber: string;
+  freeDeliveryMinPrice: number;
+  returnDays: number;
   priceRangeFilters: PriceRangeFilter[];
   heroProduct: string | null;
   socialLinks: SocialLinks;
@@ -39,7 +42,10 @@ const defaultSocialLinks: SocialLinks = { instagram: "", twitter: "", email: "" 
 
 const defaultSettings: SiteSettings = {
   websiteName: "QuesnaShop",
+  favicon: "",
   whatsappNumber: "+201025571092",
+  freeDeliveryMinPrice: 99,
+  returnDays: 30,
   priceRangeFilters: [],
   heroProduct: null,
   socialLinks: defaultSocialLinks,
@@ -62,7 +68,10 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
         if (data && data.websiteName) {
           setSettings({
             websiteName: data.websiteName,
+            favicon: data.favicon || "",
             whatsappNumber: data.whatsappNumber || defaultSettings.whatsappNumber,
+            freeDeliveryMinPrice: typeof data.freeDeliveryMinPrice === "number" ? data.freeDeliveryMinPrice : defaultSettings.freeDeliveryMinPrice,
+            returnDays: typeof data.returnDays === "number" ? data.returnDays : defaultSettings.returnDays,
             priceRangeFilters: Array.isArray(data.priceRangeFilters)
               ? data.priceRangeFilters
               : defaultSettings.priceRangeFilters,

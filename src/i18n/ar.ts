@@ -16,7 +16,7 @@ const ar: Record<string, string> = {
   "footer.aboutUs": "من نحن",
   "footer.shippingReturns": "الشحن والإرجاع",
   "footer.contact": "اتصل بنا",
-  "footer.copyright": "© {year} محمد عصام شوب. جميع الحقوق محفوظة.",
+  "footer.copyright": "© {year} {shopName}. جميع الحقوق محفوظة.",
   "footer.bottomText": "تسوق عصري · شحن عالمي",
 
   // ── الصفحة الرئيسية – البطل ──
@@ -32,9 +32,9 @@ const ar: Record<string, string> = {
 
   // ── الصفحة الرئيسية – شارات الثقة ──
   "home.freeDelivery": "توصيل مجاني",
-  "home.freeDeliverySub": "للطلبات فوق 99EGP",
+  "home.freeDeliverySub": "للطلبات فوق {price}EGP",
   "home.easyReturns": "إرجاع سهل",
-  "home.easyReturnsSub": "سياسة 30 يوم",
+  "home.easyReturnsSub": "سياسة {days} يوم",
   "home.support": "دعم 24/7",
   "home.supportSub": "دائمًا هنا",
 
@@ -54,7 +54,7 @@ const ar: Record<string, string> = {
 
   // ── الصفحة الرئيسية – قسم المزايا ──
   "home.whyChoose": "لماذا تختار",
-  "home.whyChooseBrand": "محمد عصام شوب",
+  "home.whyChooseBrand": "{shopName}",
   "home.whyChooseSuffix": "؟",
   "home.whyChooseDesc":
     "نحن ملتزمون بتقديم أفضل تجربة تسوق لك. إليك ما يميزنا.",
@@ -182,7 +182,7 @@ const ar: Record<string, string> = {
   "checkout.completeOrder": "إتمام الطلب عبر واتساب",
   "checkout.whatsappRedirect":
     "سيتم إعادة توجيهك إلى واتساب لتأكيد طلبك مع فريقنا.",
-  "checkout.whatsappMessage": "🛒 *طلب جديد من محمد عصام شوب*",
+  "checkout.whatsappMessage": "🛒 *طلب جديد من {shopName}*",
 
   // ── مفتاح اللغة ──
   "lang.en": "EN",
@@ -246,6 +246,18 @@ const ar: Record<string, string> = {
   "admin.dashboard.saveSiteSettings": "حفظ الإعدادات",
   "admin.dashboard.saving": "جاري الحفظ...",
   "admin.dashboard.settingsSaved": "تم حفظ الإعدادات بنجاح!",
+  "admin.dashboard.favicon": "أيقونة الموقع (Favicon)",
+  "admin.dashboard.faviconUploading": "جاري الرفع...",
+  "admin.dashboard.faviconChange": "تغيير الأيقونة",
+  "admin.dashboard.faviconUpload": "رفع أيقونة",
+  "admin.dashboard.faviconRemove": "إزالة",
+  "admin.dashboard.faviconHint": "يُفضل PNG أو SVG أو ICO. تظهر في تبويب المتصفح وشريط التنقل.",
+  "admin.dashboard.trustBadgeSettings": "إعدادات شارات الثقة",
+  "admin.dashboard.freeDeliveryMinPrice": "الحد الأدنى للتوصيل المجاني (ج.م)",
+  "admin.dashboard.freeDeliveryMinPriceHint": "الحد الأدنى لقيمة الطلب للتوصيل المجاني",
+  "admin.dashboard.returnDays": "أيام سياسة الإرجاع",
+  "admin.dashboard.returnDaysHint": "عدد أيام سياسة الإرجاع",
+  "admin.dashboard.socialLinks": "روابط التواصل الاجتماعي (اختياري)",
 
   // ── الإدارة – لوحة التحكم: المنتج المميز ──
   "admin.dashboard.heroProduct": "المنتج المميز",

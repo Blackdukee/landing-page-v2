@@ -98,6 +98,10 @@ export default function AdminDashboard() {
   // Site settings state
   const [siteName, setSiteName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [faviconUrl, setFaviconUrl] = useState("");
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [freeDeliveryMinPrice, setFreeDeliveryMinPrice] = useState(99);
+  const [returnDays, setReturnDays] = useState(30);
   const [socialInstagram, setSocialInstagram] = useState("");
   const [socialTwitter, setSocialTwitter] = useState("");
   const [socialEmail, setSocialEmail] = useState("");
@@ -131,6 +135,9 @@ export default function AdminDashboard() {
     if (!siteSettings.loading) {
       setSiteName(siteSettings.websiteName);
       setWhatsapp(siteSettings.whatsappNumber);
+      setFaviconUrl(siteSettings.favicon || "");
+      setFreeDeliveryMinPrice(siteSettings.freeDeliveryMinPrice ?? 99);
+      setReturnDays(siteSettings.returnDays ?? 30);
       setSocialInstagram(siteSettings.socialLinks?.instagram || "");
       setSocialTwitter(siteSettings.socialLinks?.twitter || "");
       setSocialEmail(siteSettings.socialLinks?.email || "");
@@ -140,7 +147,7 @@ export default function AdminDashboard() {
         setHeroInitialized(true);
       }
     }
-  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.whatsappNumber, siteSettings.priceRangeFilters, siteSettings.heroProduct, heroInitialized]);
+  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, heroInitialized]);
 
   useEffect(() => {
     Promise.all([
@@ -267,6 +274,9 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           websiteName: siteName,
           whatsappNumber: whatsapp,
+          favicon: faviconUrl,
+          freeDeliveryMinPrice,
+          returnDays,
           socialLinks: {
             instagram: socialInstagram,
             twitter: socialTwitter,
@@ -712,10 +722,102 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+          {/* Website Icon (Favicon) */}
+          <div className="pt-2">
+            <label className="text-xs font-medium text-muted mb-1.5 block">
+              {t("admin.dashboard.favicon" as TranslationKey)}
+            </label>
+            <div className="flex items-center gap-4">
+              {faviconUrl && (
+                <div className="shrink-0 h-10 w-10 rounded-lg border border-border bg-surface flex items-center justify-center overflow-hidden">
+                  <Image src={faviconUrl} alt="Favicon" width={32} height={32} className="object-contain" />
+                </div>
+              )}
+              <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-dashed border-border hover:border-primary/40 bg-surface px-4 py-2.5 text-sm text-muted hover:text-foreground transition-all">
+                {uploadingFavicon ? (
+                  <span className="animate-pulse">{t("admin.dashboard.faviconUploading" as TranslationKey)}</span>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    {faviconUrl ? t("admin.dashboard.faviconChange" as TranslationKey) : t("admin.dashboard.faviconUpload" as TranslationKey)}
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/png,image/svg+xml,image/x-icon,image/jpeg,image/webp"
+                  className="hidden"
+                  disabled={uploadingFavicon}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingFavicon(true);
+                    try {
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      const res = await fetch("/api/upload", { method: "POST", body: formData });
+                      const data = await res.json();
+                      if (data.url) setFaviconUrl(data.url);
+                    } catch (err) {
+                      console.error("Favicon upload failed", err);
+                    } finally {
+                      setUploadingFavicon(false);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </label>
+              {faviconUrl && (
+                <button
+                  type="button"
+                  onClick={() => setFaviconUrl("")}
+                  className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                >
+                  {t("admin.dashboard.faviconRemove" as TranslationKey)}
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-muted/60 mt-1.5">{t("admin.dashboard.faviconHint" as TranslationKey)}</p>
+          </div>
+          {/* Trust Badge Settings */}
+          <div className="pt-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
+              {t("admin.dashboard.trustBadgeSettings" as TranslationKey)}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  {t("admin.dashboard.freeDeliveryMinPrice" as TranslationKey)}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={freeDeliveryMinPrice}
+                  onChange={(e) => setFreeDeliveryMinPrice(Number(e.target.value))}
+                  className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                  placeholder="99"
+                />
+                <p className="text-xs text-muted/60 mt-1">{t("admin.dashboard.freeDeliveryMinPriceHint" as TranslationKey)}</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  {t("admin.dashboard.returnDays" as TranslationKey)}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={returnDays}
+                  onChange={(e) => setReturnDays(Number(e.target.value))}
+                  className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                  placeholder="30"
+                />
+                <p className="text-xs text-muted/60 mt-1">{t("admin.dashboard.returnDaysHint" as TranslationKey)}</p>
+              </div>
+            </div>
+          </div>
           {/* Social Contact Links */}
           <div className="pt-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
-              {t("admin.dashboard.socialLinks" as TranslationKey) || "Social Links (optional)"}
+              {t("admin.dashboard.socialLinks" as TranslationKey)}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>

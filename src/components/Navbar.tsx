@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect, useSyncExternalStore } from "react";
 import { ShoppingBag, Menu, X, Sparkles, Globe } from "lucide-react";
 import { useCartStore } from "@/store/cart";
@@ -13,7 +14,7 @@ export default function Navbar() {
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const itemCount = useCartStore((s) => s.totalItems());
   const { locale, setLocale, t } = useTranslation();
-  const { websiteName } = useSiteSettings();
+  const { websiteName, favicon } = useSiteSettings();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -35,8 +36,12 @@ export default function Navbar() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-400 text-white transition-all group-hover:shadow-lg group-hover:shadow-primary/30 group-hover:scale-105">
-            <Sparkles className="h-4.5 w-4.5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-400 text-white transition-all group-hover:shadow-lg group-hover:shadow-primary/30 group-hover:scale-105 overflow-hidden">
+            {favicon ? (
+              <Image src={favicon} alt={websiteName} width={36} height={36} className="h-full w-full object-cover" />
+            ) : (
+              <Sparkles className="h-4.5 w-4.5" />
+            )}
           </div>
           <span className="text-lg font-bold tracking-tight text-foreground">
             {websiteName}

@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
       if (Array.isArray(existing) && existing.length > 0) {
         const found = existing[0] as ImageKitFile;
-        const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-maintain_ratio,fo-auto,f-auto,q-auto${found.filePath}`;
+        const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-at_max,fo-top,f-auto,q-auto${found.filePath}`;
         return NextResponse.json({
           url: optimizedUrl,
           fileId: found.fileId,
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     });
 
     // Build optimized delivery URL (auto format + auto quality + 600x600)
-    const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-maintain_ratio,fo-auto,f-auto,q-auto${result.filePath}`;
+    const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-at_max,fo-top,f-auto,q-auto${result.filePath}`;
 
     return NextResponse.json({
       url: optimizedUrl,

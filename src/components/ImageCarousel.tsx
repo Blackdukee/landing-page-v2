@@ -160,7 +160,7 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
           src={images[current]}
           alt={`${alt} — ${current + 1}`}
           fill
-          className="object-cover transition-opacity duration-300"
+          className="object-cover object-top transition-opacity duration-300"
           sizes="(max-width: 1024px) 100vw, 50vw"
           priority={current === 0}
         />
@@ -222,7 +222,7 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
                 src={img}
                 alt={`${alt} thumbnail ${idx + 1}`}
                 fill
-                className="object-cover"
+                className="object-cover object-top"
                 sizes="64px"
               />
             </button>

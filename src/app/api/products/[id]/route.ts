@@ -38,7 +38,7 @@ export async function PUT(
       body.images = [body.image];
     }
 
-    const product = await Product.findByIdAndUpdate(id, body, { new: true });
+    const product = await Product.findByIdAndUpdate(id, body, { returnDocument: 'after' });
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }

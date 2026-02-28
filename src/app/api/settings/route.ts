@@ -65,6 +65,10 @@ export async function PUT(req: NextRequest) {
       update.freeDeliveryMinPrice = body.freeDeliveryMinPrice;
     }
 
+    if (typeof body.shippingCost === "number" && body.shippingCost >= 0) {
+      update.shippingCost = body.shippingCost;
+    }
+
     if (typeof body.returnDays === "number" && body.returnDays >= 0) {
       update.returnDays = Math.round(body.returnDays);
     }
@@ -105,7 +109,7 @@ export async function PUT(req: NextRequest) {
       const doc = await SiteSettings.create(update);
       settings = doc.toObject();
     } else {
-      settings = await SiteSettings.findOneAndUpdate({}, { $set: update }, { new: true }).lean();
+      settings = await SiteSettings.findOneAndUpdate({}, { $set: update }, { returnDocument: 'after' }).lean();
     }
 
     return NextResponse.json(settings);

@@ -157,6 +157,7 @@ const en = {
   "cart.total": "Total",
   "cart.proceedToCheckout": "Proceed to Checkout",
   "cart.insufficientStock": "Not enough stock available",
+  "cart.removeFromCart": "Remove from Cart",
 
   // ── Checkout Page ──
   "checkout.emptyTitle": "Nothing to checkout",

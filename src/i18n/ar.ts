@@ -157,6 +157,7 @@ const ar: Record<string, string> = {
   "cart.total": "الإجمالي",
   "cart.proceedToCheckout": "المتابعة للدفع",
   "cart.insufficientStock": "المخزون غير كافٍ",
+  "cart.removeFromCart": "احذف من السلة",
 
   // ── صفحة الدفع ──
   "checkout.emptyTitle": "لا يوجد شيء للدفع",

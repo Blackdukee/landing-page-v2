@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
           await Product.findByIdAndUpdate(
             item.productId,
             { $inc: { stock: -item.quantity } },
-            { new: true }
+            { returnDocument: 'after' }
           );
         }
       }

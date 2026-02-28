@@ -12,6 +12,8 @@ import {
   Truck,
   Shield,
   Star,
+  AlertCircle,
+  Trash2,
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -36,9 +38,12 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [stockError, setStockError] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const items = useCartStore((s) => s.items);
   const { t, dir } = useTranslation();
   const { freeDeliveryMinPrice, returnDays } = useSiteSettings();
 
@@ -56,6 +61,18 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
+    
+    // Check if trying to add more than available stock
+    const cartItem = items.find((i) => i.productId === product._id);
+    const quantityInCart = cartItem?.quantity || 0;
+    const availableStock = product.stock - quantityInCart;
+    
+    if (quantity > availableStock) {
+      setStockError(t("cart.insufficientStock"));
+      setTimeout(() => setStockError(""), 3000);
+      return;
+    }
+    
     let failed = false;
     for (let i = 0; i < quantity; i++) {
       const success = addItem({
@@ -70,12 +87,18 @@ export default function ProductDetailPage() {
       }
     }
     if (failed) {
-      setError(t("cart.insufficientStock"));
-      setTimeout(() => setError(""), 3000);
+      setStockError(t("cart.insufficientStock"));
+      setTimeout(() => setStockError(""), 3000);
     } else {
+      setStockError("");
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
     }
+  };
+
+  const handleRemoveFromCart = () => {
+    if (!product) return;
+    removeItem(product._id);
   };
 
   if (loading) {
@@ -205,42 +228,101 @@ export default function ProductDetailPage() {
             {/* Quantity & Add to Cart */}
             {product.stock > 0 && (
               <div className="space-y-4 mb-8">
+                {/* Stock error notification */}
+                {stockError && (
+                  <div className="flex items-center gap-3 rounded-lg border border-red-400/30 bg-red-500/10 p-3">
+                    <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />
+                    <p className="text-sm text-red-300">{stockError}</p>
+                  </div>
+                )}
+
                 {/* Quantity selector */}
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
                     {t("detail.quantity")}
                   </h3>
-                  <div className="inline-flex items-center gap-0 rounded-xl border border-border bg-surface overflow-hidden">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="flex h-10 w-10 items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <span className="flex h-10 w-12 items-center justify-center text-sm font-medium text-foreground border-x border-border">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                      className="flex h-10 w-10 items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {(() => {
+                    const cartItem = items.find((i) => i.productId === product._id);
+                    const quantityInCart = cartItem?.quantity || 0;
+                    const availableStock = product.stock - quantityInCart;
+                    const canIncrement = quantity < availableStock;
+                    
+                    return (
+                      <div className="inline-flex items-center gap-0 rounded-xl border border-border bg-surface overflow-hidden">
+                        <button
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="flex h-10 w-10 items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="flex h-10 w-12 items-center justify-center text-sm font-medium text-foreground border-x border-border">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
+                          disabled={!canIncrement}
+                          className="flex h-10 w-10 items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
 
-                {/* Add to Cart button */}
-                <button
-                  onClick={handleAddToCart}
-                  className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl px-8 py-3.5 text-sm font-semibold transition-all duration-300 shadow-lg ${
-                    added
-                      ? "bg-green-500 text-white shadow-green-500/20"
-                      : "bg-gradient-to-r from-primary to-purple-500 text-white shadow-primary/20 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30"
-                  }`}
-                >
-                  <ShoppingBag className="h-4.5 w-4.5" />
-                  {added ? t("detail.addedToCart") : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
-                </button>
+                {/* Add/Remove to Cart button */}
+                {(() => {
+                  const cartItem = items.find((i) => i.productId === product._id);
+                  const quantityInCart = cartItem?.quantity || 0;
+                  const isInCart = quantityInCart > 0;
+                  const availableStock = product.stock - quantityInCart;
+                  const isDisabled = quantity > availableStock;
+                  
+                  if (isInCart) {
+                    return (
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handleAddToCart}
+                          disabled={isDisabled}
+                          className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2.5 rounded-xl px-8 py-3.5 text-sm font-semibold transition-all duration-300 shadow-lg ${
+                            added
+                              ? "bg-green-500 text-white shadow-green-500/20"
+                              : isDisabled
+                              ? "bg-gray-400 text-white shadow-gray-400/20 cursor-not-allowed opacity-60"
+                              : "bg-gradient-to-r from-primary to-purple-500 text-white shadow-primary/20 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30"
+                          }`}
+                        >
+                          <ShoppingBag className="h-4.5 w-4.5" />
+                          {added ? t("detail.addedToCart") : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
+                        </button>
+                        <button
+                          onClick={handleRemoveFromCart}
+                          className="inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-semibold transition-all duration-300 shadow-lg bg-danger/90 text-white shadow-danger/20 hover:bg-danger hover:shadow-xl hover:shadow-danger/30"
+                        >
+                          <Trash2 className="h-4.5 w-4.5" />
+                          {t("cart.removeFromCart")}
+                        </button>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={isDisabled}
+                      className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl px-8 py-3.5 text-sm font-semibold transition-all duration-300 shadow-lg ${
+                        added
+                          ? "bg-green-500 text-white shadow-green-500/20"
+                          : isDisabled
+                          ? "bg-gray-400 text-white shadow-gray-400/20 cursor-not-allowed opacity-60"
+                          : "bg-gradient-to-r from-primary to-purple-500 text-white shadow-primary/20 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30"
+                      }`}
+                    >
+                      <ShoppingBag className="h-4.5 w-4.5" />
+                      {added ? t("detail.addedToCart") : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
+                    </button>
+                  );
+                })()}
               </div>
             )}
 

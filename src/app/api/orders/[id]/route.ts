@@ -29,7 +29,7 @@ export async function PUT(
     await dbConnect();
     const { id } = await params;
     const body = await req.json();
-    const order = await Order.findByIdAndUpdate(id, body, { new: true });
+    const order = await Order.findByIdAndUpdate(id, body, { returnDocument: 'after' });
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }

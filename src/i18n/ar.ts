@@ -209,7 +209,7 @@ const ar: Record<string, string> = {
   "admin.login.passwordPlaceholder": "كلمة المرور",
   "admin.login.signingIn": "جاري تسجيل الدخول...",
   "admin.login.signIn": "تسجيل الدخول",
-  "admin.login.defaultHint": "الافتراضي: admin@store.com / admin123",
+  "admin.login.defaultHint": "الافتراضي: ",
 
   // ── الإدارة – لوحة التحكم ──
   "admin.dashboard.title": "لوحة التحكم",

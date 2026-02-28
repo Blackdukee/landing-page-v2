@@ -209,7 +209,7 @@ const en = {
   "admin.login.passwordPlaceholder": "Password",
   "admin.login.signingIn": "Signing in...",
   "admin.login.signIn": "Sign In",
-  "admin.login.defaultHint": "Default: admin@store.com / admin123",
+  "admin.login.defaultHint": "Default: ",
 
   // ── Admin – Dashboard ──
   "admin.dashboard.title": "Dashboard",

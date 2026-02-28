@@ -147,7 +147,7 @@ export default function CartPage() {
                         onClick={() => {
                           const stock = productStock[item.productId] || item.stock || Infinity;
                           if (item.quantity + 1 > stock) {
-                            setStockError(`${item.name}: ${t("detail.stockLimitError") || "Not enough stock available"}`);
+                            setStockError(`${item.name}: ${t("cart.insufficientStock")}`);
                             setTimeout(() => setStockError(""), 3000);
                           } else {
                             setStockError("");

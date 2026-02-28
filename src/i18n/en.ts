@@ -156,6 +156,7 @@ const en = {
   "cart.freeShippingHint": "Add EGP {amount} more for free shipping",
   "cart.total": "Total",
   "cart.proceedToCheckout": "Proceed to Checkout",
+  "cart.insufficientStock": "Not enough stock available",
 
   // ── Checkout Page ──
   "checkout.emptyTitle": "Nothing to checkout",

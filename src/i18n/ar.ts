@@ -156,6 +156,7 @@ const ar: Record<string, string> = {
   "cart.freeShippingHint": "أضف EGP {amount} للحصول على شحن مجاني",
   "cart.total": "الإجمالي",
   "cart.proceedToCheckout": "المتابعة للدفع",
+  "cart.insufficientStock": "المخزون غير كافٍ",
 
   // ── صفحة الدفع ──
   "checkout.emptyTitle": "لا يوجد شيء للدفع",

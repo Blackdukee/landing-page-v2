@@ -70,7 +70,7 @@ export default function ProductDetailPage() {
       }
     }
     if (failed) {
-      setError(t("detail.stockLimitError") || "Not enough stock available");
+      setError(t("cart.insufficientStock"));
       setTimeout(() => setError(""), 3000);
     } else {
       setAdded(true);

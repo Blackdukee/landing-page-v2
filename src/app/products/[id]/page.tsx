@@ -56,16 +56,26 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
+    let failed = false;
     for (let i = 0; i < quantity; i++) {
-      addItem({
+      const success = addItem({
         productId: product._id,
         name: product.name,
         price: product.price,
         image: product.images?.[0] || product.image,
-      });
+      }, product.stock);
+      if (!success) {
+        failed = true;
+        break;
+      }
     }
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    if (failed) {
+      setError(t("detail.stockLimitError") || "Not enough stock available");
+      setTimeout(() => setError(""), 3000);
+    } else {
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    }
   };
 
   if (loading) {

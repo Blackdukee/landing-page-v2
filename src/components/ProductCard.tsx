@@ -93,7 +93,7 @@ export default function ProductCard({
             EGP {price.toFixed(2)}
           </span>
           {stock > 0 && stock <= 5 && (
-            <span className="text-[10px] font-medium text-primary-light">
+            <span className="text-[10px] font-medium text-primary-600">
               {t("card.onlyLeft", { count: stock })}
             </span>
           )}

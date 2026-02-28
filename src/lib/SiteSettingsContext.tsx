@@ -27,6 +27,7 @@ interface SiteSettings {
   favicon: string;
   whatsappNumber: string;
   freeDeliveryMinPrice: number;
+  shippingCost: number;
   returnDays: number;
   priceRangeFilters: PriceRangeFilter[];
   heroProduct: string | null;
@@ -45,6 +46,7 @@ const defaultSettings: SiteSettings = {
   favicon: "",
   whatsappNumber: "+201025571092",
   freeDeliveryMinPrice: 99,
+  shippingCost: 9.99,
   returnDays: 30,
   priceRangeFilters: [],
   heroProduct: null,
@@ -71,6 +73,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
             favicon: data.favicon || "",
             whatsappNumber: data.whatsappNumber || defaultSettings.whatsappNumber,
             freeDeliveryMinPrice: typeof data.freeDeliveryMinPrice === "number" ? data.freeDeliveryMinPrice : defaultSettings.freeDeliveryMinPrice,
+            shippingCost: typeof data.shippingCost === "number" ? data.shippingCost : defaultSettings.shippingCost,
             returnDays: typeof data.returnDays === "number" ? data.returnDays : defaultSettings.returnDays,
             priceRangeFilters: Array.isArray(data.priceRangeFilters)
               ? data.priceRangeFilters

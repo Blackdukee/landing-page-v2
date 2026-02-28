@@ -2,11 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, AlertCircle } from "lucide-react";
 import { useCartStore } from "@/store/cart";
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useState, useEffect } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
+
+interface ProductStock {
+  [productId: string]: number;
+}
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
@@ -16,9 +20,26 @@ export default function CartPage() {
   const totalPrice = useCartStore((s) => s.totalPrice);
   const totalItems = useCartStore((s) => s.totalItems);
   const { t, dir } = useTranslation();
-  const { freeDeliveryMinPrice } = useSiteSettings();
+  const { freeDeliveryMinPrice, shippingCost } = useSiteSettings();
+  const [productStock, setProductStock] = useState<ProductStock>({});
+  const [stockError, setStockError] = useState("");
 
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
+
+  // Fetch stock information for cart items
+  useEffect(() => {
+    if (items.length === 0) return;
+    const productIds = items.map((item) => item.productId);
+    Promise.all(productIds.map((id) => fetch(`/api/products/${id}`).then((r) => r.json())))
+      .then((products) => {
+        const stock: ProductStock = {};
+        products.forEach((product) => {
+          stock[product._id] = product.stock;
+        });
+        setProductStock(stock);
+      })
+      .catch(console.error);
+  }, [items]);
 
   if (!mounted) {
     return (
@@ -55,12 +76,20 @@ export default function CartPage() {
     );
   }
 
-  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : 9.99;
+  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : shippingCost;
   const total = totalPrice() + shipping;
 
   return (
     <div className="pt-28 pb-20">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        {/* Stock error notification */}
+        {stockError && (
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-400/30 bg-red-500/10 p-4">
+            <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />
+            <p className="text-sm text-red-300">{stockError}</p>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between mb-10">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{t("cart.title")}</h1>
@@ -103,9 +132,10 @@ export default function CartPage() {
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-1 rounded-lg border border-border bg-surface">
                       <button
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity - 1)
-                        }
+                        onClick={() => {
+                          setStockError("");
+                          updateQuantity(item.productId, item.quantity - 1, productStock[item.productId]);
+                        }}
                         className="flex h-8 w-8 items-center justify-center text-muted hover:text-foreground transition-colors"
                       >
                         <Minus className="h-3.5 w-3.5" />
@@ -114,9 +144,16 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity + 1)
-                        }
+                        onClick={() => {
+                          const stock = productStock[item.productId] || item.stock || Infinity;
+                          if (item.quantity + 1 > stock) {
+                            setStockError(`${item.name}: ${t("detail.stockLimitError") || "Not enough stock available"}`);
+                            setTimeout(() => setStockError(""), 3000);
+                          } else {
+                            setStockError("");
+                            updateQuantity(item.productId, item.quantity + 1, stock);
+                          }
+                        }}
                         className="flex h-8 w-8 items-center justify-center text-muted hover:text-foreground transition-colors"
                       >
                         <Plus className="h-3.5 w-3.5" />

@@ -255,6 +255,8 @@ const ar: Record<string, string> = {
   "admin.dashboard.trustBadgeSettings": "إعدادات شارات الثقة",
   "admin.dashboard.freeDeliveryMinPrice": "الحد الأدنى للتوصيل المجاني (ج.م)",
   "admin.dashboard.freeDeliveryMinPriceHint": "الحد الأدنى لقيمة الطلب للتوصيل المجاني",
+  "admin.dashboard.shippingCost": "تكلفة الشحن (ج.م)",
+  "admin.dashboard.shippingCostHint": "تكلفة الشحن المفروضة عندما يكون الطلب أقل من الحد الأدنى للتوصيل المجاني",
   "admin.dashboard.returnDays": "أيام سياسة الإرجاع",
   "admin.dashboard.returnDaysHint": "عدد أيام سياسة الإرجاع",
   "admin.dashboard.socialLinks": "روابط التواصل الاجتماعي (اختياري)",

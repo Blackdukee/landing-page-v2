@@ -18,6 +18,7 @@ export interface ISiteSettings extends Document {
   favicon: string;
   whatsappNumber: string;
   freeDeliveryMinPrice: number;
+  shippingCost: number;
   returnDays: number;
   priceRangeFilters: IPriceRange[];
   heroProduct: string | null; // Product _id to feature in hero section
@@ -51,6 +52,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     favicon: { type: String, default: "" },
     whatsappNumber: { type: String, default: "+201025571092" },
     freeDeliveryMinPrice: { type: Number, default: 99 },
+    shippingCost: { type: Number, default: 9.99 },
     returnDays: { type: Number, default: 30 },
     heroProduct: { type: String, default: null },
     socialLinks: { type: SocialLinksSchema, default: () => ({}) },

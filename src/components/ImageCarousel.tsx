@@ -19,6 +19,7 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const panStart = useRef({ x: 0, y: 0 });
 
@@ -31,11 +32,31 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
     [images.length]
   );
 
+  // Detect mobile view on mount
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
     setZoom(1);
     setPan({ x: 0, y: 0 });
     setLightboxOpen(true);
+  };
+
+  const handleImageClick = (index: number) => {
+    if (isMobile) {
+      // Open image in new tab on mobile
+      window.open(images[index], "_blank");
+    } else {
+      // Open lightbox on desktop
+      openLightbox(index);
+    }
   };
 
   const closeLightbox = () => {
@@ -154,7 +175,7 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
       {/* Main image */}
       <div
         className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-border group cursor-zoom-in"
-        onClick={() => openLightbox(current)}
+        onClick={() => handleImageClick(current)}
       >
         <Image
           src={images[current]}

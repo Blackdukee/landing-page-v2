@@ -255,6 +255,8 @@ const en = {
   "admin.dashboard.trustBadgeSettings": "Trust Badge Settings",
   "admin.dashboard.freeDeliveryMinPrice": "Free Delivery Min Price (EGP)",
   "admin.dashboard.freeDeliveryMinPriceHint": "Minimum order amount for free delivery",
+  "admin.dashboard.shippingCost": "Shipping Cost (EGP)",
+  "admin.dashboard.shippingCostHint": "Shipping cost charged when order is below free delivery minimum",
   "admin.dashboard.returnDays": "Return Policy Days",
   "admin.dashboard.returnDaysHint": "Number of days for return policy",
   "admin.dashboard.socialLinks": "Social Links (optional)",

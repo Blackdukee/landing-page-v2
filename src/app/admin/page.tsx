@@ -101,6 +101,7 @@ export default function AdminDashboard() {
   const [faviconUrl, setFaviconUrl] = useState("");
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [freeDeliveryMinPrice, setFreeDeliveryMinPrice] = useState(99);
+  const [shippingCost, setShippingCost] = useState(9.99);
   const [returnDays, setReturnDays] = useState(30);
   const [socialInstagram, setSocialInstagram] = useState("");
   const [socialTwitter, setSocialTwitter] = useState("");
@@ -137,6 +138,7 @@ export default function AdminDashboard() {
       setWhatsapp(siteSettings.whatsappNumber);
       setFaviconUrl(siteSettings.favicon || "");
       setFreeDeliveryMinPrice(siteSettings.freeDeliveryMinPrice ?? 99);
+      setShippingCost(siteSettings.shippingCost ?? 9.99);
       setReturnDays(siteSettings.returnDays ?? 30);
       setSocialInstagram(siteSettings.socialLinks?.instagram || "");
       setSocialTwitter(siteSettings.socialLinks?.twitter || "");
@@ -147,7 +149,7 @@ export default function AdminDashboard() {
         setHeroInitialized(true);
       }
     }
-  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, heroInitialized]);
+  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.shippingCost, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, heroInitialized]);
 
   useEffect(() => {
     Promise.all([
@@ -276,6 +278,7 @@ export default function AdminDashboard() {
           whatsappNumber: whatsapp,
           favicon: faviconUrl,
           freeDeliveryMinPrice,
+          shippingCost,
           returnDays,
           socialLinks: {
             instagram: socialInstagram,
@@ -797,6 +800,21 @@ export default function AdminDashboard() {
                   placeholder="99"
                 />
                 <p className="text-xs text-muted/60 mt-1">{t("admin.dashboard.freeDeliveryMinPriceHint" as TranslationKey)}</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  {t("admin.dashboard.shippingCost" as TranslationKey)}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={shippingCost}
+                  onChange={(e) => setShippingCost(Number(e.target.value))}
+                  className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                  placeholder="9.99"
+                />
+                <p className="text-xs text-muted/60 mt-1">{t("admin.dashboard.shippingCostHint" as TranslationKey)}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted mb-1.5 block">

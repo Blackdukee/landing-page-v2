@@ -22,7 +22,7 @@ export default function CheckoutPage() {
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
   const { t, dir } = useTranslation();
-  const { whatsappNumber: settingsWhatsapp, websiteName, freeDeliveryMinPrice } = useSiteSettings();
+  const { whatsappNumber: settingsWhatsapp, websiteName, freeDeliveryMinPrice, shippingCost } = useSiteSettings();
 
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [submitted, setSubmitted] = useState(false);
@@ -86,7 +86,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : 9.99;
+  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : shippingCost;
   const total = totalPrice() + shipping;
 
   const handleSubmit = (e: React.FormEvent) => {

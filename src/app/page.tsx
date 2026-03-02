@@ -60,7 +60,7 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-32 pb-20">
           <div className="flex items-center justify-center">
             <div className="max-w-2xl text-center">
-              <span className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-xs font-medium text-primary-light mb-8">
+              <span className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-xs font-medium text-shadow-primary mb-8">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("home.badge")}
               </span>
@@ -73,25 +73,25 @@ export default function HomePage() {
                 {t("home.heroLine4")}
               </h1>
 
-              <p className="text-lg text-muted max-w-lg leading-relaxed mb-10 mx-auto">
-                {t("home.heroDesc")}
-              </p>
+                {/* <p className="text-lg text-muted max-w-lg leading-relaxed mb-10 mx-auto">
+                  {t("home.heroDesc")}
+                </p>
 
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link
-                  href="/products"
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  {t("home.explore")}
-                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
-                </Link>
-                <a
-                  href="#featured"
-                  className="inline-flex items-center gap-2 rounded-full glass px-8 py-4 text-sm font-medium text-foreground transition-all hover:bg-glass-border"
-                >
-                  {t("home.seeFeatured")}
-                </a>
-              </div>
+                <div className="flex flex-wrap justify-center gap-4">
+                  <Link
+                    href="/products"
+                    className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {t("home.explore")}
+                    <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
+                  </Link>
+                  <a
+                    href="#featured"
+                    className="inline-flex items-center gap-2 rounded-full glass px-8 py-4 text-sm font-medium text-foreground transition-all hover:bg-glass-border"
+                  >
+                    {t("home.seeFeatured")}
+                  </a>
+                </div> */}
 
               {/* Trust badges */}
               <div className="flex flex-wrap justify-center gap-8 mt-14 pt-8 border-t border-border">

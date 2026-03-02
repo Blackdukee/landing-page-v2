@@ -66,6 +66,44 @@ interface ProductOption {
   category: string;
 }
 
+// Helper function to normalize WhatsApp number to +201234567890 format
+const normalizeWhatsAppNumber = (input: string): string => {
+  let number = input.trim().replace(/\s/g, "");
+  
+  // Remove + if present
+  if (number.startsWith("+")) {
+    number = number.substring(1);
+  }
+  
+  // Convert 01234567890 to 201234567890
+  if (number.startsWith("0")) {
+    number = "2" + number.substring(1);
+  }
+  
+  // Ensure it starts with 20 (Egypt country code)
+  if (!number.startsWith("20")) {
+    // If it starts with digits but not 20, assume it's from 01X format
+    if (number.startsWith("1")) {
+      number = "2" + number;
+    }
+  }
+  
+  // Add + prefix
+  return "+" + number;
+};
+
+// Helper function to display WhatsApp number in local format (01234567890)
+const displayWhatsAppNumber = (input: string): string => {
+  let number = input.trim().replace(/\s/g, "").replace(/\+/g, "");
+  
+  // Convert 201234567890 to 01234567890
+  if (number.startsWith("20")) {
+    number = "0" + number.substring(2);
+  }
+  
+  return number;
+};
+
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const siteSettings = useSiteSettings();
@@ -135,7 +173,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!siteSettings.loading) {
       setSiteName(siteSettings.websiteName);
-      setWhatsapp(siteSettings.whatsappNumber);
+      setWhatsapp(displayWhatsAppNumber(siteSettings.whatsappNumber));
       setFaviconUrl(siteSettings.favicon || "");
       setFreeDeliveryMinPrice(siteSettings.freeDeliveryMinPrice ?? 99);
       setShippingCost(siteSettings.shippingCost ?? 9.99);
@@ -275,7 +313,7 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           websiteName: siteName,
-          whatsappNumber: whatsapp,
+          whatsappNumber: normalizeWhatsAppNumber(whatsapp),
           favicon: faviconUrl,
           freeDeliveryMinPrice,
           shippingCost,
@@ -720,7 +758,7 @@ export default function AdminDashboard() {
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-                  placeholder="+201025571092"
+                  placeholder="01203441866"
                 />
               </div>
             </div>
@@ -1227,7 +1265,7 @@ export default function AdminDashboard() {
                           statusColor[order.status] || "bg-gray-500/10 text-gray-400"
                         }`}
                       >
-                        {order.status}
+                        {t(`admin.status.${order.status}` as TranslationKey)}
                       </span>
                     </td>
                     <td className="px-6 py-3.5 text-muted">

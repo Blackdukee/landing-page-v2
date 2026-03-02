@@ -56,7 +56,7 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-light mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-dark mb-4">
               {t("footer.shop")}
             </h3>
             <ul className="space-y-3">
@@ -65,26 +65,12 @@ export default function Footer() {
                   {t("footer.allProducts")}
                 </Link>
               </li>
-              <li>
-                <Link href="/products?category=Electronics" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  {t("footer.electronics")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/products?category=Fashion" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  {t("footer.fashion")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/products?category=Home" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
-                  {t("footer.homeLiving")}
-                </Link>
-              </li>
+    
             </ul>
           </div>
 
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-light mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-dark mb-4">
               {t("footer.company")}
             </h3>
             <ul className="space-y-3">
@@ -99,7 +85,8 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
+                {/* take the client to whatsapp chat with the store's number get the phone number from .env */}
+                  <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
                   {t("footer.contact")}
                 </a>
               </li>

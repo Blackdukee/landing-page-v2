@@ -35,10 +35,11 @@ export default function HomePage() {
   const { websiteName, freeDeliveryMinPrice, returnDays } = useSiteSettings();
 
   useEffect(() => {
-    fetch("/api/products?featured=true")
+    fetch("/api/products?featured=true&limit=8")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setFeatured(data.slice(0, 4));
+        if (Array.isArray(data)) setFeatured(data);
+        else if (Array.isArray(data.products)) setFeatured(data.products);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -145,8 +146,8 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {[...Array(4)].map((_, i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+              {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
                   className="rounded-2xl bg-surface animate-pulse aspect-[3/4]"
@@ -154,20 +155,31 @@ export default function HomePage() {
               ))}
             </div>
           ) : featured.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {featured.map((p) => (
-                <ProductCard
-                  key={p._id}
-                  id={p._id}
-                  name={p.name}
-                  description={p.description}
-                  price={p.price}
-                  image={p.image}
-                  category={p.category}
-                  stock={p.stock}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+                {featured.map((p) => (
+                  <ProductCard
+                    key={p._id}
+                    id={p._id}
+                    name={p.name}
+                    description={p.description}
+                    price={p.price}
+                    image={p.image}
+                    category={p.category}
+                    stock={p.stock}
+                  />
+                ))}
+              </div>
+              <div className="flex justify-center mt-12">
+                <Link
+                  href="/products"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {t("home.viewAll")}
+                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
+                </Link>
+              </div>
+            </>
           ) : (
             <div className="text-center py-20">
               <p className="text-muted">

@@ -305,6 +305,8 @@ const ar: Record<string, string> = {
   "admin.products.sortNameZA": "الاسم ي → أ",
   "admin.products.sortPriceLow": "السعر: الأقل → الأعلى",
   "admin.products.sortPriceHigh": "السعر: الأعلى → الأقل",
+  "admin.products.sortStockLow": "المخزون: الأقل → الأعلى",
+  "admin.products.sortStockHigh": "المخزون: الأعلى → الأقل",
   "admin.products.noMatch": "لا توجد منتجات مطابقة لبحثك",
   "admin.products.noProducts": "لا توجد منتجات بعد",
   "admin.products.product": "المنتج",

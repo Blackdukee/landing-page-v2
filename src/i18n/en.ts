@@ -305,6 +305,8 @@ const en = {
   "admin.products.sortNameZA": "Name Z → A",
   "admin.products.sortPriceLow": "Price Low → High",
   "admin.products.sortPriceHigh": "Price High → Low",
+  "admin.products.sortStockLow": "Stock Low → High",
+  "admin.products.sortStockHigh": "Stock High → Low",
   "admin.products.noMatch": "No products match your search",
   "admin.products.noProducts": "No products yet",
   "admin.products.product": "Product",

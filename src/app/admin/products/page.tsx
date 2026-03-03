@@ -117,6 +117,10 @@ export default function AdminProductsPage() {
       result = [...result].sort((a, b) => a.price - b.price);
     } else if (sortBy === "price-desc") {
       result = [...result].sort((a, b) => b.price - a.price);
+    } else if (sortBy === "stock-asc") {
+      result = [...result].sort((a, b) => a.stock - b.stock);
+    } else if (sortBy === "stock-desc") {
+      result = [...result].sort((a, b) => b.stock - a.stock);
     }
 
     return result;
@@ -356,6 +360,8 @@ export default function AdminProductsPage() {
             <option value="name-desc">{t("admin.products.sortNameZA" as TranslationKey)}</option>
             <option value="price-asc">{t("admin.products.sortPriceLow" as TranslationKey)}</option>
             <option value="price-desc">{t("admin.products.sortPriceHigh" as TranslationKey)}</option>
+            <option value="stock-asc">{t("admin.products.sortStockLow" as TranslationKey)}</option>
+            <option value="stock-desc">{t("admin.products.sortStockHigh" as TranslationKey)}</option>
           </select>
           <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
         </div>

@@ -27,6 +27,11 @@ const ProductSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
+// Indexes for common query patterns
+ProductSchema.index({ featured: 1, createdAt: -1 });
+ProductSchema.index({ category: 1 });
+ProductSchema.index({ name: "text" });
+
 // Keep `image` in sync: when saving, if images array has entries but image is
 // empty, populate image from the first element; conversely if image is set but
 // images is empty, seed images from image.

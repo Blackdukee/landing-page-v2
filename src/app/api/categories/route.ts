@@ -7,7 +7,7 @@ import { logError } from "@/lib/apiError";
 export async function GET() {
   try {
     await dbConnect();
-    const categories = await Category.find().sort({ name: 1 });
+    const categories = await Category.find().sort({ name: 1 }).lean();
     return NextResponse.json(categories);
   } catch (error) {
     const details = logError("GET /api/categories", error);

@@ -7,11 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "db:backup": "node --env-file=.env.local scripts/mongodb-backup.js",
+    "db:restore": "node --env-file=.env.local scripts/mongodb-restore.js",
+    "db:scheduler": "node --env-file=.env.local scripts/scheduler.js"
   },
   "dependencies": {
     "@imagekit/nodejs": "^7.3.0",
+    "adm-zip": "^0.5.17",
     "bcryptjs": "^3.0.3",
+    "googleapis": "^171.4.0",
     "lucide-react": "^0.575.0",
     "mongoose": "^9.2.1",
     "next": "16.1.6",

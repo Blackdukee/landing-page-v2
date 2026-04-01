@@ -30,13 +30,13 @@ export async function PUT(
     }
 
     // Check if another category already has this slug
-    const existing = await Category.findOne({ slug, _id: { $ne: id } });
+    const existing = await Category.findOne({ slug, _id: { $ne: id } }).lean();
     if (existing) {
       return NextResponse.json({ error: "A category with this name already exists" }, { status: 409 });
     }
 
     // Get old category name before update
-    const oldCategory = await Category.findById(id);
+    const oldCategory = await Category.findById(id).lean();
     const oldName = oldCategory?.name;
 
     const category = await Category.findByIdAndUpdate(

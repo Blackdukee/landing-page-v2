@@ -44,7 +44,7 @@ const defaultSocialLinks: SocialLinks = { instagram: "", twitter: "", email: "" 
 const defaultSettings: SiteSettings = {
   websiteName: "QuesnaShop",
   favicon: "",
-  whatsappNumber: "+201025571092",
+  whatsappNumber: "+201203441866",
   freeDeliveryMinPrice: 99,
   shippingCost: 9.99,
   returnDays: 30,

@@ -39,4 +39,12 @@ async function dbConnect(): Promise<typeof mongoose> {
   return cached.conn;
 }
 
+// Graceful shutdown — close DB connection on process termination
+process.on("SIGINT", async () => {
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.close();
+  }
+  process.exit(0);
+});
+
 export default dbConnect;

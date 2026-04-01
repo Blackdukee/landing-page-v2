@@ -7,7 +7,7 @@ import { logError } from "@/lib/apiError";
 export async function GET() {
   try {
     await dbConnect();
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const orders = await Order.find().sort({ createdAt: -1 }).limit(200).lean();
     return NextResponse.json(orders);
   } catch (error) {
     const details = logError("GET /api/orders", error);
@@ -21,16 +21,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const order = await Order.create(body);
 
-    // Update product stock for each item in the order
+    // Update product stock in a single batched operation
     if (body.items && Array.isArray(body.items)) {
-      for (const item of body.items) {
-        if (item.productId) {
-          await Product.findByIdAndUpdate(
-            item.productId,
-            { $inc: { stock: -item.quantity } },
-            { returnDocument: 'after' }
-          );
-        }
+      const bulkOps = body.items
+        .filter((item: { productId?: string }) => item.productId)
+        .map((item: { productId: string; quantity: number }) => ({
+          updateOne: {
+            filter: { _id: item.productId },
+            update: { $inc: { stock: -item.quantity } },
+          },
+        }));
+      if (bulkOps.length > 0) {
+        await Product.bulkWrite(bulkOps);
       }
     }
 

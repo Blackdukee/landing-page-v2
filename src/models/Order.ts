@@ -53,6 +53,10 @@ const OrderSchema = new Schema<IOrder>(
   { timestamps: true }
 );
 
+// Indexes for common query patterns (admin dashboard listing)
+OrderSchema.index({ createdAt: -1 });
+OrderSchema.index({ status: 1 });
+
 const Order: Model<IOrder> =
   mongoose.models.Order || mongoose.model<IOrder>("Order", OrderSchema);
 

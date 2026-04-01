@@ -50,7 +50,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
     websiteName: { type: String, default: "QuesnaShop" },
     favicon: { type: String, default: "" },
-    whatsappNumber: { type: String, default: "+201025571092" },
+    whatsappNumber: { type: String, default: "+201203441866" },
     freeDeliveryMinPrice: { type: Number, default: 99 },
     shippingCost: { type: Number, default: 9.99 },
     returnDays: { type: Number, default: 30 },

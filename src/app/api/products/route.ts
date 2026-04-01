@@ -17,11 +17,11 @@ export async function GET(req: NextRequest) {
     const filter: any = {};
     if (featured === "true") filter.featured = true;
     if (category) filter.category = category;
-    if (search) filter.name = { $regex: search, $options: "i" };
+    if (search) filter.$text = { $search: search };
 
     // If no limit requested, return all (for admin, landing page etc.)
     if (!limit) {
-      const products = await Product.find(filter).sort({ createdAt: -1 });
+      const products = await Product.find(filter).sort({ createdAt: -1 }).limit(100).lean();
       return NextResponse.json(products);
     }
 
@@ -33,7 +33,8 @@ export async function GET(req: NextRequest) {
     const products = await Product.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     return NextResponse.json({
       products,

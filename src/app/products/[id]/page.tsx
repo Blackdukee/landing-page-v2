@@ -14,6 +14,8 @@ import {
   Star,
   AlertCircle,
   Trash2,
+  Flame,
+  Zap,
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -45,7 +47,7 @@ export default function ProductDetailPage() {
   const removeItem = useCartStore((s) => s.removeItem);
   const items = useCartStore((s) => s.items);
   const { t, dir } = useTranslation();
-  const { freeDeliveryMinPrice, returnDays } = useSiteSettings();
+  const { dailyOffers, freeDeliveryMinPrice, returnDays } = useSiteSettings();
 
   useEffect(() => {
     if (!id) return;
@@ -58,6 +60,21 @@ export default function ProductDetailPage() {
       .catch(() => setError("Product not found"))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Check active daily offer
+  const activeOffer = product
+    ? dailyOffers.find(
+        (o) =>
+          String(o.productId) === String(product._id) &&
+          o.active &&
+          (!o.expiresAt || new Date(o.expiresAt).getTime() > Date.now())
+      )
+    : undefined;
+
+  const discountPercentage = activeOffer ? activeOffer.discountPercentage : 0;
+  const salePrice = activeOffer && product
+    ? Number((product.price * (1 - discountPercentage / 100)).toFixed(2))
+    : product?.price ?? 0;
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -77,7 +94,7 @@ export default function ProductDetailPage() {
       {
         productId: product._id,
         name: product.name,
-        price: product.price,
+        price: salePrice,
         image: product.images?.[0] || product.image,
       },
       product.stock,
@@ -170,7 +187,16 @@ export default function ProductDetailPage() {
                 <span className="absolute top-4 start-4 rounded-full glass-strong px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/90">
                   {product.category}
                 </span>
-                {product.featured && (
+
+                {/* Daily Offer Discount Badge */}
+                {activeOffer && (
+                  <span className="absolute top-4 end-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-red-600 via-amber-600 to-orange-500 text-white px-3.5 py-1.5 text-xs font-black shadow-lg shadow-red-500/30 backdrop-blur-sm animate-pulse motion-reduce:animate-none">
+                    <Flame className="h-3.5 w-3.5 fill-white text-white shrink-0" />
+                    <span>-{discountPercentage}% {t("home.off")}</span>
+                  </span>
+                )}
+
+                {product.featured && !activeOffer && (
                   <span className="absolute top-4 end-4 flex items-center gap-1 rounded-full bg-amber-500/20 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-amber-300">
                     <Star className="h-3 w-3 fill-amber-300" />
                     {t("detail.featured")}
@@ -194,9 +220,20 @@ export default function ProductDetailPage() {
 
             {/* Price */}
             <div className="flex items-baseline gap-3 flex-wrap mb-6">
-              <span className="text-3xl font-bold gradient-text">
-                EGP {product.price.toFixed(2)}
+              <span className={`text-3xl font-bold ${activeOffer ? "text-amber-500 dark:text-amber-400" : "gradient-text"}`}>
+                EGP {salePrice.toFixed(2)}
               </span>
+              {activeOffer && (
+                <span className="text-lg text-muted/70 line-through">
+                  EGP {product.price.toFixed(2)}
+                </span>
+              )}
+              {activeOffer && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 text-xs font-bold">
+                  <Zap className="h-3.5 w-3.5 shrink-0" />
+                  <span>{t("home.saveAmount", { amount: (product.price - salePrice).toFixed(2) })}</span>
+                </span>
+              )}
               {product.stock > 0 ? (
                 <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
                   {t("detail.inStock")}
@@ -302,7 +339,7 @@ export default function ProductDetailPage() {
                             ? t("detail.addedToCart")
                             : availableStock <= 0
                             ? t("detail.outOfStock")
-                            : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
+                            : t("detail.addToCart", { price: (salePrice * quantity).toFixed(2) })}
                         </button>
                         <button
                           onClick={handleRemoveFromCart}
@@ -332,7 +369,7 @@ export default function ProductDetailPage() {
                         ? t("detail.addedToCart")
                         : availableStock <= 0
                         ? t("detail.outOfStock")
-                        : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
+                        : t("detail.addToCart", { price: (salePrice * quantity).toFixed(2) })}
                     </button>
                   );
                 })()}
@@ -375,3 +412,4 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+

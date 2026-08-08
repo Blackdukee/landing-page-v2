@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Plus, AlertCircle } from "lucide-react";
+import { ShoppingBag, Plus, AlertCircle, Flame } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useState } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 interface ProductCardProps {
   id: string;
@@ -32,6 +33,19 @@ export default function ProductCard({
   const [added, setAdded] = useState(false);
   const [error, setError] = useState("");
   const { t } = useTranslation();
+  const { dailyOffers } = useSiteSettings();
+
+  // Check active daily offer
+  const activeOffer = dailyOffers.find(
+    (o) =>
+      String(o.productId) === String(id) &&
+      o.active &&
+      (!o.expiresAt || new Date(o.expiresAt).getTime() > Date.now())
+  );
+  const discountPercentage = activeOffer ? activeOffer.discountPercentage : 0;
+  const salePrice = activeOffer
+    ? Number((price * (1 - discountPercentage / 100)).toFixed(2))
+    : price;
 
   // Check quantity already in cart
   const quantityInCart = getItemQuantity(id);
@@ -44,7 +58,7 @@ export default function ProductCard({
 
     if (isOutOfStock) return;
 
-    const success = addItem({ productId: id, name, price, image }, stock, 1);
+    const success = addItem({ productId: id, name, price: salePrice, image }, stock, 1);
     if (!success) {
       setError(t("cart.insufficientStock"));
       setTimeout(() => setError(""), 3000);
@@ -88,6 +102,14 @@ export default function ProductCard({
           <span className="absolute top-3 start-3 rounded-full glass-strong px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
             {category}
           </span>
+
+          {/* Daily Offer Discount Badge */}
+          {activeOffer && (
+            <span className="absolute top-3 end-3 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-600 via-amber-600 to-orange-500 text-white px-2.5 py-1 text-[10px] font-black shadow-md shadow-red-500/20 backdrop-blur-sm animate-pulse motion-reduce:animate-none">
+              <Flame className="h-3 w-3 fill-white text-white shrink-0" />
+              <span>-{discountPercentage}% {t("home.off")}</span>
+            </span>
+          )}
         </div>
 
         {/* Info */}
@@ -101,9 +123,16 @@ export default function ProductCard({
             </p>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-base font-bold tracking-tight gradient-text">
-              EGP {price.toFixed(2)}
-            </span>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className={`text-base font-bold tracking-tight ${activeOffer ? "text-amber-500 dark:text-amber-400" : "gradient-text"}`}>
+                EGP {salePrice.toFixed(2)}
+              </span>
+              {activeOffer && (
+                <span className="text-xs text-muted/70 line-through">
+                  EGP {price.toFixed(2)}
+                </span>
+              )}
+            </div>
             {!isOutOfStock && stock > 0 && stock - quantityInCart <= 5 && (
               <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
                 {t("card.onlyLeft", { count: stock - quantityInCart })}
@@ -143,3 +172,4 @@ export default function ProductCard({
     </Link>
   );
 }
+

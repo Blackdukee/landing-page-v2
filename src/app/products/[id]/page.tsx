@@ -31,6 +31,7 @@ interface Product {
   images: string[];
   stock: number;
   category: string;
+  company?: { _id: string; name: string; logo: string } | string | null;
   featured: boolean;
   createdAt: string;
 }
@@ -183,10 +184,24 @@ export default function ProductDetailPage() {
                 images={product.images?.length ? product.images : [product.image]}
                 alt={product.name}
               >
-                {/* Category badge */}
-                <span className="absolute top-4 start-4 z-10 rounded-full bg-black/65 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
-                  {product.category}
-                </span>
+                {/* Category & Company badges */}
+                <div className="absolute top-4 start-4 z-10 flex items-center gap-2 flex-wrap max-w-[calc(100%-4rem)]">
+                  <span className="rounded-full bg-black/65 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
+                    {product.category}
+                  </span>
+                  {(() => {
+                    const comp = typeof product.company === 'object' && product.company !== null ? product.company : null;
+                    if (!comp || !comp.name) return null;
+                    return (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-black/65 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-white border border-white/20 shadow-sm">
+                        {comp.logo && (
+                          <img src={comp.logo} alt={comp.name} className="h-4 w-4 rounded-full object-cover shrink-0" />
+                        )}
+                        <span>{comp.name}</span>
+                      </span>
+                    );
+                  })()}
+                </div>
 
                 {/* Daily Offer Discount Badge */}
                 {activeOffer && (
@@ -208,10 +223,24 @@ export default function ProductDetailPage() {
 
           {/* Details */}
           <div className="flex flex-col">
-            {/* Category */}
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">
-              {product.category}
-            </span>
+            {/* Category & Company badge */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                {product.category}
+              </span>
+              {(() => {
+                const comp = typeof product.company === 'object' && product.company !== null ? product.company : null;
+                if (!comp || !comp.name) return null;
+                return (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-semibold text-primary">
+                    {comp.logo && (
+                      <img src={comp.logo} alt={comp.name} className="h-4 w-4 rounded-full object-cover shrink-0" />
+                    )}
+                    <span>{comp.name}</span>
+                  </span>
+                );
+              })()}
+            </div>
 
             {/* Name */}
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4">

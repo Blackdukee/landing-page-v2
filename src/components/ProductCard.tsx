@@ -15,6 +15,7 @@ interface ProductCardProps {
   price: number;
   image: string;
   category: string;
+  company?: { _id: string; name: string; logo: string } | string;
   stock: number;
 }
 
@@ -25,6 +26,7 @@ export default function ProductCard({
   price,
   image,
   category,
+  company,
   stock,
 }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
@@ -98,10 +100,28 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Category badge */}
-          <span className="absolute top-3 start-3 z-10 rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
-            {category}
-          </span>
+          {/* Category & Company badges */}
+          <div className="absolute top-3 start-3 z-10 flex items-center gap-1.5 flex-wrap max-w-[calc(100%-4rem)]">
+            <span className="rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
+              {category}
+            </span>
+            {(() => {
+              const compObj = typeof company === "object" && company !== null ? company : null;
+              if (!compObj || !compObj.name) return null;
+              return (
+                <span className="inline-flex items-center gap-1 rounded-full bg-black/65 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white border border-white/20 shadow-sm">
+                  {compObj.logo && (
+                    <img
+                      src={compObj.logo}
+                      alt={compObj.name}
+                      className="h-3.5 w-3.5 rounded-full object-cover shrink-0"
+                    />
+                  )}
+                  <span>{compObj.name}</span>
+                </span>
+              );
+            })()}
+          </div>
 
           {/* Daily Offer Discount Badge */}
           {activeOffer && (

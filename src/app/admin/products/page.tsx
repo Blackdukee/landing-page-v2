@@ -19,6 +19,13 @@ import {
 import { useTranslation } from "@/i18n/LanguageContext";
 import type { TranslationKey } from "@/i18n/en";
 
+interface Company {
+  _id: string;
+  name: string;
+  logo: string;
+  description?: string;
+}
+
 interface Product {
   _id: string;
   name: string;
@@ -28,6 +35,7 @@ interface Product {
   images: string[];
   stock: number;
   category: string;
+  company?: { _id: string; name: string; logo: string } | string | null;
   featured: boolean;
 }
 
@@ -45,6 +53,7 @@ const emptyProduct = {
   images: [] as string[],
   stock: 0,
   category: "General",
+  company: "",
   featured: false,
 };
 
@@ -52,6 +61,7 @@ export default function AdminProductsPage() {
   const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
@@ -85,6 +95,12 @@ export default function AdminProductsPage() {
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) setCategories(data);
+      })
+      .catch(console.error);
+    fetch("/api/companies")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCompanies(data);
       })
       .catch(console.error);
   }, []);
@@ -166,6 +182,12 @@ export default function AdminProductsPage() {
   const openEdit = (product: Product) => {
     setEditing(product);
     const imgs = product.images || (product.image ? [product.image] : []);
+    const companyId =
+      typeof product.company === "object" && product.company !== null
+        ? product.company._id
+        : typeof product.company === "string"
+        ? product.company
+        : "";
     setForm({
       name: product.name,
       description: product.description,
@@ -174,6 +196,7 @@ export default function AdminProductsPage() {
       images: imgs,
       stock: product.stock,
       category: product.category,
+      company: companyId,
       featured: product.featured,
     });
     setUploadError("");
@@ -202,6 +225,7 @@ export default function AdminProductsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          company: form.company || null,
           image: form.images[0] || form.image,
         }),
       });
@@ -429,7 +453,28 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="text-xs text-muted">{product.category}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-muted">{product.category}</span>
+                        {(() => {
+                          const compObj =
+                            typeof product.company === "object" && product.company !== null
+                              ? product.company
+                              : companies.find((c) => c._id === product.company);
+                          if (!compObj) return null;
+                          return (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-2 py-0.5 text-[11px] font-medium text-foreground">
+                              {compObj.logo && (
+                                <img
+                                  src={compObj.logo}
+                                  alt={compObj.name}
+                                  className="h-3.5 w-3.5 rounded-full object-cover shrink-0"
+                                />
+                              )}
+                              <span>{compObj.name}</span>
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 font-medium text-foreground">
                       EGP {product.price.toFixed(2)}
@@ -573,6 +618,24 @@ export default function AdminProductsPage() {
                       </option>
                     )
                   )}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted mb-1.5">
+                  Company / Brand
+                </label>
+                <select
+                  value={form.company}
+                  onChange={(e) => updateField("company", e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                >
+                  <option value="">None / General</option>
+                  {companies.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 

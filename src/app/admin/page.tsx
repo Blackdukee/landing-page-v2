@@ -26,6 +26,7 @@ import {
   Twitter,
   Flame,
   Clock,
+  Building2,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings, type IDailyOfferItem } from "@/lib/SiteSettingsContext";
@@ -50,6 +51,13 @@ interface Category {
   _id: string;
   name: string;
   slug: string;
+  description?: string;
+}
+
+interface Company {
+  _id: string;
+  name: string;
+  logo: string;
   description?: string;
 }
 
@@ -134,6 +142,19 @@ export default function AdminDashboard() {
   // Delete category dialog state
   const [deleteDialogCatId, setDeleteDialogCatId] = useState<string | null>(null);
   const [deleteDialogCatName, setDeleteDialogCatName] = useState("");
+
+  // Company management state
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [compLoading, setCompLoading] = useState(true);
+  const [newCompanyName, setNewCompanyName] = useState("");
+  const [newCompanyLogo, setNewCompanyLogo] = useState("");
+  const [newCompanyDesc, setNewCompanyDesc] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [savingCompany, setSavingCompany] = useState(false);
+  const [compError, setCompError] = useState("");
+  const [deleteDialogCompId, setDeleteDialogCompId] = useState<string | null>(null);
+  const [deleteDialogCompName, setDeleteDialogCompName] = useState("");
+  const [deletingComp, setDeletingComp] = useState<string | null>(null);
 
   // Site settings state
   const [siteName, setSiteName] = useState("");
@@ -244,6 +265,95 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  const fetchCompanies = () => {
+    setCompLoading(true);
+    fetch("/api/companies")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCompanies(data);
+      })
+      .catch(console.error)
+      .finally(() => setCompLoading(false));
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  const handleAddCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCompanyName.trim() || !newCompanyLogo.trim()) return;
+    setCompError("");
+    setSavingCompany(true);
+    try {
+      const res = await fetch("/api/companies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newCompanyName.trim(),
+          logo: newCompanyLogo.trim(),
+          description: newCompanyDesc.trim(),
+        }),
+      });
+      if (res.ok) {
+        setNewCompanyName("");
+        setNewCompanyLogo("");
+        setNewCompanyDesc("");
+        fetchCompanies();
+      } else {
+        const data = await res.json();
+        setCompError(data.error || "Failed to add company");
+      }
+    } catch {
+      setCompError("Network error");
+    } finally {
+      setSavingCompany(false);
+    }
+  };
+
+  const openDeleteCompDialog = (id: string, name: string) => {
+    setDeleteDialogCompId(id);
+    setDeleteDialogCompName(name);
+  };
+
+  const handleDeleteCompany = async () => {
+    if (!deleteDialogCompId) return;
+    setDeletingComp(deleteDialogCompId);
+    const idToDelete = deleteDialogCompId;
+    setDeleteDialogCompId(null);
+    try {
+      await fetch(`/api/companies/${idToDelete}`, {
+        method: "DELETE",
+      });
+      fetchCompanies();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setDeletingComp(null);
+    }
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    setUploadingLogo(true);
+    setCompError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setNewCompanyLogo(data.url);
+      } else {
+        setCompError(data.error || "Failed to upload logo");
+      }
+    } catch (err) {
+      console.error("Logo upload failed", err);
+      setCompError("Network error during logo upload");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -682,6 +792,41 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Delete Company Dialog */}
+      {deleteDialogCompId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-foreground">
+                Delete Company / Brand
+              </h3>
+            </div>
+            <p className="text-sm text-muted mb-6">
+              Are you sure you want to delete company &quot;{deleteDialogCompName}&quot;? Products linked to this company will have their company unlinked.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteCompany}
+                className="flex-1 min-h-[44px] rounded-xl bg-red-500 text-white hover:bg-red-600 px-4 py-2.5 text-sm font-medium transition-colors"
+              >
+                Delete Company
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteDialogCompId(null)}
+                className="flex-1 min-h-[44px] rounded-xl bg-surface hover:bg-card-hover text-muted px-4 py-2.5 text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Offer Dialog */}
       {deleteOfferIndex !== null && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -905,6 +1050,154 @@ export default function AdminDashboard() {
                       </div>
                     </>
                   )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Companies / Brands Management */}
+      <div className="rounded-2xl bg-card border border-border mb-8">
+        <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Building2 className="h-3.5 w-3.5" />
+            </div>
+            <h2 className="font-semibold text-sm text-foreground">Companies / Brands Management</h2>
+            <span className="text-xs text-muted">({companies.length})</span>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {/* Add Company Form */}
+          <form onSubmit={handleAddCompany} className="mb-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  Company Name <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Nike, Apple, Samsung"
+                  value={newCompanyName}
+                  onChange={(e) => {
+                    setNewCompanyName(e.target.value);
+                    setCompError("");
+                  }}
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted mb-1.5 block">
+                  Description (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Brand description or tagline"
+                  value={newCompanyDesc}
+                  onChange={(e) => setNewCompanyDesc(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {/* Logo Upload Section */}
+            <div>
+              <label className="text-xs font-medium text-muted mb-1.5 block">
+                Company Logo <span className="text-red-400">*</span>
+              </label>
+              <div className="flex items-center gap-4">
+                {newCompanyLogo && (
+                  <div className="relative h-12 w-12 rounded-xl border border-border bg-surface flex items-center justify-center overflow-hidden shrink-0">
+                    <Image src={newCompanyLogo} alt="Company Logo" width={48} height={48} className="object-contain p-1" />
+                    <button
+                      type="button"
+                      onClick={() => setNewCompanyLogo("")}
+                      className="absolute top-0.5 end-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white hover:bg-red-500 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-dashed border-border hover:border-primary/40 bg-surface px-4 py-2.5 text-sm text-muted hover:text-foreground transition-all">
+                  {uploadingLogo ? (
+                    <span className="animate-pulse">Uploading Logo...</span>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" />
+                      {newCompanyLogo ? "Change Logo" : "Upload Logo"}
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/png,image/svg+xml,image/jpeg,image/webp"
+                    className="hidden"
+                    disabled={uploadingLogo}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleLogoUpload(file);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {compError && <p className="text-xs text-red-400">{compError}</p>}
+
+            <button
+              type="submit"
+              disabled={savingCompany || !newCompanyName.trim() || !newCompanyLogo.trim()}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
+            >
+              <Plus className="h-4 w-4" />
+              {savingCompany ? "Adding Company..." : "Add Company"}
+            </button>
+          </form>
+
+          {/* Companies List */}
+          {compLoading ? (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-14 bg-surface rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : companies.length === 0 ? (
+            <p className="text-sm text-muted text-center py-8">
+              No companies added yet. Add your first brand above.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {companies.map((comp) => (
+                <div
+                  key={comp._id}
+                  className="flex items-center justify-between gap-3 rounded-xl bg-surface/50 border border-border p-3 group hover:border-primary/20 transition-all"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-white/5 border border-border shrink-0 flex items-center justify-center p-1">
+                      {comp.logo ? (
+                        <Image src={comp.logo} alt={comp.name} width={36} height={36} className="object-contain max-h-full max-w-full" />
+                      ) : (
+                        <Building2 className="h-5 w-5 text-muted" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{comp.name}</p>
+                      {comp.description && (
+                        <p className="text-xs text-muted truncate">{comp.description}</p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openDeleteCompDialog(comp._id, comp.name)}
+                    disabled={deletingComp === comp._id}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-50 shrink-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               ))}
             </div>

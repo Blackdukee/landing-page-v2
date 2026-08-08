@@ -22,6 +22,23 @@ export interface SocialLinks {
   email: string;
 }
 
+export interface IDailyOfferItem {
+  _id?: string;
+  productId: string;
+  discountPercentage: number;
+  expiresAt?: string | null;
+  active: boolean;
+  product?: {
+    _id: string;
+    name: string;
+    description: string;
+    price: number;
+    image: string;
+    stock: number;
+    category: string;
+  };
+}
+
 interface SiteSettings {
   websiteName: string;
   favicon: string;
@@ -32,6 +49,7 @@ interface SiteSettings {
   priceRangeFilters: PriceRangeFilter[];
   heroProduct: string | null;
   socialLinks: SocialLinks;
+  dailyOffers: IDailyOfferItem[];
 }
 
 interface SiteSettingsContextValue extends SiteSettings {
@@ -51,6 +69,7 @@ const defaultSettings: SiteSettings = {
   priceRangeFilters: [],
   heroProduct: null,
   socialLinks: defaultSocialLinks,
+  dailyOffers: [],
 };
 
 const SiteSettingsContext = createContext<SiteSettingsContextValue>({
@@ -86,6 +105,28 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
                   email: data.socialLinks.email || "",
                 }
               : defaultSocialLinks,
+            dailyOffers: Array.isArray(data.dailyOffers)
+              ? data.dailyOffers.map((item: any) => {
+                  const isPopulated = typeof item.productId === "object" && item.productId !== null;
+                  const prodObj = isPopulated ? item.productId : item.product;
+                  return {
+                    _id: item._id ? String(item._id) : undefined,
+                    productId: isPopulated ? String(item.productId._id) : String(item.productId || ""),
+                    discountPercentage: typeof item.discountPercentage === "number" ? item.discountPercentage : 0,
+                    expiresAt: item.expiresAt ? new Date(item.expiresAt).toISOString() : null,
+                    active: typeof item.active === "boolean" ? item.active : true,
+                    product: prodObj && prodObj._id ? {
+                      _id: String(prodObj._id),
+                      name: String(prodObj.name || ""),
+                      description: String(prodObj.description || ""),
+                      price: typeof prodObj.price === "number" ? prodObj.price : 0,
+                      image: String(prodObj.image || ""),
+                      stock: typeof prodObj.stock === "number" ? prodObj.stock : 0,
+                      category: String(prodObj.category || ""),
+                    } : undefined,
+                  };
+                })
+              : defaultSettings.dailyOffers,
           });
         }
       })

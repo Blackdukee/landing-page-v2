@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
+import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
 
 // Helper function to normalize WhatsApp number to +201234567890 format
@@ -30,10 +31,10 @@ const normalizeWhatsAppNumber = (input: string): string => {
 
 // Helper to get or create the singleton settings document (returns plain object)
 async function getSettings() {
-  let settings = await SiteSettings.findOne().lean();
+  let settings = await SiteSettings.findOne().populate("dailyOffers.productId").lean();
   if (!settings) {
     const doc = await SiteSettings.create({});
-    settings = doc.toObject();
+    settings = await SiteSettings.findById(doc._id).populate("dailyOffers.productId").lean();
   }
   return settings;
 }
@@ -129,12 +130,38 @@ export async function PUT(req: NextRequest) {
       update.priceRangeFilters = filters;
     }
 
+    if (Array.isArray(body.dailyOffers)) {
+      const dailyOffers = body.dailyOffers
+        .filter(
+          (item: any) =>
+            item &&
+            (item.productId || (item.productId && item.productId._id)) &&
+            typeof item.discountPercentage === "number" &&
+            item.discountPercentage >= 1 &&
+            item.discountPercentage <= 90
+        )
+        .map((item: any) => {
+          const offer: Record<string, any> = {
+            productId: typeof item.productId === "object" && item.productId?._id ? item.productId._id : item.productId,
+            discountPercentage: Math.min(90, Math.max(1, Math.round(item.discountPercentage))),
+            active: typeof item.active === "boolean" ? item.active : true,
+            expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
+          };
+          if (item._id) {
+            offer._id = item._id;
+          }
+          return offer;
+        });
+      update.dailyOffers = dailyOffers;
+    }
+
     let settings = await SiteSettings.findOne().lean();
     if (!settings) {
       const doc = await SiteSettings.create(update);
-      settings = doc.toObject();
+      settings = await SiteSettings.findById(doc._id).populate("dailyOffers.productId").lean();
     } else {
-      settings = await SiteSettings.findOneAndUpdate({}, { $set: update }, { returnDocument: 'after' }).lean();
+      await SiteSettings.findOneAndUpdate({}, { $set: update }, { returnDocument: 'after' });
+      settings = await SiteSettings.findOne().populate("dailyOffers.productId").lean();
     }
 
     return NextResponse.json(settings);

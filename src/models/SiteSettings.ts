@@ -13,6 +13,14 @@ export interface ISocialLinks {
   email: string;
 }
 
+export interface IDailyOffer {
+  _id?: string;
+  productId: mongoose.Types.ObjectId | string;
+  discountPercentage: number;
+  expiresAt?: Date | null;
+  active: boolean;
+}
+
 export interface ISiteSettings extends Document {
   websiteName: string;
   favicon: string;
@@ -23,6 +31,7 @@ export interface ISiteSettings extends Document {
   priceRangeFilters: IPriceRange[];
   heroProduct: string | null; // Product _id to feature in hero section
   socialLinks: ISocialLinks;
+  dailyOffers: IDailyOffer[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,6 +55,15 @@ const SocialLinksSchema = new Schema(
   { _id: false }
 );
 
+const DailyOfferSchema = new Schema<IDailyOffer>(
+  {
+    productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+    discountPercentage: { type: Number, required: true, min: 1, max: 90 },
+    expiresAt: { type: Date, default: null },
+    active: { type: Boolean, default: true },
+  }
+);
+
 const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
     websiteName: { type: String, default: "QuesnaShop" },
@@ -56,6 +74,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     returnDays: { type: Number, default: 30 },
     heroProduct: { type: String, default: null },
     socialLinks: { type: SocialLinksSchema, default: () => ({}) },
+    dailyOffers: { type: [DailyOfferSchema], default: [] },
     priceRangeFilters: {
       type: [PriceRangeSchema],
       default: [

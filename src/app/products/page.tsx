@@ -15,6 +15,7 @@ interface Product {
   stock: number;
   category: string;
   featured: boolean;
+  company?: { _id: string; name: string; logo: string } | string | null;
 }
 
 interface PaginationInfo {
@@ -363,6 +364,7 @@ export default function ProductsPage() {
                 price={p.price}
                 image={p.image}
                 category={p.category}
+                company={p.company ?? undefined}
                 stock={p.stock}
               />
             ))}

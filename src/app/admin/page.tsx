@@ -323,12 +323,18 @@ export default function AdminDashboard() {
     const idToDelete = deleteDialogCompId;
     setDeleteDialogCompId(null);
     try {
-      await fetch(`/api/companies/${idToDelete}`, {
+      const res = await fetch(`/api/companies/${idToDelete}`, {
         method: "DELETE",
       });
-      fetchCompanies();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setCompError(data.error || "Failed to delete company");
+      } else {
+        fetchCompanies();
+      }
     } catch (error) {
       console.error(error);
+      setCompError("Network error");
     } finally {
       setDeletingComp(null);
     }
@@ -1194,7 +1200,8 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => openDeleteCompDialog(comp._id, comp.name)}
                     disabled={deletingComp === comp._id}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-50 shrink-0"
+                    aria-label={`Delete company ${comp.name}`}
+                    className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-50 shrink-0"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

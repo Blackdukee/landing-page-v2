@@ -27,6 +27,7 @@ interface Product {
   stock: number;
   category: string;
   featured: boolean;
+  company?: { _id: string; name: string; logo: string } | string | null;
 }
 
 export default function HomePage() {
@@ -180,6 +181,7 @@ export default function HomePage() {
                     price={p.price}
                     image={p.image}
                     category={p.category}
+                    company={p.company ?? undefined}
                     stock={p.stock}
                   />
                 ))}

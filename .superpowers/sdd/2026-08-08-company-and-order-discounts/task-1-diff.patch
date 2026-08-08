@@ -1,0 +1,332 @@
+diff --git a/src/app/api/companies/[id]/route.ts b/src/app/api/companies/[id]/route.ts
+new file mode 100644
+index 0000000..095a119
+--- /dev/null
++++ b/src/app/api/companies/[id]/route.ts
+@@ -0,0 +1,80 @@
++import { NextRequest, NextResponse } from "next/server";
++import dbConnect from "@/lib/mongodb";
++import Company from "@/models/Company";
++import Product from "@/models/Product";
++import { logError } from "@/lib/apiError";
++
++function checkAdminAuth(req: NextRequest) {
++  const token = req.cookies.get("admin-token")?.value;
++  if (!token) {
++    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  }
++  try {
++    const user = JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
++    if (user.role !== "admin") {
++      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
++    }
++  } catch {
++    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
++  }
++  return null;
++}
++
++export async function PUT(
++  req: NextRequest,
++  { params }: { params: Promise<{ id: string }> }
++) {
++  const authError = checkAdminAuth(req);
++  if (authError) return authError;
++
++  try {
++    await dbConnect();
++    const { id } = await params;
++    const body = await req.json();
++
++    const updateData: Record<string, unknown> = {};
++    if (typeof body.name === "string" && body.name.trim()) {
++      updateData.name = body.name.trim();
++    }
++    if (typeof body.logo === "string" && body.logo.trim()) {
++      updateData.logo = body.logo.trim();
++    }
++    if (typeof body.description === "string") {
++      updateData.description = body.description.trim();
++    }
++
++    const company = await Company.findByIdAndUpdate(id, updateData, { returnDocument: "after" });
++    if (!company) {
++      return NextResponse.json({ error: "Company not found" }, { status: 404 });
++    }
++    return NextResponse.json(company);
++  } catch (error) {
++    const details = logError("PUT /api/companies/[id]", error);
++    return NextResponse.json({ error: "Failed to update company", details }, { status: 500 });
++  }
++}
++
++export async function DELETE(
++  req: NextRequest,
++  { params }: { params: Promise<{ id: string }> }
++) {
++  const authError = checkAdminAuth(req);
++  if (authError) return authError;
++
++  try {
++    await dbConnect();
++    const { id } = await params;
++    const company = await Company.findByIdAndDelete(id);
++    if (!company) {
++      return NextResponse.json({ error: "Company not found" }, { status: 404 });
++    }
++
++    // Unlink company from all products referencing it
++    await Product.updateMany({ company: id }, { $set: { company: null } });
++
++    return NextResponse.json({ message: "Company deleted successfully" });
++  } catch (error) {
++    const details = logError("DELETE /api/companies/[id]", error);
++    return NextResponse.json({ error: "Failed to delete company", details }, { status: 500 });
++  }
++}
+diff --git a/src/app/api/companies/route.ts b/src/app/api/companies/route.ts
+new file mode 100644
+index 0000000..1d004bd
+--- /dev/null
++++ b/src/app/api/companies/route.ts
+@@ -0,0 +1,62 @@
++import { NextRequest, NextResponse } from "next/server";
++import dbConnect from "@/lib/mongodb";
++import Company from "@/models/Company";
++import { logError } from "@/lib/apiError";
++
++function checkAdminAuth(req: NextRequest) {
++  const token = req.cookies.get("admin-token")?.value;
++  if (!token) {
++    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  }
++  try {
++    const user = JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
++    if (user.role !== "admin") {
++      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
++    }
++  } catch {
++    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
++  }
++  return null;
++}
++
++export async function GET() {
++  try {
++    await dbConnect();
++    const companies = await Company.find().sort({ name: 1 }).lean();
++    return NextResponse.json(companies);
++  } catch (error) {
++    const details = logError("GET /api/companies", error);
++    return NextResponse.json({ error: "Failed to fetch companies", details }, { status: 500 });
++  }
++}
++
++export async function POST(req: NextRequest) {
++  const authError = checkAdminAuth(req);
++  if (authError) return authError;
++
++  try {
++    await dbConnect();
++    const body = await req.json();
++
++    const { name, logo, description } = body;
++
++    if (!name || typeof name !== "string" || !name.trim()) {
++      return NextResponse.json({ error: "Company name is required" }, { status: 400 });
++    }
++
++    if (!logo || typeof logo !== "string" || !logo.trim()) {
++      return NextResponse.json({ error: "Company logo is required" }, { status: 400 });
++    }
++
++    const company = await Company.create({
++      name: name.trim(),
++      logo: logo.trim(),
++      description: typeof description === "string" ? description.trim() : "",
++    });
++
++    return NextResponse.json(company, { status: 201 });
++  } catch (error) {
++    const details = logError("POST /api/companies", error);
++    return NextResponse.json({ error: "Failed to create company", details }, { status: 500 });
++  }
++}
+diff --git a/src/app/api/products/[id]/route.ts b/src/app/api/products/[id]/route.ts
+index 95fe700..1234e63 100644
+--- a/src/app/api/products/[id]/route.ts
++++ b/src/app/api/products/[id]/route.ts
+@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
+ import dbConnect from "@/lib/mongodb";
+ import Product from "@/models/Product";
+ import Category from "@/models/Category";
++import Company from "@/models/Company";
+ import { logError } from "@/lib/apiError";
+ 
++// Ensure Company model is registered
++// eslint-disable-next-line @typescript-eslint/no-unused-expressions
++Company;
++
+ export async function GET(
+   _req: NextRequest,
+   { params }: { params: Promise<{ id: string }> }
+@@ -11,7 +16,7 @@ export async function GET(
+   try {
+     await dbConnect();
+     const { id } = await params;
+-    const product = await Product.findById(id).lean();
++    const product = await Product.findById(id).populate("company", "name logo").lean();
+     if (!product) {
+       return NextResponse.json({ error: "Product not found" }, { status: 404 });
+     }
+@@ -38,7 +43,21 @@ export async function PUT(
+       body.images = [body.image];
+     }
+ 
+-    const product = await Product.findByIdAndUpdate(id, body, { returnDocument: 'after' });
++    if ("company" in body) {
++      if (body.company) {
++        if (typeof body.company === "string" && body.company.trim()) {
++          body.company = body.company.trim();
++        } else if (typeof body.company === "object" && body.company._id) {
++          body.company = body.company._id;
++        } else {
++          body.company = null;
++        }
++      } else {
++        body.company = null;
++      }
++    }
++
++    const product = await Product.findByIdAndUpdate(id, body, { returnDocument: 'after' }).populate("company", "name logo");
+     if (!product) {
+       return NextResponse.json({ error: "Product not found" }, { status: 404 });
+     }
+diff --git a/src/app/api/products/route.ts b/src/app/api/products/route.ts
+index a6e89bb..5e1e588 100644
+--- a/src/app/api/products/route.ts
++++ b/src/app/api/products/route.ts
+@@ -1,14 +1,20 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import dbConnect from "@/lib/mongodb";
+ import Product from "@/models/Product";
++import Company from "@/models/Company";
+ import { logError } from "@/lib/apiError";
+ 
++// Ensure Company model is registered
++// eslint-disable-next-line @typescript-eslint/no-unused-expressions
++Company;
++
+ export async function GET(req: NextRequest) {
+   try {
+     await dbConnect();
+     const { searchParams } = new URL(req.url);
+     const featured = searchParams.get("featured");
+     const category = searchParams.get("category");
++    const company = searchParams.get("company");
+     const search = searchParams.get("search");
+     const page = parseInt(searchParams.get("page") || "1");
+     const limit = parseInt(searchParams.get("limit") || "0"); // 0 = no limit (backward compat)
+@@ -17,11 +23,16 @@ export async function GET(req: NextRequest) {
+     const filter: any = {};
+     if (featured === "true") filter.featured = true;
+     if (category) filter.category = category;
++    if (company) filter.company = company;
+     if (search) filter.$text = { $search: search };
+ 
+     // If no limit requested, return all (for admin, landing page etc.)
+     if (!limit) {
+-      const products = await Product.find(filter).sort({ createdAt: -1 }).limit(100).lean();
++      const products = await Product.find(filter)
++        .sort({ createdAt: -1 })
++        .populate("company", "name logo")
++        .limit(100)
++        .lean();
+       return NextResponse.json(products);
+     }
+ 
+@@ -32,6 +43,7 @@ export async function GET(req: NextRequest) {
+ 
+     const products = await Product.find(filter)
+       .sort({ createdAt: -1 })
++      .populate("company", "name logo")
+       .skip(skip)
+       .limit(limit)
+       .lean();
+@@ -55,6 +67,19 @@ export async function POST(req: NextRequest) {
+   try {
+     await dbConnect();
+     const body = await req.json();
++
++    if (body.company) {
++      if (typeof body.company === "string" && body.company.trim()) {
++        body.company = body.company.trim();
++      } else if (typeof body.company === "object" && body.company._id) {
++        body.company = body.company._id;
++      } else {
++        body.company = null;
++      }
++    } else {
++      body.company = null;
++    }
++
+     const product = await Product.create(body);
+     return NextResponse.json(product, { status: 201 });
+   } catch (error) {
+diff --git a/src/models/Company.ts b/src/models/Company.ts
+new file mode 100644
+index 0000000..146e17f
+--- /dev/null
++++ b/src/models/Company.ts
+@@ -0,0 +1,23 @@
++import mongoose, { Schema, Document, Model } from "mongoose";
++
++export interface ICompany extends Document {
++  name: string;
++  logo: string;
++  description?: string;
++  createdAt: Date;
++  updatedAt: Date;
++}
++
++const CompanySchema = new Schema<ICompany>(
++  {
++    name: { type: String, required: true, trim: true },
++    logo: { type: String, required: true, trim: true },
++    description: { type: String, default: "" },
++  },
++  { timestamps: true }
++);
++
++const Company: Model<ICompany> =
++  mongoose.models.Company || mongoose.model<ICompany>("Company", CompanySchema);
++
++export default Company;
+diff --git a/src/models/Product.ts b/src/models/Product.ts
+index 8032e8c..3bdfc64 100644
+--- a/src/models/Product.ts
++++ b/src/models/Product.ts
+@@ -8,6 +8,7 @@ export interface IProduct extends Document {
+   images: string[];
+   stock: number;
+   category: string;
++  company?: mongoose.Types.ObjectId | string | null;
+   featured: boolean;
+   createdAt: Date;
+   updatedAt: Date;
+@@ -22,6 +23,7 @@ const ProductSchema = new Schema<IProduct>(
+     images: { type: [String], default: [] },
+     stock: { type: Number, required: true, default: 0 },
+     category: { type: String, required: true, default: "General" },
++    company: { type: Schema.Types.ObjectId, ref: "Company", default: null },
+     featured: { type: Boolean, default: false },
+   },
+   { timestamps: true }
+@@ -30,6 +32,7 @@ const ProductSchema = new Schema<IProduct>(
+ // Indexes for common query patterns
+ ProductSchema.index({ featured: 1, createdAt: -1 });
+ ProductSchema.index({ category: 1 });
++ProductSchema.index({ company: 1 });
+ ProductSchema.index({ name: "text" });
+ 
+ // Keep `image` in sync: when saving, if images array has entries but image is

@@ -187,7 +187,7 @@ export default function DailyOffersSection() {
           </div>
 
           {/* Section Level Live Clock */}
-          <div className="flex items-center gap-3 rounded-2xl glass-strong p-3.5 sm:p-4 border border-amber-500/30 shadow-lg shadow-amber-500/5 self-start md:self-auto">
+          <div className="flex items-center gap-3 rounded-2xl bg-card p-3.5 sm:p-4 border border-amber-500/30 shadow-lg shadow-amber-500/10 self-start md:self-auto">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-red-500 text-white shadow-md">
               <Clock className="h-5 w-5 animate-pulse" />
             </div>
@@ -254,7 +254,7 @@ export default function DailyOffersSection() {
                   </div>
 
                   {/* Category Pill */}
-                  <span className="absolute top-3 end-3 z-10 rounded-full glass-strong px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/95 shadow-sm">
+                  <span className="absolute top-3 end-3 z-10 rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
                     {product.category}
                   </span>
 

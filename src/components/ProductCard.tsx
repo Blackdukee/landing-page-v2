@@ -99,7 +99,7 @@ export default function ProductCard({
           )}
 
           {/* Category badge */}
-          <span className="absolute top-3 start-3 rounded-full glass-strong px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
+          <span className="absolute top-3 start-3 z-10 rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
             {category}
           </span>
 

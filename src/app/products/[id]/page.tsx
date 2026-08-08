@@ -184,7 +184,7 @@ export default function ProductDetailPage() {
                 alt={product.name}
               >
                 {/* Category badge */}
-                <span className="absolute top-4 start-4 rounded-full glass-strong px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/90">
+                <span className="absolute top-4 start-4 z-10 rounded-full bg-black/65 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
                   {product.category}
                 </span>
 

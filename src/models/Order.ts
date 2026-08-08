@@ -8,6 +8,24 @@ export interface IOrderItem {
   image: string;
 }
 
+export interface IOrderItemAdjustment {
+  productId: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  stacked: boolean;
+  basePrice: number;
+  priorPrice: number;
+  finalPrice: number;
+}
+
+export interface IOrderDiscountDetails {
+  itemAdjustments: IOrderItemAdjustment[];
+  orderDiscountType?: "percentage" | "fixed" | null;
+  orderDiscountValue?: number;
+  originalTotal: number;
+  finalTotal: number;
+}
+
 export interface ICustomerInfo {
   name: string;
   address: string;
@@ -20,6 +38,7 @@ export interface IOrder extends Document {
   customerInfo: ICustomerInfo;
   items: IOrderItem[];
   totalPrice: number;
+  discountDetails?: IOrderDiscountDetails;
   status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
   createdAt: Date;
   updatedAt: Date;
@@ -44,6 +63,23 @@ const OrderSchema = new Schema<IOrder>(
       },
     ],
     totalPrice: { type: Number, required: true },
+    discountDetails: {
+      itemAdjustments: [
+        {
+          productId: { type: String },
+          discountType: { type: String, enum: ["percentage", "fixed"] },
+          discountValue: { type: Number },
+          stacked: { type: Boolean },
+          basePrice: { type: Number },
+          priorPrice: { type: Number },
+          finalPrice: { type: Number },
+        },
+      ],
+      orderDiscountType: { type: String, enum: ["percentage", "fixed"], default: null },
+      orderDiscountValue: { type: Number },
+      originalTotal: { type: Number },
+      finalTotal: { type: Number },
+    },
     status: {
       type: String,
       enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],

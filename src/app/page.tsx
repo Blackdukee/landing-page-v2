@@ -14,6 +14,7 @@ import {
   Package,
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import DailyOffersSection from "@/components/DailyOffersSection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
@@ -123,6 +124,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ───────────── DAILY OFFERS ───────────── */}
+      <DailyOffersSection />
 
       {/* ───────────── FEATURED ───────────── */}
       <section id="featured" className="py-24 lg:py-32">

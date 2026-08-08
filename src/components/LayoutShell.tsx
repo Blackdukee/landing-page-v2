@@ -9,28 +9,22 @@ import { SiteSettingsProvider, useSiteSettings } from "@/lib/SiteSettingsContext
 
 function DynamicTitle() {
   const { websiteName, favicon } = useSiteSettings();
-  useEffect(() => {
-    if (websiteName) {
-      document.title = `${websiteName} | Modern Online Store`;
-    }
-  }, [websiteName]);
 
   useEffect(() => {
     if (!favicon) return;
 
-    // Remove any existing icon links
-    const existingIcons = document.querySelectorAll("link[rel='icon'], link[rel='shortcut icon']");
-    existingIcons.forEach((el) => el.remove());
-
-    const link = document.createElement("link");
-    link.rel = "icon";
-    link.type = "image/png";
-    link.href = favicon;
-    document.head.appendChild(link);
-
-    return () => {
-      link.remove();
-    };
+    try {
+      let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        link.type = "image/png";
+        document.head.appendChild(link);
+      }
+      link.href = favicon;
+    } catch {
+      // Ignore DOM errors if running in non-standard environment
+    }
   }, [favicon]);
 
   return null;

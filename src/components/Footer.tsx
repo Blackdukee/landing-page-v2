@@ -96,10 +96,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted">
-            {t("footer.copyright", { year: String(new Date().getFullYear()), shopName: websiteName })}
+            {t("footer.copyright", { year: String(new Date().getFullYear()), shopName: websiteName })} · قويسنا، المنوفية، مصر
           </p>
           <p className="text-xs text-muted">
-            {t("footer.bottomText")}
+            معدات وأدوات TOTAL الأصلية · شحن سريع لجميع المحافظات
           </p>
         </div>
       </div>

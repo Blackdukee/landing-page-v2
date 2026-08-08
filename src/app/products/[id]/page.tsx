@@ -46,6 +46,9 @@ export async function generateMetadata(
   return {
     title,
     description,
+    alternates: {
+      canonical: `${BASE_URL}/products/${product._id}`,
+    },
     openGraph: {
       title,
       description,
@@ -74,24 +77,50 @@ export default async function ProductDetailPage(
       ? product.company.name
       : undefined;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.description,
-    image: product.images?.length ? product.images : [product.image],
-    offers: {
-      "@type": "Offer",
-      price: product.price,
-      priceCurrency: "EGP",
-      availability:
-        product.stock > 0
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
-      url: `${BASE_URL}/products/${product._id}`,
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description: product.description,
+      image: product.images?.length ? product.images : [product.image],
+      offers: {
+        "@type": "Offer",
+        price: product.price,
+        priceCurrency: "EGP",
+        availability:
+          product.stock > 0
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+        url: `${BASE_URL}/products/${product._id}`,
+      },
+      ...(companyName && { brand: { "@type": "Brand", name: companyName } }),
     },
-    ...(companyName && { brand: { "@type": "Brand", name: companyName } }),
-  };
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "الرئيسية",
+          item: BASE_URL,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "جميع المنتجات",
+          item: `${BASE_URL}/products`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: product.name,
+          item: `${BASE_URL}/products/${product._id}`,
+        },
+      ],
+    },
+  ];
 
   return (
     <>

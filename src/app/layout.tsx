@@ -24,13 +24,20 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mohammed-essam.ver
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "QuesnaShop | متجر قصنا الإلكتروني",
+    default: "QuesnaShop | متجر قصنا الإلكتروني لأدوات TOTAL في مصر",
     template: "%s | QuesnaShop",
   },
   description:
-    "تسوق أدوات TOTAL وأفضل المنتجات بأسعار مميزة. شحن سريع لجميع محافظات مصر.",
+    "متجر قصنا الإلكتروني - أفضل أسعار أدوات ومعدات TOTAL الكهربائية واليدوية في مصر. بضاعة أصلية وتوصيل سريع لكافة المحافظات.",
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      "ar-EG": SITE_URL,
+      "ar": SITE_URL,
+    },
+  },
   openGraph: {
-    siteName: "QuesnaShop",
+    siteName: "QuesnaShop | متجر قصنا",
     locale: "ar_EG",
     type: "website",
   },
@@ -65,17 +72,41 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              name: "QuesnaShop",
-              url: SITE_URL,
-              potentialAction: {
-                "@type": "SearchAction",
-                target: `${SITE_URL}/products?search={search_term_string}`,
-                "query-input": "required name=search_term_string",
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "QuesnaShop",
+                alternateName: "متجر قصنا",
+                url: SITE_URL,
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: `${SITE_URL}/products?search={search_term_string}`,
+                  "query-input": "required name=search_term_string",
+                },
               },
-            }),
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "QuesnaShop",
+                alternateName: "متجر قصنا",
+                url: SITE_URL,
+                logo: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  telephone: "+201203441866",
+                  contactType: "customer service",
+                  areaServed: "EG",
+                  availableLanguage: "Arabic",
+                },
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: "قويسنا",
+                  addressRegion: "المنوفية",
+                  addressCountry: "EG",
+                },
+              },
+            ]),
           }}
         />
         <LayoutShell>{children}</LayoutShell>

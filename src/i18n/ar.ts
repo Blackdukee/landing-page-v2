@@ -52,6 +52,19 @@ const ar: Record<string, string> = {
   "home.viewAll": "عرض الكل",
   "home.noProducts": "لا توجد منتجات متاحة حتى الآن.",
 
+  // ── الصفحة الرئيسية – عروض اليوم ──
+  "home.dailyOffersTitle": "عروض اليوم والتخفيضات الكبرى",
+  "home.dailyOffersSubtitle":
+    "خصومات خاصة ومحدودة الوقت متاحة اليوم فقط. تسوق قبل انتهاء العرض!",
+  "home.endsIn": "ينتهي خلال",
+  "home.saveAmount": "وفر {amount} ج.م",
+  "home.off": "خصم",
+  "home.dealExpired": "انتهى العرض",
+  "home.hours": "س",
+  "home.minutes": "د",
+  "home.seconds": "ث",
+  "home.claimDeal": "احصل على العرض",
+
   // ── الصفحة الرئيسية – قسم المزايا ──
   "home.whyChoose": "لماذا تختار",
   "home.whyChooseBrand": "{shopName}",
@@ -382,6 +395,23 @@ const ar: Record<string, string> = {
   "admin.status.shipped": "تم الشحن",
   "admin.status.delivered": "تم التوصيل",
   "admin.status.cancelled": "ملغي",
+
+  // ── الإدارة – عروض اليوم ──
+  "admin.offers.title": "إدارة عروض اليوم",
+  "admin.offers.subtitle":
+    "اختر المنتجات وحدد نسب الخصم وجدول العروض المميزة",
+  "admin.offers.selectProduct": "اختر منتجاً...",
+  "admin.offers.discountPercent": "نسبة الخصم (%)",
+  "admin.offers.salePrice": "سعر العرض",
+  "admin.offers.savings": "قيمة التوفير",
+  "admin.offers.expiryOptional": "تاريخ ووقت انتهاء العرض (اختياري)",
+  "admin.offers.addOffer": "إضافة عرض جديد",
+  "admin.offers.noOffers":
+    "لا توجد عروض حالياً. أضف أول عرض من النموذج أعلاه.",
+  "admin.offers.active": "مفعل",
+  "admin.offers.inactive": "معطل",
+  "admin.offers.deleteConfirm": "هل تريد حذف هذا العرض؟",
+  "admin.offers.productAlreadyAdded": "هذا المنتج مضاف بالفعل في العروض.",
 };
 
 export default ar;

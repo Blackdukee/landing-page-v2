@@ -52,6 +52,19 @@ const en = {
   "home.viewAll": "View all",
   "home.noProducts": "No products available yet.",
 
+  // ── Home – Daily Offers ──
+  "home.dailyOffersTitle": "Daily Offers & Flash Deals",
+  "home.dailyOffersSubtitle":
+    "Special limited-time discounts available today only. Grab them before they're gone!",
+  "home.endsIn": "Ends in",
+  "home.saveAmount": "Save EGP {amount}",
+  "home.off": "OFF",
+  "home.dealExpired": "Deal expired",
+  "home.hours": "h",
+  "home.minutes": "m",
+  "home.seconds": "s",
+  "home.claimDeal": "Claim Deal",
+
   // ── Home – Values section ──
   "home.whyChoose": "Why Choose",
   "home.whyChooseBrand": "{shopName}",
@@ -382,6 +395,22 @@ const en = {
   "admin.status.shipped": "Shipped",
   "admin.status.delivered": "Delivered",
   "admin.status.cancelled": "Cancelled",
+
+  // ── Admin – Daily Offers ──
+  "admin.offers.title": "Daily Offers Management",
+  "admin.offers.subtitle":
+    "Select products, set discount percentages, and schedule flash deals",
+  "admin.offers.selectProduct": "Select a product...",
+  "admin.offers.discountPercent": "Discount Percentage (%)",
+  "admin.offers.salePrice": "Sale Price",
+  "admin.offers.savings": "Customer Saves",
+  "admin.offers.expiryOptional": "Offer Expiration (optional)",
+  "admin.offers.addOffer": "Add Daily Offer",
+  "admin.offers.noOffers": "No active daily offers. Add your first offer above.",
+  "admin.offers.active": "Active",
+  "admin.offers.inactive": "Inactive",
+  "admin.offers.deleteConfirm": "Remove this daily offer?",
+  "admin.offers.productAlreadyAdded": "This product already has a daily offer.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

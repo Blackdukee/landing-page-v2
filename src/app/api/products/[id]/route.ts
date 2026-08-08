@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 import Category from "@/models/Category";
+import Company from "@/models/Company";
 import { logError } from "@/lib/apiError";
+
+// Ensure Company model is registered
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+Company;
 
 export async function GET(
   _req: NextRequest,
@@ -11,7 +16,7 @@ export async function GET(
   try {
     await dbConnect();
     const { id } = await params;
-    const product = await Product.findById(id).lean();
+    const product = await Product.findById(id).populate("company", "name logo").lean();
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
@@ -38,7 +43,21 @@ export async function PUT(
       body.images = [body.image];
     }
 
-    const product = await Product.findByIdAndUpdate(id, body, { returnDocument: 'after' });
+    if ("company" in body) {
+      if (body.company) {
+        if (typeof body.company === "string" && body.company.trim()) {
+          body.company = body.company.trim();
+        } else if (typeof body.company === "object" && body.company._id) {
+          body.company = body.company._id;
+        } else {
+          body.company = null;
+        }
+      } else {
+        body.company = null;
+      }
+    }
+
+    const product = await Product.findByIdAndUpdate(id, body, { returnDocument: 'after' }).populate("company", "name logo");
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }

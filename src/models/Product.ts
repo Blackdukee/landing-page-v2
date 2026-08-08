@@ -8,6 +8,7 @@ export interface IProduct extends Document {
   images: string[];
   stock: number;
   category: string;
+  company?: mongoose.Types.ObjectId | string | null;
   featured: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -22,6 +23,7 @@ const ProductSchema = new Schema<IProduct>(
     images: { type: [String], default: [] },
     stock: { type: Number, required: true, default: 0 },
     category: { type: String, required: true, default: "General" },
+    company: { type: Schema.Types.ObjectId, ref: "Company", default: null },
     featured: { type: Boolean, default: false },
   },
   { timestamps: true }
@@ -30,6 +32,7 @@ const ProductSchema = new Schema<IProduct>(
 // Indexes for common query patterns
 ProductSchema.index({ featured: 1, createdAt: -1 });
 ProductSchema.index({ category: 1 });
+ProductSchema.index({ company: 1 });
 ProductSchema.index({ name: "text" });
 
 // Keep `image` in sync: when saving, if images array has entries but image is

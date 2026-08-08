@@ -60,8 +60,7 @@ export default function DailyOffersSection() {
         Boolean(
           offer.active &&
             offer.product &&
-            typeof offer.product.stock === "number" &&
-            offer.product.stock > 0
+            offer.product._id
         )
     );
   }, [dailyOffers]);

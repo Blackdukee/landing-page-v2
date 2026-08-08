@@ -515,15 +515,20 @@ export default function AdminDashboard() {
         }),
       });
 
+      const data = await res.json();
       if (res.ok) {
         setOfferMsg(t("admin.dashboard.settingsSaved" as TranslationKey));
         setSelectedOfferProdId("");
         setOfferDiscount(20);
         setOfferExpiry("");
         setOfferSearch("");
+        if (Array.isArray(data.dailyOffers)) {
+          setDailyOffers(data.dailyOffers);
+        } else {
+          setDailyOffers(updatedOffers);
+        }
         siteSettings.refresh();
       } else {
-        const data = await res.json();
         setOfferError(data.error || "Failed to add offer");
       }
     } catch {

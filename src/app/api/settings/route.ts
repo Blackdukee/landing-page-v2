@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import dbConnect from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
 import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Helper function to normalize WhatsApp number to +201234567890 format
 const normalizeWhatsAppNumber = (input: string): string => {
@@ -141,8 +145,11 @@ export async function PUT(req: NextRequest) {
             item.discountPercentage <= 90
         )
         .map((item: any) => {
+          const rawId = typeof item.productId === "object" && item.productId?._id ? item.productId._id : item.productId;
           const offer: Record<string, any> = {
-            productId: typeof item.productId === "object" && item.productId?._id ? item.productId._id : item.productId,
+            productId: mongoose.Types.ObjectId.isValid(String(rawId))
+              ? new mongoose.Types.ObjectId(String(rawId))
+              : rawId,
             discountPercentage: Math.min(90, Math.max(1, Math.round(item.discountPercentage))),
             active: typeof item.active === "boolean" ? item.active : true,
             expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,

@@ -24,9 +24,11 @@ import {
   Search,
   Instagram,
   Twitter,
+  Flame,
+  Clock,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
-import { useSiteSettings } from "@/lib/SiteSettingsContext";
+import { useSiteSettings, type IDailyOfferItem } from "@/lib/SiteSettingsContext";
 import type { TranslationKey } from "@/i18n/en";
 
 interface Stats {
@@ -169,6 +171,17 @@ export default function AdminDashboard() {
   const [savingHero, setSavingHero] = useState(false);
   const [heroMsg, setHeroMsg] = useState("");
 
+  // Daily Offers state
+  const [dailyOffers, setDailyOffers] = useState<IDailyOfferItem[]>([]);
+  const [selectedOfferProdId, setSelectedOfferProdId] = useState<string>("");
+  const [offerDiscount, setOfferDiscount] = useState<number>(20);
+  const [offerExpiry, setOfferExpiry] = useState<string>("");
+  const [offerSearch, setOfferSearch] = useState<string>("");
+  const [savingOffer, setSavingOffer] = useState<boolean>(false);
+  const [offerMsg, setOfferMsg] = useState<string>("");
+  const [offerError, setOfferError] = useState<string>("");
+  const [deleteOfferIndex, setDeleteOfferIndex] = useState<number | null>(null);
+
   // Load site settings into local state
   useEffect(() => {
     if (!siteSettings.loading) {
@@ -182,12 +195,13 @@ export default function AdminDashboard() {
       setSocialTwitter(siteSettings.socialLinks?.twitter || "");
       setSocialEmail(siteSettings.socialLinks?.email || "");
       setPriceRanges(siteSettings.priceRangeFilters.map((f) => ({ ...f })));
+      setDailyOffers(siteSettings.dailyOffers || []);
       if (!heroInitialized) {
         setHeroProductId(siteSettings.heroProduct);
         setHeroInitialized(true);
       }
     }
-  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.shippingCost, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, heroInitialized]);
+  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.shippingCost, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, siteSettings.dailyOffers, heroInitialized]);
 
   useEffect(() => {
     Promise.all([
@@ -453,6 +467,137 @@ export default function AdminDashboard() {
       p.category.toLowerCase().includes(heroSearch.toLowerCase())
   );
 
+  // Daily offers handlers
+  const handleAddDailyOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOfferError("");
+    setOfferMsg("");
+
+    if (!selectedOfferProdId) {
+      setOfferError(t("admin.offers.selectProduct" as TranslationKey));
+      return;
+    }
+
+    const isDuplicate = dailyOffers.some((o) => {
+      const pId = typeof o.productId === "object" ? (o.productId as any)?._id : o.productId;
+      return String(pId) === String(selectedOfferProdId);
+    });
+
+    if (isDuplicate) {
+      setOfferError(t("admin.offers.productAlreadyAdded" as TranslationKey));
+      return;
+    }
+
+    const discountVal = Math.min(90, Math.max(1, Math.round(offerDiscount)));
+
+    const newOffer: IDailyOfferItem = {
+      productId: selectedOfferProdId,
+      discountPercentage: discountVal,
+      active: true,
+      expiresAt: offerExpiry ? new Date(offerExpiry).toISOString() : null,
+    };
+
+    const updatedOffers = [...dailyOffers, newOffer];
+    setSavingOffer(true);
+
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dailyOffers: updatedOffers.map((o) => ({
+            _id: o._id,
+            productId: typeof o.productId === "object" ? (o.productId as any)?._id : o.productId,
+            discountPercentage: o.discountPercentage,
+            active: o.active,
+            expiresAt: o.expiresAt,
+          })),
+        }),
+      });
+
+      if (res.ok) {
+        setOfferMsg(t("admin.dashboard.settingsSaved" as TranslationKey));
+        setSelectedOfferProdId("");
+        setOfferDiscount(20);
+        setOfferExpiry("");
+        setOfferSearch("");
+        siteSettings.refresh();
+      } else {
+        const data = await res.json();
+        setOfferError(data.error || "Failed to add offer");
+      }
+    } catch {
+      setOfferError("Network error");
+    } finally {
+      setSavingOffer(false);
+    }
+  };
+
+  const handleToggleOfferActive = async (index: number) => {
+    const updated = dailyOffers.map((o, i) =>
+      i === index ? { ...o, active: !o.active } : o
+    );
+    setDailyOffers(updated);
+
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dailyOffers: updated.map((o) => ({
+            _id: o._id,
+            productId: typeof o.productId === "object" ? (o.productId as any)?._id : o.productId,
+            discountPercentage: o.discountPercentage,
+            active: o.active,
+            expiresAt: o.expiresAt,
+          })),
+        }),
+      });
+
+      if (res.ok) {
+        siteSettings.refresh();
+      }
+    } catch (err) {
+      console.error("Failed to toggle offer active state", err);
+    }
+  };
+
+  const handleDeleteOffer = async (index: number) => {
+    const updated = dailyOffers.filter((_, i) => i !== index);
+    setDailyOffers(updated);
+    setDeleteOfferIndex(null);
+
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dailyOffers: updated.map((o) => ({
+            _id: o._id,
+            productId: typeof o.productId === "object" ? (o.productId as any)?._id : o.productId,
+            discountPercentage: o.discountPercentage,
+            active: o.active,
+            expiresAt: o.expiresAt,
+          })),
+        }),
+      });
+
+      if (res.ok) {
+        siteSettings.refresh();
+      }
+    } catch (err) {
+      console.error("Failed to delete offer", err);
+    }
+  };
+
+  const selectedOfferProduct = allProducts.find((p) => p._id === selectedOfferProdId);
+  const filteredOfferProducts = allProducts.filter(
+    (p) =>
+      !offerSearch ||
+      p.name.toLowerCase().includes(offerSearch.toLowerCase()) ||
+      p.category.toLowerCase().includes(offerSearch.toLowerCase())
+  );
+
   const statCards = [
     {
       label: t("admin.dashboard.totalProducts" as TranslationKey),
@@ -524,6 +669,43 @@ export default function AdminDashboard() {
               <button
                 onClick={() => setDeleteDialogCatId(null)}
                 className="w-full rounded-xl bg-surface hover:bg-card-hover text-muted px-4 py-3 text-sm font-medium transition-colors"
+              >
+                {t("admin.dashboard.cancel" as TranslationKey)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Offer Dialog */}
+      {deleteOfferIndex !== null && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-foreground">
+                {t("admin.offers.deleteConfirm" as TranslationKey)}
+              </h3>
+            </div>
+            <p className="text-sm text-muted mb-6">
+              Are you sure you want to remove this daily offer?
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                aria-label="Confirm delete daily offer"
+                onClick={() => handleDeleteOffer(deleteOfferIndex)}
+                className="flex-1 min-h-[44px] rounded-xl bg-red-500 text-white hover:bg-red-600 px-4 py-2.5 text-sm font-medium transition-colors"
+              >
+                Delete Offer
+              </button>
+              <button
+                type="button"
+                aria-label={t("admin.dashboard.cancel" as TranslationKey)}
+                onClick={() => setDeleteOfferIndex(null)}
+                className="flex-1 min-h-[44px] rounded-xl bg-surface hover:bg-card-hover text-muted px-4 py-2.5 text-sm font-medium transition-colors"
               >
                 {t("admin.dashboard.cancel" as TranslationKey)}
               </button>
@@ -1023,6 +1205,327 @@ export default function AdminDashboard() {
             <Save className="h-4 w-4" />
             {savingHero ? t("admin.dashboard.saving" as TranslationKey) : t("admin.dashboard.saveHeroProduct" as TranslationKey)}
           </button>
+        </div>
+      </div>
+
+      {/* Daily Offers Management */}
+      <div className="rounded-2xl bg-card border border-border mb-8">
+        <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/10 text-red-400">
+              <Flame className="h-3.5 w-3.5" />
+            </div>
+            <h2 className="font-semibold text-sm text-foreground">
+              {t("admin.offers.title" as TranslationKey)}
+            </h2>
+            <span className="text-xs text-muted">({dailyOffers.length})</span>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <p className="text-xs text-muted">
+            {t("admin.offers.subtitle" as TranslationKey)}
+          </p>
+
+          <form onSubmit={handleAddDailyOffer} className="space-y-5">
+            {/* Product Selector */}
+            <div>
+              <label className="text-xs font-medium text-muted mb-1.5 block">
+                {t("admin.offers.selectProduct" as TranslationKey)}
+              </label>
+
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                  <input
+                    type="text"
+                    value={offerSearch}
+                    onChange={(e) => setOfferSearch(e.target.value)}
+                    placeholder={t("admin.dashboard.searchProducts" as TranslationKey)}
+                    className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                  />
+                </div>
+
+                <select
+                  aria-label={t("admin.offers.selectProduct" as TranslationKey)}
+                  value={selectedOfferProdId}
+                  onChange={(e) => {
+                    setSelectedOfferProdId(e.target.value);
+                    setOfferError("");
+                  }}
+                  className={inputClass}
+                >
+                  <option value="">
+                    {t("admin.offers.selectProduct" as TranslationKey)}
+                  </option>
+                  {filteredOfferProducts.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name} ({p.category}) - {p.price.toFixed(2)} EGP
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Selected Product Card Preview */}
+              {selectedOfferProduct && (
+                <div className="flex items-center gap-4 rounded-xl border border-primary/30 bg-primary/5 p-3.5 mt-3">
+                  <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-surface flex-shrink-0">
+                    <Image
+                      src={selectedOfferProduct.image}
+                      alt={selectedOfferProduct.name}
+                      fill
+                      className="object-cover"
+                      sizes="56px"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {selectedOfferProduct.name}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {selectedOfferProduct.category} · EGP {selectedOfferProduct.price.toFixed(2)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Clear selected product"
+                    onClick={() => setSelectedOfferProdId("")}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Discount Percentage Slider + Number Input */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-muted">
+                  {t("admin.offers.discountPercent" as TranslationKey)}
+                </label>
+                <span className="text-sm font-bold text-primary">
+                  {offerDiscount}%
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min={1}
+                  max={90}
+                  value={offerDiscount}
+                  onChange={(e) => setOfferDiscount(Number(e.target.value))}
+                  aria-label={t("admin.offers.discountPercent" as TranslationKey)}
+                  className="flex-1 accent-primary h-2 bg-surface rounded-lg cursor-pointer min-h-[44px]"
+                />
+                <input
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={offerDiscount}
+                  onChange={(e) =>
+                    setOfferDiscount(Math.min(90, Math.max(1, Number(e.target.value))))
+                  }
+                  aria-label={t("admin.offers.discountPercent" as TranslationKey)}
+                  className="w-24 min-h-[44px] rounded-xl border border-border bg-surface px-3 py-2.5 text-center text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            </div>
+
+            {/* Real-Time Price & Savings Preview */}
+            {selectedOfferProduct && (
+              <div className="rounded-xl bg-surface/80 border border-border p-4 space-y-2">
+                <div className="flex justify-between items-center text-xs text-muted">
+                  <span>Original Price:</span>
+                  <span className="line-through">{selectedOfferProduct.price.toFixed(2)} EGP</span>
+                </div>
+                <div className="flex justify-between items-center text-sm font-semibold text-foreground">
+                  <span>{t("admin.offers.salePrice" as TranslationKey)}:</span>
+                  <span className="text-emerald-400 font-bold text-base">
+                    {(selectedOfferProduct.price * (1 - offerDiscount / 100)).toFixed(2)} EGP
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-xs text-emerald-400/90 font-medium">
+                  <span>{t("admin.offers.savings" as TranslationKey)}:</span>
+                  <span>
+                    Save {(selectedOfferProduct.price * (offerDiscount / 100)).toFixed(2)} EGP (-{offerDiscount}%)
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Expiration Date/Time */}
+            <div>
+              <label className="text-xs font-medium text-muted mb-1.5 block">
+                {t("admin.offers.expiryOptional" as TranslationKey)}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  type="datetime-local"
+                  value={offerExpiry}
+                  onChange={(e) => setOfferExpiry(e.target.value)}
+                  aria-label={t("admin.offers.expiryOptional" as TranslationKey)}
+                  className={`${inputClass} flex-1 min-w-[200px] min-h-[44px]`}
+                />
+                <button
+                  type="button"
+                  aria-label="Set expiration to end of day"
+                  onClick={() => {
+                    const todayEnd = new Date();
+                    todayEnd.setHours(23, 59, 59, 999);
+                    const iso = new Date(
+                      todayEnd.getTime() - todayEnd.getTimezoneOffset() * 60000
+                    )
+                      .toISOString()
+                      .slice(0, 16);
+                    setOfferExpiry(iso);
+                  }}
+                  className="min-h-[44px] px-4 rounded-xl border border-border bg-surface text-xs font-medium text-muted hover:text-foreground hover:bg-card-hover transition-colors flex items-center gap-1.5"
+                >
+                  <Clock className="h-4 w-4" />
+                  End of Day
+                </button>
+              </div>
+            </div>
+
+            {offerError && <p className="text-xs text-red-400">{offerError}</p>}
+            {offerMsg && <p className="text-xs text-emerald-400">{offerMsg}</p>}
+
+            {/* Add Daily Offer Button */}
+            <button
+              type="submit"
+              disabled={savingOffer || !selectedOfferProdId}
+              aria-label={t("admin.offers.addOffer" as TranslationKey)}
+              className="min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-6 py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
+            >
+              <Plus className="h-4 w-4" />
+              {savingOffer
+                ? t("admin.dashboard.saving" as TranslationKey)
+                : t("admin.offers.addOffer" as TranslationKey)}
+            </button>
+          </form>
+
+          {/* Configured Offers Grid */}
+          <div className="pt-6 border-t border-border">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">
+              Configured Offers ({dailyOffers.length})
+            </h3>
+
+            {dailyOffers.length === 0 ? (
+              <p className="text-sm text-muted text-center py-6">
+                {t("admin.offers.noOffers" as TranslationKey)}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {dailyOffers.map((offer, idx) => {
+                  const prodId = typeof offer.productId === "object" ? (offer.productId as any)?._id : offer.productId;
+                  const prod = offer.product || allProducts.find((p) => String(p._id) === String(prodId));
+                  const originalPrice = prod?.price || 0;
+                  const salePrice = originalPrice * (1 - offer.discountPercentage / 100);
+
+                  return (
+                    <div
+                      key={offer._id || idx}
+                      className={`flex flex-col sm:flex-row items-start gap-4 rounded-xl border p-4 transition-all ${
+                        offer.active
+                          ? "border-border bg-surface/60 hover:border-primary/30"
+                          : "border-border/50 bg-surface/20 opacity-60"
+                      }`}
+                    >
+                      {prod?.image ? (
+                        <div className="relative h-16 w-16 rounded-lg overflow-hidden bg-surface flex-shrink-0">
+                          <Image
+                            src={prod.image}
+                            alt={prod.name || "Product"}
+                            fill
+                            className="object-cover"
+                            sizes="64px"
+                          />
+                          <span className="absolute top-1 start-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                            -{offer.discountPercentage}%
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="h-16 w-16 rounded-lg bg-surface flex items-center justify-center flex-shrink-0 text-muted">
+                          <Package className="h-6 w-6" />
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-0 w-full">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="text-sm font-medium text-foreground truncate">
+                              {prod?.name || `Product ID: ${typeof offer.productId === "string" ? offer.productId : "Unknown"}`}
+                            </h4>
+                            {prod?.category && (
+                              <p className="text-[11px] text-muted">{prod.category}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-2 flex items-baseline gap-2">
+                          <span className="text-sm font-bold text-emerald-400">
+                            {salePrice.toFixed(2)} EGP
+                          </span>
+                          {originalPrice > 0 && (
+                            <span className="text-xs text-muted line-through">
+                              {originalPrice.toFixed(2)} EGP
+                            </span>
+                          )}
+                        </div>
+
+                        {offer.expiresAt && (
+                          <div className="mt-1.5 flex items-center gap-1 text-[11px] text-muted">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              Expires: {new Date(offer.expiresAt).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-border/40">
+                          {/* Active Switch Toggle */}
+                          <button
+                            type="button"
+                            aria-label={
+                              offer.active
+                                ? t("admin.offers.active" as TranslationKey)
+                                : t("admin.offers.inactive" as TranslationKey)
+                            }
+                            onClick={() => handleToggleOfferActive(idx)}
+                            className={`min-h-[44px] min-w-[44px] px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium transition-colors ${
+                              offer.active
+                                ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                                : "bg-surface hover:bg-card-hover text-muted"
+                            }`}
+                          >
+                            <span
+                              className={`h-2.5 w-2.5 rounded-full ${
+                                offer.active ? "bg-emerald-400 animate-pulse" : "bg-muted"
+                              }`}
+                            />
+                            {offer.active
+                              ? t("admin.offers.active" as TranslationKey)
+                              : t("admin.offers.inactive" as TranslationKey)}
+                          </button>
+
+                          {/* Delete button */}
+                          <button
+                            type="button"
+                            aria-label="Delete daily offer"
+                            onClick={() => setDeleteOfferIndex(idx)}
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

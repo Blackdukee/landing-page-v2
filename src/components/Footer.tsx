@@ -36,17 +36,17 @@ export default function Footer() {
             {hasAnySocial && (
               <div className="flex gap-4 mt-6">
                 {socialLinks.instagram && (
-                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-primary transition-colors duration-200">
+                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted hover:text-primary transition-colors duration-200">
                     <Instagram className="h-5 w-5" />
                   </a>
                 )}
                 {socialLinks.twitter && (
-                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-primary transition-colors duration-200">
+                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-muted hover:text-primary transition-colors duration-200">
                     <Twitter className="h-5 w-5" />
                   </a>
                 )}
                 {socialLinks.email && (
-                  <a href={`mailto:${socialLinks.email}`} className="text-muted hover:text-primary transition-colors duration-200">
+                  <a href={`mailto:${socialLinks.email}`} aria-label="Email support" className="text-muted hover:text-primary transition-colors duration-200">
                     <Mail className="h-5 w-5" />
                   </a>
                 )}
@@ -56,7 +56,7 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-dark mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground mb-4">
               {t("footer.shop")}
             </h3>
             <ul className="space-y-3">
@@ -70,23 +70,23 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-primary-dark mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground mb-4">
               {t("footer.company")}
             </h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
+                <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""}?text=Hi,%20I%20have%20a%20question`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
                   {t("footer.aboutUs")}
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
+                <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""}?text=Hi,%20I%20have%20a%20question%20about%20shipping`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
                   {t("footer.shippingReturns")}
                 </a>
               </li>
               <li>
                 {/* take the client to whatsapp chat with the store's number get the phone number from .env */}
-                  <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
+                  <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
                   {t("footer.contact")}
                 </a>
               </li>

@@ -73,25 +73,25 @@ export default function HomePage() {
                 {t("home.heroLine4")}
               </h1>
 
-                {/* <p className="text-lg text-muted max-w-lg leading-relaxed mb-10 mx-auto">
-                  {t("home.heroDesc")}
-                </p>
+              <p className="text-lg text-muted max-w-lg leading-relaxed mb-10 mx-auto">
+                {t("home.heroDesc")}
+              </p>
 
-                <div className="flex flex-wrap justify-center gap-4">
-                  <Link
-                    href="/products"
-                    className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    {t("home.explore")}
-                    <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
-                  </Link>
-                  <a
-                    href="#featured"
-                    className="inline-flex items-center gap-2 rounded-full glass px-8 py-4 text-sm font-medium text-foreground transition-all hover:bg-glass-border"
-                  >
-                    {t("home.seeFeatured")}
-                  </a>
-                </div> */}
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link
+                  href="/products"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {t("home.explore")}
+                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
+                </Link>
+                <a
+                  href="#featured"
+                  className="inline-flex items-center gap-2 rounded-full glass px-8 py-4 text-sm font-medium text-foreground transition-all hover:bg-glass-border"
+                >
+                  {t("home.seeFeatured")}
+                </a>
+              </div>
 
               {/* Trust badges */}
               <div className="flex flex-wrap justify-center gap-8 mt-14 pt-8 border-t border-border">
@@ -115,7 +115,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10">
-          <div className="flex flex-col items-center gap-2 animate-bounce">
+          <div className="flex flex-col items-center gap-2 animate-bounce motion-reduce:animate-none">
             <span className="text-[10px] uppercase tracking-widest text-muted">
               {t("home.scroll")}
             </span>
@@ -150,8 +150,18 @@ export default function HomePage() {
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl bg-surface animate-pulse aspect-[3/4]"
-                />
+                  className="rounded-2xl bg-card border border-border overflow-hidden animate-pulse motion-reduce:animate-none flex flex-col"
+                >
+                  <div className="aspect-square bg-surface" />
+                  <div className="p-3 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted/20 rounded w-3/4" />
+                      <div className="h-3 bg-muted/20 rounded w-full" />
+                    </div>
+                    <div className="h-4 bg-muted/20 rounded w-1/3" />
+                    <div className="h-9 bg-muted/20 rounded-xl w-full" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : featured.length > 0 ? (

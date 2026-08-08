@@ -206,6 +206,7 @@ export default function ProductsPage() {
             <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
             <input
               type="text"
+              aria-label={t("products.searchPlaceholder") || "Search products"}
               placeholder={t("products.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -214,6 +215,7 @@ export default function ProductsPage() {
             {search && (
               <button
                 onClick={() => setSearch("")}
+                aria-label="Clear search input"
                 className="absolute end-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
               >
                 <X className="h-4 w-4" />
@@ -225,6 +227,7 @@ export default function ProductsPage() {
             <div className="relative">
               <select
                 value={sortBy}
+                aria-label={t("products.sortBy") || "Sort products"}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="appearance-none rounded-xl border border-border bg-surface px-4 py-2.5 pe-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
               >
@@ -238,6 +241,7 @@ export default function ProductsPage() {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
+              aria-label={t("products.filters") || "Toggle filters"}
               className="sm:hidden inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground hover:bg-card-hover transition-colors"
             >
               <SlidersHorizontal className="h-4 w-4" />
@@ -262,6 +266,7 @@ export default function ProductsPage() {
                 <button
                   key={cat}
                   onClick={() => handleCategoryChange(cat)}
+                  aria-label={`Filter by category: ${getCategoryLabel(cat)}`}
                   className={`rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${
                     activeCategory === cat
                       ? "bg-gradient-to-r from-primary to-purple-500 text-white shadow-md shadow-primary/20"
@@ -283,6 +288,7 @@ export default function ProductsPage() {
                 <button
                   key={range.label}
                   onClick={() => setActivePriceRange(idx)}
+                  aria-label={`Filter by price range: ${range.label}`}
                   className={`rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${
                     activePriceRange === idx
                       ? "bg-gradient-to-r from-primary to-purple-500 text-white shadow-md shadow-primary/20"
@@ -317,6 +323,7 @@ export default function ProductsPage() {
             {activeFiltersCount > 0 && (
               <button
                 onClick={clearAllFilters}
+                aria-label={t("products.clearAllFilters")}
                 className="text-xs font-medium text-primary hover:text-primary-light transition-colors"
               >
                 {t("products.clearAllFilters")}
@@ -331,8 +338,18 @@ export default function ProductsPage() {
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl bg-surface animate-pulse aspect-[3/4]"
-              />
+                className="rounded-2xl bg-card border border-border overflow-hidden animate-pulse motion-reduce:animate-none flex flex-col"
+              >
+                <div className="aspect-square bg-surface" />
+                <div className="p-3 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="h-4 bg-muted/20 rounded w-3/4" />
+                    <div className="h-3 bg-muted/20 rounded w-full" />
+                  </div>
+                  <div className="h-4 bg-muted/20 rounded w-1/3" />
+                  <div className="h-9 bg-muted/20 rounded-xl w-full" />
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredProducts.length > 0 ? (
@@ -361,6 +378,7 @@ export default function ProductsPage() {
             </p>
             <button
               onClick={clearAllFilters}
+              aria-label={t("products.clearFilters")}
               className="rounded-full glass px-5 py-2 text-sm font-medium text-foreground hover:border-primary/30 transition-all"
             >
               {t("products.clearFilters")}
@@ -371,12 +389,13 @@ export default function ProductsPage() {
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && !loading && (
           <div className="mt-12 flex items-center justify-center">
-            <nav className="inline-flex items-center gap-1 rounded-2xl bg-card border border-border p-1.5">
+            <nav className="inline-flex items-center gap-1 rounded-2xl bg-card border border-border p-1.5" aria-label="Pagination">
               <button
                 onClick={() => goToPage(1)}
                 disabled={currentPage === 1}
                 className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 title={t("products.firstPage")}
+                aria-label={t("products.firstPage") || "First page"}
               >
                 <ChevronsLeft className="h-4 w-4" />
               </button>
@@ -386,6 +405,7 @@ export default function ProductsPage() {
                 disabled={currentPage === 1}
                 className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 title={t("products.previousPage")}
+                aria-label={t("products.previousPage") || "Previous page"}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -402,6 +422,7 @@ export default function ProductsPage() {
                   <button
                     key={pageNum}
                     onClick={() => goToPage(pageNum as number)}
+                    aria-label={`Go to page ${pageNum}`}
                     className={`flex h-9 min-w-[2.25rem] items-center justify-center rounded-xl px-2 text-xs font-medium transition-all ${
                       currentPage === pageNum
                         ? "bg-gradient-to-r from-primary to-purple-500 text-white shadow-md shadow-primary/20"
@@ -418,6 +439,7 @@ export default function ProductsPage() {
                 disabled={currentPage === pagination.totalPages}
                 className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 title={t("products.nextPage")}
+                aria-label={t("products.nextPage") || "Next page"}
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -427,6 +449,7 @@ export default function ProductsPage() {
                 disabled={currentPage === pagination.totalPages}
                 className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 title={t("products.lastPage")}
+                aria-label={t("products.lastPage") || "Last page"}
               >
                 <ChevronsRight className="h-4 w-4" />
               </button>

@@ -22,6 +22,17 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [mobileOpen]);
+
   const displayCount = mounted ? itemCount : 0;
   const toggleLocale = () => setLocale(locale === "en" ? "ar" : "en");
 
@@ -66,6 +77,7 @@ export default function Navbar() {
           {/* Language Toggle */}
           <button
             onClick={toggleLocale}
+            aria-label={locale === "en" ? "Switch language to Arabic" : "Switch language to English"}
             className="inline-flex items-center gap-1.5 rounded-full glass px-3.5 py-2 text-xs font-semibold text-muted hover:text-foreground transition-all hover:border-primary/30"
           >
             <Globe className="h-3.5 w-3.5" />
@@ -74,6 +86,7 @@ export default function Navbar() {
 
           <Link
             href="/cart"
+            aria-label={`${t("nav.cart")}${displayCount > 0 ? ` (${displayCount} items)` : ""}`}
             className="relative group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
           >
             <ShoppingBag className="h-4 w-4" />
@@ -91,11 +104,16 @@ export default function Navbar() {
           {/* Language Toggle (mobile) */}
           <button
             onClick={toggleLocale}
+            aria-label={locale === "en" ? "Switch language to Arabic" : "Switch language to English"}
             className="p-2 rounded-lg text-muted hover:text-foreground hover:bg-glass transition-colors"
           >
             <Globe className="h-5 w-5" />
           </button>
-          <Link href="/cart" className="relative p-2 text-foreground">
+          <Link
+            href="/cart"
+            aria-label={`${t("nav.cart")}${displayCount > 0 ? ` (${displayCount} items)` : ""}`}
+            className="relative p-2 text-foreground"
+          >
             <ShoppingBag className="h-5 w-5" />
             {displayCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
@@ -105,6 +123,7 @@ export default function Navbar() {
           </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
             className="p-2 rounded-lg text-foreground hover:bg-glass transition-colors"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -112,26 +131,33 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu & Backdrop */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-glass-border bg-surface/95 backdrop-blur-xl">
-          <div className="flex flex-col px-6 py-4 gap-1">
-            <Link
-              href="/"
-              onClick={() => setMobileOpen(false)}
-              className="text-sm font-medium py-3 px-3 rounded-lg text-muted hover:text-foreground hover:bg-glass transition-all"
-            >
-              {t("nav.home")}
-            </Link>
-            <Link
-              href="/products"
-              onClick={() => setMobileOpen(false)}
-              className="text-sm font-medium py-3 px-3 rounded-lg text-muted hover:text-foreground hover:bg-glass transition-all"
-            >
-              {t("nav.shop")}
-            </Link>
+        <>
+          <div
+            className="fixed inset-0 top-[73px] z-40 bg-black/40 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="relative z-50 md:hidden border-t border-glass-border bg-surface/95 backdrop-blur-xl">
+            <div className="flex flex-col px-6 py-4 gap-1">
+              <Link
+                href="/"
+                onClick={() => setMobileOpen(false)}
+                className="text-sm font-medium py-3 px-3 rounded-lg text-muted hover:text-foreground hover:bg-glass transition-all"
+              >
+                {t("nav.home")}
+              </Link>
+              <Link
+                href="/products"
+                onClick={() => setMobileOpen(false)}
+                className="text-sm font-medium py-3 px-3 rounded-lg text-muted hover:text-foreground hover:bg-glass transition-all"
+              >
+                {t("nav.shop")}
+              </Link>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </header>
   );

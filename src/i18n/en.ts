@@ -225,8 +225,23 @@ const en = {
   // ── Admin – Sidebar Nav ──
   "admin.nav.dashboard": "Dashboard",
   "admin.nav.products": "Products",
+  "admin.nav.companies": "Companies",
   "admin.nav.orders": "Orders",
   "admin.nav.viewStore": "View Store",
+
+  // ── Admin – Companies & Brands ──
+  "admin.companies.title": "Companies & Brands Management",
+  "admin.companies.subtitle": "Add and edit logos and names of manufacturing companies and brands",
+  "admin.companies.addCompany": "Add New Company",
+  "admin.companies.name": "Company / Brand Name",
+  "admin.companies.logo": "Company Logo",
+  "admin.companies.description": "Company Description (optional)",
+  "admin.companies.noCompanies": "No companies registered yet. Add the first company above.",
+  "admin.companies.deleteConfirm": "Are you sure you want to delete this company? It will be unlinked from associated products.",
+  "admin.companies.selectCompany": "Select Manufacturer Company (optional)",
+  "admin.companies.allCompanies": "All Companies",
+  "admin.companies.companySaved": "Company data saved successfully",
+  "admin.companies.companyDeleted": "Company deleted successfully",
 
   // ── Admin – Login ──
   "admin.login.title": "Admin Portal",
@@ -388,6 +403,21 @@ const en = {
   "admin.orders.qty": "Qty",
   "admin.orders.totalLabel": "Total",
   "admin.orders.ordered": "Ordered",
+  "admin.orders.applyDiscount": "Apply Discount & Confirm Order",
+  "admin.orders.discountModalTitle": "Discounts & Order Confirmation #{id}",
+  "admin.orders.itemDiscounts": "Discounts on Specific Items",
+  "admin.orders.orderDiscount": "Additional Order Total Discount",
+  "admin.orders.stackDiscount": "Stack with Current Discount",
+  "admin.orders.stackDiscountHelp": "When enabled, discount is calculated on already reduced price, otherwise on original price.",
+  "admin.orders.originalTotal": "Original Order Total",
+  "admin.orders.totalSavings": "Total Applied Savings",
+  "admin.orders.finalPayable": "Final Payable Amount",
+  "admin.orders.saveAndConfirm": "Save & Confirm Order with Discount",
+  "admin.orders.copyWhatsAppArabic": "Copy WhatsApp Message for Customer (Arabic)",
+  "admin.orders.copiedWhatsApp": "WhatsApp message copied successfully!",
+  "admin.orders.discountAppliedSuccess": "Discount applied and order confirmed successfully",
+  "admin.orders.percentage": "Percentage (%)",
+  "admin.orders.fixed": "Fixed Amount (EGP)",
 
   // ── Admin – Statuses ──
   "admin.status.pending": "Pending",

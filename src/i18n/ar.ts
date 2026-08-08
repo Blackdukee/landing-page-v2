@@ -225,8 +225,23 @@ const ar: Record<string, string> = {
   // ── الإدارة – الشريط الجانبي ──
   "admin.nav.dashboard": "لوحة التحكم",
   "admin.nav.products": "المنتجات",
+  "admin.nav.companies": "الشركات",
   "admin.nav.orders": "الطلبات",
   "admin.nav.viewStore": "عرض المتجر",
+
+  // ── الإدارة – الشركات والعلامات التجارية ──
+  "admin.companies.title": "إدارة الشركات والعلامات التجارية",
+  "admin.companies.subtitle": "إضافة وتعديل شعارات وأسماء الشركات والمصانع المصنعة للمنتجات",
+  "admin.companies.addCompany": "إضافة شركة جديدة",
+  "admin.companies.name": "اسم الشركة / العلامة التجارية",
+  "admin.companies.logo": "شعار الشركة (Logo)",
+  "admin.companies.description": "وصف الشركة (اختياري)",
+  "admin.companies.noCompanies": "لا توجد شركات مسجلة حالياً. أضف أول شركة أعلاه.",
+  "admin.companies.deleteConfirm": "هل أنت متأكد من حذف هذه الشركة؟ سيتم إلغاء ربطها بالمنتجات المرتبطة.",
+  "admin.companies.selectCompany": "اختر الشركة المصنعة (اختياري)",
+  "admin.companies.allCompanies": "جميع الشركات",
+  "admin.companies.companySaved": "تم حفظ بيانات الشركة بنجاح",
+  "admin.companies.companyDeleted": "تم حذف الشركة بنجاح",
 
   // ── الإدارة – تسجيل الدخول ──
   "admin.login.title": "بوابة الإدارة",
@@ -388,6 +403,21 @@ const ar: Record<string, string> = {
   "admin.orders.qty": "الكمية",
   "admin.orders.totalLabel": "المجموع",
   "admin.orders.ordered": "تاريخ الطلب",
+  "admin.orders.applyDiscount": "تطبيق خصم وتأكيد الطلب",
+  "admin.orders.discountModalTitle": "خصومات وتأكيد الطلب رقم #{id}",
+  "admin.orders.itemDiscounts": "خصم على أصناف محددة",
+  "admin.orders.orderDiscount": "خصم إضافي على إجمالي الطلب",
+  "admin.orders.stackDiscount": "دمج مع الخصم الحالي (Stacking)",
+  "admin.orders.stackDiscountHelp": "عند التفعيل، يُحسب الخصم على السعر المخفض بالفعل، وإلا يُحسب على السعر الأصلي.",
+  "admin.orders.originalTotal": "إجمالي الطلب الأصلي",
+  "admin.orders.totalSavings": "إجمالي قيمة الخصومات المطبقة",
+  "admin.orders.finalPayable": "المبلغ النهائي المطلوب للدفع",
+  "admin.orders.saveAndConfirm": "حفظ وتأكيد الطلب بالخصم",
+  "admin.orders.copyWhatsAppArabic": "نسخ رسالة الواتساب للعميل (بالعربية)",
+  "admin.orders.copiedWhatsApp": "تم نسخ رسالة الواتساب بنجاح!",
+  "admin.orders.discountAppliedSuccess": "تم تطبيق الخصم وتأكيد الطلب بنجاح",
+  "admin.orders.percentage": "نسبة مئوية (%)",
+  "admin.orders.fixed": "مبلغ ثابت (ج.م)",
 
   // ── الإدارة – الحالات ──
   "admin.status.pending": "معلق",

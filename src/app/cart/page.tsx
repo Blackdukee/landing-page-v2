@@ -23,6 +23,7 @@ export default function CartPage() {
   const { freeDeliveryMinPrice, shippingCost } = useSiteSettings();
   const [productStock, setProductStock] = useState<ProductStock>({});
   const [stockError, setStockError] = useState("");
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
 
@@ -66,7 +67,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/products"
-            className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white px-7 py-3 text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25"
+            className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white px-7 py-3 text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25 cursor-pointer"
           >
             {t("cart.continueShopping")}
             <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
@@ -98,8 +99,8 @@ export default function CartPage() {
             </p>
           </div>
           <button
-            onClick={clearCart}
-            className="text-xs font-medium text-muted hover:text-danger transition-colors"
+            onClick={() => setShowClearConfirm(true)}
+            className="text-xs font-medium text-muted hover:text-danger transition-colors cursor-pointer"
           >
             {t("cart.clearAll")}
           </button>
@@ -136,7 +137,8 @@ export default function CartPage() {
                           setStockError("");
                           updateQuantity(item.productId, item.quantity - 1, productStock[item.productId]);
                         }}
-                        className="flex h-8 w-8 items-center justify-center text-muted hover:text-foreground transition-colors"
+                        aria-label="Decrease quantity"
+                        className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center text-muted hover:text-foreground transition-colors cursor-pointer"
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
@@ -154,7 +156,9 @@ export default function CartPage() {
                             updateQuantity(item.productId, item.quantity + 1, stock);
                           }
                         }}
-                        className="flex h-8 w-8 items-center justify-center text-muted hover:text-foreground transition-colors"
+                        disabled={item.quantity >= (productStock[item.productId] || item.stock || Infinity)}
+                        aria-label="Increase quantity"
+                        className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center text-muted hover:text-foreground transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
@@ -165,7 +169,8 @@ export default function CartPage() {
                       </span>
                       <button
                         onClick={() => removeItem(item.productId)}
-                        className="text-muted hover:text-danger transition-colors"
+                        aria-label={`Remove ${item.name} from cart`}
+                        className="text-muted hover:text-danger transition-colors cursor-pointer p-2 flex items-center justify-center min-w-[44px] min-h-[44px]"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -197,7 +202,7 @@ export default function CartPage() {
                   </span>
                 </div>
                 {shipping > 0 && (
-                  <p className="text-[11px] text-primary-light">
+                  <p className="text-xs text-primary font-medium mt-1">
                     {t("cart.freeShippingHint", { amount: (freeDeliveryMinPrice - totalPrice()).toFixed(2) })}
                   </p>
                 )}
@@ -209,7 +214,7 @@ export default function CartPage() {
 
               <Link
                 href="/checkout"
-                className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white py-3.5 text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25"
+                className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white py-3.5 text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25 cursor-pointer"
               >
                 {t("cart.proceedToCheckout")}
                 <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
@@ -217,7 +222,7 @@ export default function CartPage() {
 
               <Link
                 href="/products"
-                className="mt-3 flex w-full items-center justify-center text-xs font-medium text-muted hover:text-foreground transition-colors"
+                className="mt-3 flex w-full items-center justify-center text-xs font-medium text-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 {t("cart.continueShopping")}
               </Link>
@@ -225,6 +230,39 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* Clear Cart Confirmation Dialog */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-amber-500">
+              <AlertCircle className="h-6 w-6 shrink-0" />
+              <h3 className="text-lg font-bold text-foreground">Clear Cart?</h3>
+            </div>
+            <p className="text-sm text-muted">
+              Are you sure you want to remove all items from your shopping cart? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground rounded-lg border border-border hover:bg-surface transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  clearCart();
+                  setShowClearConfirm(false);
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-danger hover:bg-danger/90 rounded-lg transition-colors cursor-pointer"
+              >
+                Clear Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

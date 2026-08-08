@@ -134,7 +134,7 @@ Let $S_{\text{items}} = \sum (P_{\text{final}} \times \text{quantity})$.
 
 ---
 
-## 6. Accessibility & Performance Constraints
-- All modal triggers, discount type switches, and stacking checkboxes enforce minimum 44×44px touch targets with descriptive `aria-label`s.
-- Clean TypeScript types without `any` regressions.
-- WCAG AA text contrast (> 4.5:1) for all discount summaries and company badges.
+## 5. Localization & Messaging Focus (Arabic First)
+- **Primary Language Focus:** Arabic (`ar.ts` and Arabic order summaries).
+- **Admin & WhatsApp Messages:** All order adjustment summaries, discount breakdowns, itemized details, and WhatsApp confirmation templates are generated in rich, professional Egyptian Arabic (e.g. "تفاصيل الطلب بعد الخصم", "قيمة الخصم المطبق", "المبلغ النهائي للدفع").
+- Full Arabic translation strings for Company Management, Brand Selector, and Order Discount Modals.

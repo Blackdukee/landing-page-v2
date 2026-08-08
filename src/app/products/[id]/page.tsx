@@ -67,26 +67,24 @@ export default function ProductDetailPage() {
     const quantityInCart = cartItem?.quantity || 0;
     const availableStock = product.stock - quantityInCart;
     
-    if (quantity > availableStock) {
+    if (availableStock <= 0 || quantity > availableStock) {
       setStockError(t("cart.insufficientStock"));
       setTimeout(() => setStockError(""), 3000);
       return;
     }
     
-    let failed = false;
-    for (let i = 0; i < quantity; i++) {
-      const success = addItem({
+    const success = addItem(
+      {
         productId: product._id,
         name: product.name,
         price: product.price,
         image: product.images?.[0] || product.image,
-      }, product.stock);
-      if (!success) {
-        failed = true;
-        break;
-      }
-    }
-    if (failed) {
+      },
+      product.stock,
+      quantity
+    );
+
+    if (!success) {
       setStockError(t("cart.insufficientStock"));
       setTimeout(() => setStockError(""), 3000);
     } else {
@@ -195,21 +193,21 @@ export default function ProductDetailPage() {
             </h1>
 
             {/* Price */}
-            <div className="flex items-baseline gap-3 mb-6">
+            <div className="flex items-baseline gap-3 flex-wrap mb-6">
               <span className="text-3xl font-bold gradient-text">
                 EGP {product.price.toFixed(2)}
               </span>
               {product.stock > 0 ? (
-                <span className="text-xs font-medium text-green-400 bg-green-500/10 rounded-full px-2.5 py-1">
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
                   {t("detail.inStock")}
                 </span>
               ) : (
-                <span className="text-xs font-medium text-red-400 bg-red-500/10 rounded-full px-2.5 py-1">
+                <span className="text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2.5 py-1">
                   {t("detail.outOfStock")}
                 </span>
               )}
               {product.stock > 0 && product.stock <= 5 && (
-                <span className="text-xs text-amber-400">
+                <span className="text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
                   {t("detail.onlyLeft", { count: product.stock })}
                 </span>
               )}
@@ -230,53 +228,60 @@ export default function ProductDetailPage() {
               <div className="space-y-4 mb-8">
                 {/* Stock error notification */}
                 {stockError && (
-                  <div className="flex items-center gap-3 rounded-lg border border-red-400/30 bg-red-500/10 p-3">
-                    <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />
-                    <p className="text-sm text-red-300">{stockError}</p>
+                  <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3">
+                    <AlertCircle className="h-5 w-5 text-red-700 shrink-0" />
+                    <p className="text-sm font-medium text-red-700">{stockError}</p>
                   </div>
                 )}
 
                 {/* Quantity selector */}
-                <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                    {t("detail.quantity")}
-                  </h3>
-                  {(() => {
-                    const cartItem = items.find((i) => i.productId === product._id);
-                    const quantityInCart = cartItem?.quantity || 0;
-                    const availableStock = product.stock - quantityInCart;
-                    const canIncrement = quantity < availableStock;
-                    
-                    return (
+                {(() => {
+                  const cartItem = items.find((i) => i.productId === product._id);
+                  const quantityInCart = cartItem?.quantity || 0;
+                  const availableStock = Math.max(0, product.stock - quantityInCart);
+                  const canIncrement = availableStock > 0 && quantity < availableStock;
+                  
+                  return (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
+                        {t("detail.quantity")}
+                      </h3>
                       <div className="inline-flex items-center gap-0 rounded-xl border border-border bg-surface overflow-hidden">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="flex h-10 w-10 items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors"
+                          aria-label="Decrease quantity"
+                          className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors"
                         >
                           <Minus className="h-4 w-4" />
                         </button>
-                        <span className="flex h-10 w-12 items-center justify-center text-sm font-medium text-foreground border-x border-border">
+                        <span className="flex h-11 w-12 items-center justify-center text-sm font-medium text-foreground border-x border-border">
                           {quantity}
                         </span>
                         <button
-                          onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
+                          onClick={() => availableStock > 0 && setQuantity(Math.min(availableStock, quantity + 1))}
                           disabled={!canIncrement}
-                          className="flex h-10 w-10 items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Increase quantity"
+                          className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center text-muted hover:bg-card-hover hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
-                    );
-                  })()}
-                </div>
+                      {availableStock <= 0 && (
+                        <p className="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1 mt-2 inline-block">
+                          {t("cart.insufficientStock")}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Add/Remove to Cart button */}
                 {(() => {
                   const cartItem = items.find((i) => i.productId === product._id);
                   const quantityInCart = cartItem?.quantity || 0;
                   const isInCart = quantityInCart > 0;
-                  const availableStock = product.stock - quantityInCart;
-                  const isDisabled = quantity > availableStock;
+                  const availableStock = Math.max(0, product.stock - quantityInCart);
+                  const isDisabled = availableStock <= 0 || quantity > availableStock;
                   
                   if (isInCart) {
                     return (
@@ -293,7 +298,11 @@ export default function ProductDetailPage() {
                           }`}
                         >
                           <ShoppingBag className="h-4.5 w-4.5" />
-                          {added ? t("detail.addedToCart") : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
+                          {added
+                            ? t("detail.addedToCart")
+                            : availableStock <= 0
+                            ? t("detail.outOfStock")
+                            : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
                         </button>
                         <button
                           onClick={handleRemoveFromCart}
@@ -319,7 +328,11 @@ export default function ProductDetailPage() {
                       }`}
                     >
                       <ShoppingBag className="h-4.5 w-4.5" />
-                      {added ? t("detail.addedToCart") : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
+                      {added
+                        ? t("detail.addedToCart")
+                        : availableStock <= 0
+                        ? t("detail.outOfStock")
+                        : t("detail.addToCart", { price: (product.price * quantity).toFixed(2) })}
                     </button>
                   );
                 })()}

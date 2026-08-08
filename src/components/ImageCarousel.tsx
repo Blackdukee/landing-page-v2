@@ -19,9 +19,10 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const panStart = useRef({ x: 0, y: 0 });
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   const prev = useCallback(
     () => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1)),
@@ -32,16 +33,6 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
     [images.length]
   );
 
-  // Detect mobile view on mount
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
     setZoom(1);
@@ -50,13 +41,7 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
   };
 
   const handleImageClick = (index: number) => {
-    if (isMobile) {
-      // Open image in new tab on mobile
-      window.open(images[index], "_blank");
-    } else {
-      // Open lightbox on desktop
-      openLightbox(index);
-    }
+    openLightbox(index);
   };
 
   const closeLightbox = () => {
@@ -100,6 +85,35 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
     const newZoom = Math.max(zoom - 0.5, 1);
     setZoom(newZoom);
     if (newZoom === 1) setPan({ x: 0, y: 0 });
+  };
+
+  // Touch swipe handling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, isLightbox = false) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    const diffX = touchEndX - touchStartX.current;
+    const diffY = touchEndY - touchStartY.current;
+
+    // Trigger swipe if horizontal movement is dominant and > 40px
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX < 0) {
+        isLightbox ? lightboxNext() : next();
+      } else {
+        isLightbox ? lightboxPrev() : prev();
+      }
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
   };
 
   // Handle mouse/touch dragging when zoomed
@@ -176,6 +190,8 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
       <div
         className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-border group cursor-zoom-in"
         onClick={() => handleImageClick(current)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={(e) => handleTouchEnd(e, false)}
       >
         <Image
           src={images[current]}
@@ -194,32 +210,36 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
           <>
             <button
               onClick={(e) => { e.stopPropagation(); prev(); }}
-              className="absolute start-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full glass-strong text-white/80 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute start-3 top-1/2 -translate-y-1/2 flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center rounded-full glass-strong text-white/80 hover:text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200"
               aria-label="Previous image"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); next(); }}
-              className="absolute end-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full glass-strong text-white/80 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute end-3 top-1/2 -translate-y-1/2 flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center rounded-full glass-strong text-white/80 hover:text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200"
               aria-label="Next image"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
 
             {/* Dot indicators */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center">
               {images.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={(e) => { e.stopPropagation(); setCurrent(idx); }}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    idx === current
-                      ? "w-6 bg-white"
-                      : "w-1.5 bg-white/40 hover:bg-white/60"
-                  }`}
+                  className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center p-2 cursor-pointer focus:outline-none"
                   aria-label={`Go to image ${idx + 1}`}
-                />
+                >
+                  <span
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      idx === current
+                        ? "w-6 bg-white"
+                        : "w-2 bg-white/40 hover:bg-white/60"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           </>
@@ -233,11 +253,12 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
             <button
               key={idx}
               onClick={() => setCurrent(idx)}
-              className={`relative h-16 w-16 shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+              className={`relative h-16 w-16 min-w-[44px] min-h-[44px] shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                 idx === current
                   ? "border-primary ring-2 ring-primary/20"
                   : "border-border hover:border-primary/40 opacity-60 hover:opacity-100"
               }`}
+              aria-label={`Select image ${idx + 1}`}
             >
               <Image
                 src={img}
@@ -257,6 +278,8 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
           className="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm"
           style={{ zIndex: 9999 }}
           onClick={closeLightbox}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={(e) => zoom <= 1 && handleTouchEnd(e, true)}
         >
           {/* Top bar */}
           <div className="absolute top-0 inset-x-0 flex items-center justify-between p-4 z-20">
@@ -266,7 +289,7 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); zoomOut(); }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
                 aria-label="Zoom out"
               >
                 <ZoomOut className="h-5 w-5" />
@@ -276,15 +299,15 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
               </span>
               <button
                 onClick={(e) => { e.stopPropagation(); zoomIn(); }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
                 aria-label="Zoom in"
               >
                 <ZoomIn className="h-5 w-5" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors ms-2"
-                aria-label="Close"
+                className="flex h-11 w-11 min-w-[44px] min-h-[44px] items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors ms-2"
+                aria-label="Close preview"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -296,14 +319,14 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
-                className="absolute start-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                className="absolute start-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 min-w-[44px] min-h-[44px] items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
-                className="absolute end-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                className="absolute end-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 min-w-[44px] min-h-[44px] items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -352,11 +375,12 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
                     setZoom(1);
                     setPan({ x: 0, y: 0 });
                   }}
-                  className={`relative h-14 w-14 shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                  className={`relative h-14 w-14 min-w-[44px] min-h-[44px] shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                     idx === lightboxIndex
                       ? "border-white ring-2 ring-white/30"
                       : "border-white/20 hover:border-white/50 opacity-50 hover:opacity-100"
                   }`}
+                  aria-label={`View image ${idx + 1}`}
                 >
                   <Image
                     src={img}

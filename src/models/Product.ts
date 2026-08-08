@@ -6,6 +6,8 @@ export interface IProduct extends Document {
   price: number;
   image: string;
   images: string[];
+  /** ImageKit fileIds parallel to the `images` array — used to delete from ImageKit on removal */
+  imageFileIds: string[];
   stock: number;
   category: string;
   company?: mongoose.Types.ObjectId | string | null;
@@ -21,6 +23,7 @@ const ProductSchema = new Schema<IProduct>(
     price: { type: Number, required: true },
     image: { type: String, default: "" },
     images: { type: [String], default: [] },
+    imageFileIds: { type: [String], default: [] },
     stock: { type: Number, required: true, default: 0 },
     category: { type: String, required: true, default: "General" },
     company: { type: Schema.Types.ObjectId, ref: "Company", default: null },

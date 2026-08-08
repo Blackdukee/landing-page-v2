@@ -16,16 +16,16 @@ function DynamicTitle() {
   }, [websiteName]);
 
   useEffect(() => {
+    if (!favicon) return;
+
     // Remove any existing icon links
     const existingIcons = document.querySelectorAll("link[rel='icon'], link[rel='shortcut icon']");
     existingIcons.forEach((el) => el.remove());
 
-    if (!favicon) return;
-
     const link = document.createElement("link");
     link.rel = "icon";
-    link.type = "image/x-icon";
-    link.href = favicon.includes("?") ? `${favicon}&v=${Date.now()}` : `${favicon}?v=${Date.now()}`;
+    link.type = "image/png";
+    link.href = favicon;
     document.head.appendChild(link);
 
     return () => {

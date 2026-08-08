@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import ImageKit from "@imagekit/nodejs";
 import type { File as ImageKitFile } from "@imagekit/nodejs/resources/files/files";
 import { createHash } from "crypto";
+import sharp from "sharp";
 import { logError } from "@/lib/apiError";
+
+// Vercel Hobby: 10s max, must use Node.js runtime (sharp needs native binaries)
+export const runtime = "nodejs";
+export const maxDuration = 10;
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
@@ -26,21 +31,44 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size — Vercel Hobby caps request bodies at 4.5MB total,
+    // so we enforce 4MB here to leave room for multipart form overhead.
+    if (file.size > 4 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "File too large. Maximum size is 5MB" },
+        { error: "File too large. Maximum size is 4MB" },
         { status: 400 }
       );
     }
 
-    // Convert file to base64
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString("base64");
+    const rawBuffer = Buffer.from(bytes);
 
-    // Compute content hash for deduplication
-    const contentHash = createHash("md5").update(buffer).digest("hex");
+    // --- Pre-process with sharp (skip SVGs — sharp can't handle them) ---
+    let uploadBuffer: Buffer;
+    let uploadMime: string;
+    let uploadExt: string;
+
+    if (file.type === "image/svg+xml") {
+      // SVGs are already tiny — upload as-is
+      uploadBuffer = rawBuffer;
+      uploadMime = "image/svg+xml";
+      uploadExt = ".svg";
+    } else {
+      // Resize to max 800×800, convert to WebP, strip EXIF, fix orientation
+      uploadBuffer = await sharp(rawBuffer)
+        .rotate()                         // auto-rotate from EXIF
+        .resize(800, 800, {
+          fit: "inside",                  // never crops, never upscales
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 82 })           // good quality/size balance
+        .toBuffer();
+      uploadMime = "image/webp";
+      uploadExt = ".webp";
+    }
+
+    // Compute content hash of the processed buffer for deduplication
+    const contentHash = createHash("md5").update(uploadBuffer).digest("hex");
 
     const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT!.replace(/\/$/, "");
 
@@ -54,9 +82,10 @@ export async function POST(req: Request) {
 
       if (Array.isArray(existing) && existing.length > 0) {
         const found = existing[0] as ImageKitFile;
-        const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-at_max,fo-top,f-auto,q-auto${found.filePath}`;
+        // No /tr: needed — file is already optimized at upload time
+        const directUrl = `${urlEndpoint}${found.filePath}`;
         return NextResponse.json({
-          url: optimizedUrl,
+          url: directUrl,
           fileId: found.fileId,
           width: found.width,
           height: found.height,
@@ -67,19 +96,29 @@ export async function POST(req: Request) {
       // If search fails, proceed with upload
     }
 
-    // Upload image to ImageKit with content hash as tag
+    // Sanitize filename and apply correct extension
+    const safeName =
+      file.name
+        .toLowerCase()
+        .replace(/\.[^.]+$/, "")          // strip original extension
+        .replace(/[^a-z0-9_-]/g, "-")     // replace special chars
+        .replace(/-+/g, "-")
+        .slice(0, 80) + uploadExt;
+
+    // Upload the pre-optimized buffer (no transformation needed at delivery)
+    const base64 = uploadBuffer.toString("base64");
     const result = await imagekit.files.upload({
       file: base64,
-      fileName: file.name || "upload.jpg",
+      fileName: safeName,
       folder: "/novashop/products",
       tags: [contentHash],
     });
 
-    // Build optimized delivery URL (auto format + auto quality + 600x600)
-    const optimizedUrl = `${urlEndpoint}/tr:w-600,h-600,c-at_max,fo-top,f-auto,q-auto${result.filePath}`;
+    // Return the plain CDN URL — file is already sized & compressed
+    const directUrl = `${urlEndpoint}${result.filePath}`;
 
     return NextResponse.json({
-      url: optimizedUrl,
+      url: directUrl,
       fileId: result.fileId,
       width: result.width,
       height: result.height,

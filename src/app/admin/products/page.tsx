@@ -33,6 +33,7 @@ interface Product {
   price: number;
   image: string;
   images: string[];
+  imageFileIds: string[];
   stock: number;
   category: string;
   company?: { _id: string; name: string; logo: string } | string | null;
@@ -51,6 +52,7 @@ const emptyProduct = {
   price: 0,
   image: "",
   images: [] as string[],
+  imageFileIds: [] as string[],
   stock: 0,
   category: "General",
   company: "",
@@ -182,6 +184,7 @@ export default function AdminProductsPage() {
   const openEdit = (product: Product) => {
     setEditing(product);
     const imgs = product.images || (product.image ? [product.image] : []);
+    const fileIds = product.imageFileIds || [];
     const companyId =
       typeof product.company === "object" && product.company !== null
         ? product.company._id
@@ -194,6 +197,7 @@ export default function AdminProductsPage() {
       price: product.price,
       image: product.image,
       images: imgs,
+      imageFileIds: fileIds,
       stock: product.stock,
       category: product.category,
       company: companyId,
@@ -227,6 +231,7 @@ export default function AdminProductsPage() {
           ...form,
           company: form.company || null,
           image: form.images[0] || form.image,
+          imageFileIds: form.imageFileIds,
         }),
       });
 
@@ -286,7 +291,8 @@ export default function AdminProductsPage() {
 
       setForm((prev) => {
         const newImages = [...prev.images, data.url];
-        return { ...prev, images: newImages, image: newImages[0] };
+        const newFileIds = [...prev.imageFileIds, data.fileId || ""];
+        return { ...prev, images: newImages, imageFileIds: newFileIds, image: newImages[0] };
       });
     } catch {
       setUploadError("Upload failed. Please try again.");
@@ -305,7 +311,8 @@ export default function AdminProductsPage() {
         newUploadsRef.current = newUploadsRef.current.filter((u) => u.url !== removedUrl);
       }
       const newImages = prev.images.filter((_, i) => i !== index);
-      return { ...prev, images: newImages, image: newImages[0] || "" };
+      const newFileIds = prev.imageFileIds.filter((_, i) => i !== index);
+      return { ...prev, images: newImages, imageFileIds: newFileIds, image: newImages[0] || "" };
     });
   };
 

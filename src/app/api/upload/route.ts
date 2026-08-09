@@ -1,19 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import ImageKit from "@imagekit/nodejs";
 import type { File as ImageKitFile } from "@imagekit/nodejs/resources/files/files";
 import { createHash } from "crypto";
 import sharp from "sharp";
 import { logError } from "@/lib/apiError";
+import { checkAdminAuthResponse } from "@/lib/auth";
 
 // Vercel Hobby: 10s max, must use Node.js runtime (sharp needs native binaries)
 export const runtime = "nodejs";
 export const maxDuration = 10;
 
 const imagekit = new ImageKit({
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "dummy_private_key_for_build",
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -61,7 +65,7 @@ export async function POST(req: Request) {
           fit: "inside",                  // never crops, never upscales
           withoutEnlargement: true,
         })
-        .webp({ quality: 82 })           // good quality/size balance
+        .webp({ quality: 82, effort: 6, smartSubsample: true }) // High efficiency WebP compression
         .toBuffer();
       uploadMime = "image/webp";
       uploadExt = ".webp";

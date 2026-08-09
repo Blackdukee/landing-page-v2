@@ -649,9 +649,9 @@ export default function ProductsClient() {
                   </button>
                 </div>
 
-                {/* Products Grid for this category */}
+                {/* Products Grid for this category (Preview up to 4 items) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-                  {catProds.map((p) => (
+                  {catProds.slice(0, 4).map((p) => (
                     <ProductCard
                       key={p._id}
                       id={p._id}

@@ -48,9 +48,9 @@ export async function POST(req: NextRequest) {
     const rawBuffer = Buffer.from(bytes);
 
     // --- Pre-process with sharp (skip SVGs — sharp can't handle them) ---
-    let uploadBuffer: Buffer;
-    let uploadMime: string;
-    let uploadExt: string;
+    let uploadBuffer: Buffer = rawBuffer;
+    let uploadMime: string = file.type;
+    let uploadExt: string = file.name.slice(file.name.lastIndexOf(".")) || ".png";
 
     if (file.type === "image/svg+xml") {
       // SVGs are already tiny — upload as-is
@@ -58,17 +58,23 @@ export async function POST(req: NextRequest) {
       uploadMime = "image/svg+xml";
       uploadExt = ".svg";
     } else {
-      // Resize to max 800×800, convert to WebP, strip EXIF, fix orientation
-      uploadBuffer = await sharp(rawBuffer)
-        .rotate()                         // auto-rotate from EXIF
-        .resize(800, 800, {
-          fit: "inside",                  // never crops, never upscales
-          withoutEnlargement: true,
-        })
-        .webp({ quality: 82, effort: 6, smartSubsample: true }) // High efficiency WebP compression
-        .toBuffer();
-      uploadMime = "image/webp";
-      uploadExt = ".webp";
+      try {
+        // Resize to max 800×800, convert to WebP, strip EXIF, fix orientation
+        uploadBuffer = await sharp(rawBuffer)
+          .rotate()                         // auto-rotate from EXIF
+          .resize(800, 800, {
+            fit: "inside",                  // never crops, never upscales
+            withoutEnlargement: true,
+          })
+          .webp({ quality: 82, effort: 6, smartSubsample: true }) // High efficiency WebP compression
+          .toBuffer();
+        uploadMime = "image/webp";
+        uploadExt = ".webp";
+      } catch (sharpError) {
+        console.warn("[Upload] Sharp optimization fallback to raw buffer:", sharpError);
+        uploadBuffer = rawBuffer;
+        uploadMime = file.type;
+      }
     }
 
     // Compute content hash of the processed buffer for deduplication

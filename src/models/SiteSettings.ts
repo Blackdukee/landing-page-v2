@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import "./Product";
 
 export interface IPriceRange {
   label: string;

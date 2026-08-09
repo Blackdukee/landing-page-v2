@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+// Pre-register all models to ensure Mongoose population never throws MissingSchemaError
+import "../models/Product";
+import "../models/Company";
+import "../models/Category";
+import "../models/Order";
+import "../models/Shift";
+import "../models/SiteSettings";
+import "../models/User";
+
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;

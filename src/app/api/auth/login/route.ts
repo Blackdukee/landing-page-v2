@@ -3,6 +3,7 @@ import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { logError } from "@/lib/apiError";
+import { createSignedToken, setAdminCookie } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,23 +34,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    // Simple token-based auth (cookie)
-    const token = Buffer.from(
-      JSON.stringify({ id: user._id, email: user.email, role: user.role })
-    ).toString("base64");
+    const userId = user._id.toString();
+    const userEmail = user.email;
+    const userRole = user.role || "admin";
+
+    // Cryptographically signed token-based auth (cookie)
+    const token = createSignedToken({
+      id: userId,
+      _id: userId,
+      email: userEmail,
+      name: "Admin",
+      role: userRole,
+    });
 
     const response = NextResponse.json({
       message: "Login successful",
-      user: { email: user.email, role: user.role },
+      user: { email: userEmail, role: userRole },
     });
 
-    response.cookies.set("admin-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
+    setAdminCookie(response, token);
 
     return response;
   } catch (error) {

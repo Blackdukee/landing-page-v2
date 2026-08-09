@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const name = (body.name || "").trim();
     const description = (body.description || "").trim();
+    const icon = (body.icon || "").trim();
 
     if (!name) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Category already exists" }, { status: 409 });
     }
 
-    const category = await Category.create({ name, slug, description });
+    const category = await Category.create({ name, slug, description, icon });
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     const details = logError("POST /api/categories", error);

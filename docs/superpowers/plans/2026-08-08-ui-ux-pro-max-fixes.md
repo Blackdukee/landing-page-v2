@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Resolve all critical UI/UX bugs, stock overflow glitches, accessibility failures (contrast & aria-labels), touch target constraints, mobile carousel behavior, and checkout pop-up blockers across the QuesnaShop e-commerce application.
+**Goal:** Resolve all critical UI/UX bugs, stock overflow glitches, accessibility failures (contrast & aria-labels), touch target constraints, mobile carousel behavior, and checkout pop-up blockers across the M L N TOOLS e-commerce application.
 
 **Architecture:** Maintain client-side Zustand cart persistence with server-validated stock checks; standardize Tailwind design tokens (elevating muted text contrast to ≥4.5:1 WCAG AA); introduce responsive, accessible component patterns for ProductCard, ImageCarousel, Cart, and Checkout flows.
 

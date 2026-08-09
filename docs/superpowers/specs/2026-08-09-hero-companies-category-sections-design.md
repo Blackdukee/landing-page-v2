@@ -1,7 +1,7 @@
 # Hero Brands Showcase & Categorized Product Sections Specification (Arabic-First)
 
 ## 1. Overview
-This feature transforms the landing page (`HomeClient.tsx`) of **QuesnaShop** into a high-converting, brand-driven e-commerce experience tailored specifically for the **Arabic market**. It replaces the generic hero with an **Authorized Brands & Companies Showcase** (Option A: Hybrid Brand Spotlight + Infinite Logo Marquee in Arabic) and introduces **Dedicated Category-by-Category Product Sections** (each displaying 8 products with an Arabic "View All" gateway).
+This feature transforms the landing page (`HomeClient.tsx`) of **M L N TOOLS** into a high-converting, brand-driven e-commerce experience tailored specifically for the **Arabic market**. It replaces the generic hero with an **Authorized Brands & Companies Showcase** (Option A: Hybrid Brand Spotlight + Infinite Logo Marquee in Arabic) and introduces **Dedicated Category-by-Category Product Sections** (each displaying 8 products with an Arabic "View All" gateway).
 
 ---
 

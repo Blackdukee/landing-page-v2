@@ -52,6 +52,7 @@ interface Category {
   name: string;
   slug: string;
   description?: string;
+  icon?: string;
 }
 
 interface Company {
@@ -131,13 +132,44 @@ export default function AdminDashboard() {
   const [catLoading, setCatLoading] = useState(true);
   const [newCatName, setNewCatName] = useState("");
   const [newCatDesc, setNewCatDesc] = useState("");
+  const [newCatIcon, setNewCatIcon] = useState("");
   const [addingCat, setAddingCat] = useState(false);
   const [editingCat, setEditingCat] = useState<string | null>(null);
   const [editCatName, setEditCatName] = useState("");
   const [editCatDesc, setEditCatDesc] = useState("");
+  const [editCatIcon, setEditCatIcon] = useState("");
+  const [uploadingCatIcon, setUploadingCatIcon] = useState(false);
   const [savingCat, setSavingCat] = useState(false);
   const [deletingCat, setDeletingCat] = useState<string | null>(null);
   const [catError, setCatError] = useState("");
+
+  const handleCatIconUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCatIcon(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (isEdit) {
+          setEditCatIcon(data.url);
+        } else {
+          setNewCatIcon(data.url);
+        }
+      } else {
+        setCatError("Failed to upload category icon");
+      }
+    } catch {
+      setCatError("Failed to upload category icon");
+    } finally {
+      setUploadingCatIcon(false);
+    }
+  };
 
   // Delete category dialog state
   const [deleteDialogCatId, setDeleteDialogCatId] = useState<string | null>(null);
@@ -370,11 +402,16 @@ export default function AdminDashboard() {
       const res = await fetch("/api/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newCatName.trim(), description: newCatDesc.trim() }),
+        body: JSON.stringify({
+          name: newCatName.trim(),
+          description: newCatDesc.trim(),
+          icon: newCatIcon.trim(),
+        }),
       });
       if (res.ok) {
         setNewCatName("");
         setNewCatDesc("");
+        setNewCatIcon("");
         fetchCategories();
       } else {
         const data = await res.json();
@@ -395,11 +432,17 @@ export default function AdminDashboard() {
       const res = await fetch(`/api/categories/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editCatName.trim(), description: editCatDesc.trim() }),
+        body: JSON.stringify({
+          name: editCatName.trim(),
+          description: editCatDesc.trim(),
+          icon: editCatIcon.trim(),
+        }),
       });
       if (res.ok) {
         setEditingCat(null);
         setEditCatName("");
+        setEditCatDesc("");
+        setEditCatIcon("");
         fetchCategories();
       } else {
         const data = await res.json();
@@ -807,11 +850,11 @@ export default function AdminDashboard() {
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <h3 className="font-semibold text-foreground">
-                Delete Company / Brand
+                {t("admin.companies.deleteDialogTitle" as TranslationKey)}
               </h3>
             </div>
             <p className="text-sm text-muted mb-6">
-              Are you sure you want to delete company &quot;{deleteDialogCompName}&quot;? Products linked to this company will have their company unlinked.
+              {t("admin.companies.deleteDialogDesc" as TranslationKey, { name: deleteDialogCompName })}
             </p>
             <div className="flex gap-3">
               <button
@@ -819,14 +862,14 @@ export default function AdminDashboard() {
                 onClick={handleDeleteCompany}
                 className="flex-1 min-h-[44px] rounded-xl bg-red-500 text-white hover:bg-red-600 px-4 py-2.5 text-sm font-medium transition-colors"
               >
-                Delete Company
+                {t("admin.companies.deleteButton" as TranslationKey)}
               </button>
               <button
                 type="button"
                 onClick={() => setDeleteDialogCompId(null)}
                 className="flex-1 min-h-[44px] rounded-xl bg-surface hover:bg-card-hover text-muted px-4 py-2.5 text-sm font-medium transition-colors"
               >
-                Cancel
+                {t("admin.dashboard.cancel" as TranslationKey)}
               </button>
             </div>
           </div>
@@ -846,16 +889,16 @@ export default function AdminDashboard() {
               </h3>
             </div>
             <p className="text-sm text-muted mb-6">
-              Are you sure you want to remove this daily offer?
+              {t("admin.offers.deleteOfferDialogDesc" as TranslationKey)}
             </p>
             <div className="flex gap-3">
               <button
                 type="button"
-                aria-label="Confirm delete daily offer"
+                aria-label={t("admin.offers.deleteOfferButton" as TranslationKey)}
                 onClick={() => handleDeleteOffer(deleteOfferIndex)}
                 className="flex-1 min-h-[44px] rounded-xl bg-red-500 text-white hover:bg-red-600 px-4 py-2.5 text-sm font-medium transition-colors"
               >
-                Delete Offer
+                {t("admin.offers.deleteOfferButton" as TranslationKey)}
               </button>
               <button
                 type="button"
@@ -923,8 +966,8 @@ export default function AdminDashboard() {
         <div className="p-6">
           {/* Add Category Form */}
           <form onSubmit={handleAddCategory} className="mb-5 space-y-3">
-            <div className="flex gap-3">
-              <div className="relative flex-1 max-w-xs">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative flex-1 min-w-[200px] max-w-xs">
                 <input
                   type="text"
                   placeholder={t("admin.dashboard.newCatPlaceholder" as TranslationKey)}
@@ -936,6 +979,38 @@ export default function AdminDashboard() {
                   className={inputClass}
                 />
               </div>
+              
+              {/* Category Icon Uploader */}
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1.5 cursor-pointer rounded-xl bg-surface border border-border hover:border-primary/40 text-foreground px-3 py-2 text-xs font-medium transition-all">
+                  <Upload className="h-3.5 w-3.5 text-primary" />
+                  <span>{uploadingCatIcon ? "جاري الرفع..." : "أيقونة القسم"}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleCatIconUpload(e, false)}
+                    className="hidden"
+                    disabled={uploadingCatIcon}
+                  />
+                </label>
+                {newCatIcon && (
+                  <div className="relative group">
+                    <img
+                      src={newCatIcon}
+                      alt="Category Icon Preview"
+                      className="h-9 w-9 rounded-xl border border-primary/40 bg-surface object-contain p-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setNewCatIcon("")}
+                      className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="submit"
                 disabled={addingCat || !newCatName.trim()}
@@ -1007,32 +1082,65 @@ export default function AdminDashboard() {
                           <X className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                      <input
-                        type="text"
-                        value={editCatDesc}
-                        onChange={(e) => setEditCatDesc(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleUpdateCategory(cat._id);
-                          if (e.key === "Escape") setEditingCat(null);
-                        }}
-                        placeholder={t("admin.dashboard.catDescPlaceholder" as TranslationKey)}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={editCatDesc}
+                          onChange={(e) => setEditCatDesc(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleUpdateCategory(cat._id);
+                            if (e.key === "Escape") setEditingCat(null);
+                          }}
+                          placeholder={t("admin.dashboard.catDescPlaceholder" as TranslationKey)}
+                          className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                        />
+                        <label className="flex items-center gap-1 cursor-pointer rounded-lg bg-surface border border-border px-2.5 py-1.5 text-xs text-foreground hover:border-primary/40 transition-all">
+                          <Upload className="h-3 w-3 text-primary" />
+                          <span>أيقونة</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleCatIconUpload(e, true)}
+                            className="hidden"
+                          />
+                        </label>
+                        {editCatIcon && (
+                          <div className="relative">
+                            <img src={editCatIcon} alt="Cat Icon" className="h-7 w-7 rounded border border-primary/40 bg-surface object-contain p-0.5" />
+                            <button
+                              type="button"
+                              onClick={() => setEditCatIcon("")}
+                              className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px]"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-foreground truncate">
-                            {cat.name}
-                          </span>
-                          <span className="text-[10px] text-muted font-mono bg-surface rounded px-1.5 py-0.5">
-                            {cat.slug}
-                          </span>
+                      <div className="flex-1 min-w-0 flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface border border-border overflow-hidden shrink-0">
+                          {cat.icon ? (
+                            <img src={cat.icon} alt={cat.name} className="h-full w-full object-contain p-1" />
+                          ) : (
+                            <Tag className="h-4 w-4 text-muted" />
+                          )}
                         </div>
-                        {cat.description && (
-                          <p className="text-xs text-muted mt-0.5 truncate">{cat.description}</p>
-                        )}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-foreground truncate">
+                              {cat.name}
+                            </span>
+                            <span className="text-[10px] text-muted font-mono bg-surface rounded px-1.5 py-0.5">
+                              {cat.slug}
+                            </span>
+                          </div>
+                          {cat.description && (
+                            <p className="text-xs text-muted mt-0.5 truncate">{cat.description}</p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -1040,6 +1148,7 @@ export default function AdminDashboard() {
                             setEditingCat(cat._id);
                             setEditCatName(cat.name);
                             setEditCatDesc(cat.description || "");
+                            setEditCatIcon(cat.icon || "");
                             setCatError("");
                           }}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-card-hover hover:text-foreground transition-colors"
@@ -1070,7 +1179,9 @@ export default function AdminDashboard() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Building2 className="h-3.5 w-3.5" />
             </div>
-            <h2 className="font-semibold text-sm text-foreground">Companies / Brands Management</h2>
+            <h2 className="font-semibold text-sm text-foreground">
+              {t("admin.companies.title" as TranslationKey)}
+            </h2>
             <span className="text-xs text-muted">({companies.length})</span>
           </div>
         </div>
@@ -1081,11 +1192,11 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-medium text-muted mb-1.5 block">
-                  Company Name <span className="text-red-400">*</span>
+                  {t("admin.companies.name" as TranslationKey)} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Nike, Apple, Samsung"
+                  placeholder={t("admin.companies.namePlaceholder" as TranslationKey)}
                   value={newCompanyName}
                   onChange={(e) => {
                     setNewCompanyName(e.target.value);
@@ -1097,11 +1208,11 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted mb-1.5 block">
-                  Description (Optional)
+                  {t("admin.companies.description" as TranslationKey)}
                 </label>
                 <input
                   type="text"
-                  placeholder="Brand description or tagline"
+                  placeholder={t("admin.companies.descPlaceholder" as TranslationKey)}
                   value={newCompanyDesc}
                   onChange={(e) => setNewCompanyDesc(e.target.value)}
                   className={inputClass}
@@ -1112,15 +1223,16 @@ export default function AdminDashboard() {
             {/* Logo Upload Section */}
             <div>
               <label className="text-xs font-medium text-muted mb-1.5 block">
-                Company Logo <span className="text-red-400">*</span>
+                {t("admin.companies.logo" as TranslationKey)} <span className="text-red-400">*</span>
               </label>
               <div className="flex items-center gap-4">
                 {newCompanyLogo && (
                   <div className="relative h-12 w-12 rounded-xl border border-border bg-surface flex items-center justify-center overflow-hidden shrink-0">
-                    <Image src={newCompanyLogo} alt="Company Logo" width={48} height={48} className="object-contain p-1" />
+                    <Image src={newCompanyLogo} alt={newCompanyName || "Company Logo"} width={48} height={48} className="object-contain p-1" />
                     <button
                       type="button"
                       onClick={() => setNewCompanyLogo("")}
+                      aria-label={t("admin.companies.removeLogo" as TranslationKey)}
                       className="absolute top-0.5 end-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white hover:bg-red-500 transition-colors"
                     >
                       <X className="h-3 w-3" />
@@ -1129,11 +1241,11 @@ export default function AdminDashboard() {
                 )}
                 <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-dashed border-border hover:border-primary/40 bg-surface px-4 py-2.5 text-sm text-muted hover:text-foreground transition-all">
                   {uploadingLogo ? (
-                    <span className="animate-pulse">Uploading Logo...</span>
+                    <span className="animate-pulse">{t("admin.companies.uploadingLogo" as TranslationKey)}</span>
                   ) : (
                     <>
                       <Plus className="h-4 w-4" />
-                      {newCompanyLogo ? "Change Logo" : "Upload Logo"}
+                      {newCompanyLogo ? t("admin.companies.changeLogo" as TranslationKey) : t("admin.companies.uploadLogo" as TranslationKey)}
                     </>
                   )}
                   <input
@@ -1159,7 +1271,7 @@ export default function AdminDashboard() {
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
             >
               <Plus className="h-4 w-4" />
-              {savingCompany ? "Adding Company..." : "Add Company"}
+              {savingCompany ? t("admin.companies.addingCompany" as TranslationKey) : t("admin.companies.addCompany" as TranslationKey)}
             </button>
           </form>
 
@@ -1172,7 +1284,7 @@ export default function AdminDashboard() {
             </div>
           ) : companies.length === 0 ? (
             <p className="text-sm text-muted text-center py-8">
-              No companies added yet. Add your first brand above.
+              {t("admin.companies.noCompanies" as TranslationKey)}
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -1200,7 +1312,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => openDeleteCompDialog(comp._id, comp.name)}
                     disabled={deletingComp === comp._id}
-                    aria-label={`Delete company ${comp.name}`}
+                    aria-label={t("admin.companies.deleteAria" as TranslationKey, { name: comp.name })}
                     className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-50 shrink-0"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -1641,7 +1753,7 @@ export default function AdminDashboard() {
             {selectedOfferProduct && (
               <div className="rounded-xl bg-surface/80 border border-border p-4 space-y-2">
                 <div className="flex justify-between items-center text-xs text-muted">
-                  <span>Original Price:</span>
+                  <span>{t("admin.offers.originalPrice" as TranslationKey)}</span>
                   <span className="line-through">{selectedOfferProduct.price.toFixed(2)} EGP</span>
                 </div>
                 <div className="flex justify-between items-center text-sm font-semibold text-foreground">
@@ -1653,7 +1765,7 @@ export default function AdminDashboard() {
                 <div className="flex justify-between items-center text-xs text-emerald-400/90 font-medium">
                   <span>{t("admin.offers.savings" as TranslationKey)}:</span>
                   <span>
-                    Save {(selectedOfferProduct.price * (offerDiscount / 100)).toFixed(2)} EGP (-{offerDiscount}%)
+                    {(selectedOfferProduct.price * (offerDiscount / 100)).toFixed(2)} EGP (-{offerDiscount}%)
                   </span>
                 </div>
               </div>
@@ -1674,7 +1786,7 @@ export default function AdminDashboard() {
                 />
                 <button
                   type="button"
-                  aria-label="Set expiration to end of day"
+                  aria-label={t("admin.offers.endOfDay" as TranslationKey)}
                   onClick={() => {
                     const todayEnd = new Date();
                     todayEnd.setHours(23, 59, 59, 999);
@@ -1688,7 +1800,7 @@ export default function AdminDashboard() {
                   className="min-h-[44px] px-4 rounded-xl border border-border bg-surface text-xs font-medium text-muted hover:text-foreground hover:bg-card-hover transition-colors flex items-center gap-1.5"
                 >
                   <Clock className="h-4 w-4" />
-                  End of Day
+                  {t("admin.offers.endOfDay" as TranslationKey)}
                 </button>
               </div>
             </div>
@@ -1713,7 +1825,7 @@ export default function AdminDashboard() {
           {/* Configured Offers Grid */}
           <div className="pt-6 border-t border-border">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">
-              Configured Offers ({dailyOffers.length})
+              {t("admin.offers.configuredOffers" as TranslationKey)} ({dailyOffers.length})
             </h3>
 
             {dailyOffers.length === 0 ? (
@@ -1783,7 +1895,7 @@ export default function AdminDashboard() {
                           <div className="mt-1.5 flex items-center gap-1 text-[11px] text-muted">
                             <Clock className="h-3 w-3" />
                             <span>
-                              Expires: {new Date(offer.expiresAt).toLocaleString()}
+                              {t("admin.offers.expires" as TranslationKey)} {new Date(offer.expiresAt).toLocaleString()}
                             </span>
                           </div>
                         )}
@@ -1817,7 +1929,7 @@ export default function AdminDashboard() {
                           {/* Delete button */}
                           <button
                             type="button"
-                            aria-label="Delete daily offer"
+                            aria-label={t("admin.offers.deleteAria" as TranslationKey)}
                             onClick={() => setDeleteOfferIndex(idx)}
                             className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors"
                           >

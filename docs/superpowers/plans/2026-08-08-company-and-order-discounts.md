@@ -160,7 +160,7 @@ In `src/app/api/orders/[id]/route.ts`, accept `status`, `totalPrice`, and `disco
   - "Copy WhatsApp Message (Arabic)" button generating the Arabic message:
     ```
     مرحباً {customerName}! 🛍️
-    تم تأكيد طلبك رقم #{orderId} بنجاح من متجر QuesnaShop.
+    تم تأكيد طلبك رقم #{orderId} بنجاح من متجر M L N TOOLS.
 
     📋 تفاصيل الأصناف:
     - {itemName} × {qty}: {finalItemPrice} ج.م (وفرت {itemSavings} ج.م)

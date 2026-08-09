@@ -43,6 +43,7 @@ interface CategoryItem {
   name: string;
   slug?: string;
   description?: string;
+  icon?: string;
 }
 
 interface CompanyItem {
@@ -235,6 +236,14 @@ export default function ProductsClient() {
       products: prods,
     }));
   }, [isCategorizedSectionsView, filteredProducts]);
+
+  const categoryIconMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((cat) => {
+      if (cat.name && cat.icon) map.set(cat.name, cat.icon);
+    });
+    return map;
+  }, [categories]);
 
   const activeFiltersCount =
     (activeCategory !== "All" ? 1 : 0) +
@@ -482,13 +491,16 @@ export default function ProductsClient() {
                 <button
                   key={cat._id}
                   onClick={() => handleCategoryChange(cat.name)}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
                     activeCategory === cat.name
                       ? "bg-primary text-white shadow-sm shadow-primary/20"
                       : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
                   }`}
                 >
-                  {cat.name}
+                  {cat.icon && (
+                    <img src={cat.icon} alt={cat.name} className="h-4 w-4 object-contain" />
+                  )}
+                  <span>{cat.name}</span>
                 </button>
               ))}
             </div>
@@ -593,17 +605,27 @@ export default function ProductsClient() {
         ) : isCategorizedSectionsView && categorizedGroups.length > 0 ? (
           /* ───────────── CATEGORY SECTIONS VIEW ───────────── */
           <div className="space-y-16">
-            {categorizedGroups.map(({ categoryName, products: catProds }) => (
-              <section
-                key={categoryName}
-                className="p-6 sm:p-8 rounded-3xl bg-surface/30 border border-border/80"
-              >
-                {/* Category Header */}
-                <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-border/70">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-                      <Tag className="h-5 w-5" />
-                    </div>
+            {categorizedGroups.map(({ categoryName, products: catProds }) => {
+              const catIcon = categoryIconMap.get(categoryName);
+              return (
+                <section
+                  key={categoryName}
+                  className="p-6 sm:p-8 rounded-3xl bg-surface/30 border border-border/80"
+                >
+                  {/* Category Header */}
+                  <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-border/70">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold overflow-hidden p-1.5 border border-primary/20">
+                        {catIcon ? (
+                          <img
+                            src={catIcon}
+                            alt={categoryName}
+                            className="h-full w-full object-contain"
+                          />
+                        ) : (
+                          <Tag className="h-5 w-5" />
+                        )}
+                      </div>
                     <div>
                       <h2 className="text-xl sm:text-2xl font-extrabold text-foreground">
                         {categoryName}
@@ -644,7 +666,8 @@ export default function ProductsClient() {
                   ))}
                 </div>
               </section>
-            ))}
+            );
+          })}
           </div>
         ) : (
           /* ───────────── STANDARD FILTERED PRODUCT GRID ───────────── */

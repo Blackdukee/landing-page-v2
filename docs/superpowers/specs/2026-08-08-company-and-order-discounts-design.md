@@ -1,7 +1,7 @@
 # Company Management & Admin Order Discount Stacking Specification
 
 ## 1. Overview
-This feature introduces two major enhancements to the QuesnaShop platform:
+This feature introduces two major enhancements to the M L N TOOLS platform:
 1. **Company / Brand Management:** A dedicated entity and admin dashboard panel allowing admins to create, edit, and delete companies (brands) with logo uploads. Products can be associated with a company, displaying brand logos/badges on product cards and detail pages.
 2. **Admin Order Discount & Stacking System:** An interactive order adjustment and confirmation workflow in the Admin Orders screen where admins can apply item-level or whole-order discounts (% or fixed EGP). If an item already has an existing discount (such as from Daily Offers), a stacking checkbox lets the admin choose between compounding the new discount on the already-discounted price vs. calculating from the original base price. The final payable total is saved to the order and formatted into a one-click WhatsApp confirmation message for the customer.
 

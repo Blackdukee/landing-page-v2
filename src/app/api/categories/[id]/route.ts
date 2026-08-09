@@ -19,6 +19,7 @@ export async function PUT(
     const body = await req.json();
     const name = (body.name || "").trim();
     const description = (body.description || "").trim();
+    const icon = (body.icon || "").trim();
 
     if (!name) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
@@ -45,7 +46,7 @@ export async function PUT(
 
     const category = await Category.findByIdAndUpdate(
       id,
-      { name, slug, description },
+      { name, slug, description, icon },
       { returnDocument: 'after' }
     );
 

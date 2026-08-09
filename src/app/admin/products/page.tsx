@@ -630,14 +630,14 @@ export default function AdminProductsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-muted mb-1.5">
-                  Company / Brand
+                  {t("admin.companies.name" as TranslationKey)}
                 </label>
                 <select
                   value={form.company}
                   onChange={(e) => updateField("company", e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
                 >
-                  <option value="">None / General</option>
+                  <option value="">{t("admin.companies.none" as TranslationKey)}</option>
                   {companies.map((c) => (
                     <option key={c._id} value={c._id}>
                       {c.name}

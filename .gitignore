@@ -37,10 +37,27 @@ yarn-error.log*
 # vercel
 .vercel
 
-# typescript
+# Backups & Restores
+/tmp-backups/
+/tmp-restores/
+*.zip
+public/*.zip
+public/backup-*.zip
+
+# Public uploaded images (keeps system SVGs)
+public/*.png
+public/*.jpg
+public/*.jpeg
+public/*.webp
+!public/next.svg
+!public/vercel.svg
+!public/file.svg
+!public/globe.svg
+!public/window.svg
+# typescript & system artifacts
 *.tsbuildinfo
 next-env.d.ts
 design-system
-
 .agents
+
 

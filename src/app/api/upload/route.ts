@@ -26,11 +26,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
-    if (!allowedTypes.includes(file.type)) {
+    // Validate file type (supports standard web images, SVGs, and favicon ICO files)
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/svg+xml",
+      "image/x-icon",
+      "image/vnd.microsoft.icon",
+    ];
+
+    const isIco =
+      file.type === "image/x-icon" ||
+      file.type === "image/vnd.microsoft.icon" ||
+      file.name.toLowerCase().endsWith(".ico");
+
+    const isSvg = file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg");
+
+    if (!allowedTypes.includes(file.type) && !isIco && !isSvg) {
       return NextResponse.json(
-        { error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF, SVG" },
+        { error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF, SVG, ICO" },
         { status: 400 }
       );
     }
@@ -47,20 +63,24 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const rawBuffer = Buffer.from(bytes);
 
-    // --- Pre-process with sharp (skip SVGs — sharp can't handle them) ---
+    // --- Pre-process with sharp (skip SVGs & ICO icons — upload as-is) ---
     let uploadBuffer: Buffer = rawBuffer;
-    let uploadMime: string = file.type;
-    let uploadExt: string = file.name.slice(file.name.lastIndexOf(".")) || ".png";
+    let uploadMime: string = file.type || (isIco ? "image/x-icon" : "image/png");
+    let uploadExt: string = isIco ? ".ico" : isSvg ? ".svg" : ".webp";
 
-    if (file.type === "image/svg+xml") {
-      // SVGs are already tiny — upload as-is
+    if (isSvg) {
       uploadBuffer = rawBuffer;
       uploadMime = "image/svg+xml";
       uploadExt = ".svg";
+    } else if (isIco) {
+      uploadBuffer = rawBuffer;
+      uploadMime = "image/x-icon";
+      uploadExt = ".ico";
     } else {
       try {
-        // Resize to max 800×800, convert to WebP, strip EXIF, fix orientation
-        uploadBuffer = await sharp(rawBuffer)
+        // Normalize color profile to sRGB, handle orientation, resize to max 800×800, convert to WebP
+        uploadBuffer = await sharp(rawBuffer, { failOn: "none" })
+          .toColorspace("srgb")
           .rotate()                         // auto-rotate from EXIF
           .resize(800, 800, {
             fit: "inside",                  // never crops, never upscales
@@ -74,6 +94,7 @@ export async function POST(req: NextRequest) {
         console.warn("[Upload] Sharp optimization fallback to raw buffer:", sharpError);
         uploadBuffer = rawBuffer;
         uploadMime = file.type;
+        uploadExt = file.name.slice(file.name.lastIndexOf(".")) || ".png";
       }
     }
 

@@ -2,29 +2,37 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
+  ChevronRight,
   Star,
   Package,
   ShieldCheck,
 } from "lucide-react";
 import BrandHeroSection, { Company } from "@/components/BrandHeroSection";
-import CategoryProductSection, {
-  Category,
-  Product,
-} from "@/components/CategoryProductSection";
+import ProductCard from "@/components/ProductCard";
 import DailyOffersSection from "@/components/DailyOffersSection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  stock: number;
+  category: string;
+  featured: boolean;
+  company?: { _id: string; name: string; logo: string } | string | null;
+}
+
 export default function HomeClient() {
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [featured, setFeatured] = useState<Product[]>([]);
   const [loadingCompanies, setLoadingCompanies] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   const { t, dir } = useTranslation();
   const { websiteName, freeDeliveryMinPrice } = useSiteSettings();
@@ -40,41 +48,17 @@ export default function HomeClient() {
       .finally(() => setLoadingCompanies(false));
   }, []);
 
-  // 2. Fetch Categories
+  // 2. Fetch Featured Products
   useEffect(() => {
-    fetch("/api/categories")
+    fetch("/api/products?featured=true&limit=8")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setCategories(data);
+        if (Array.isArray(data)) setFeatured(data);
+        else if (Array.isArray(data.products)) setFeatured(data.products);
       })
       .catch(console.error)
-      .finally(() => setLoadingCategories(false));
+      .finally(() => setLoadingFeatured(false));
   }, []);
-
-  // 3. Fetch Products for Category Sections
-  useEffect(() => {
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setProducts(data);
-        else if (Array.isArray(data.products)) setProducts(data.products);
-      })
-      .catch(console.error)
-      .finally(() => setLoadingProducts(false));
-  }, []);
-
-  // Group products by category name (max 4 per category for landing page showcase)
-  const productsByCategory = useMemo(() => {
-    const map: Record<string, Product[]> = {};
-    for (const p of products) {
-      if (!p.category) continue;
-      if (!map[p.category]) map[p.category] = [];
-      if (map[p.category].length < 4) {
-        map[p.category].push(p);
-      }
-    }
-    return map;
-  }, [products]);
 
   return (
     <>
@@ -84,41 +68,92 @@ export default function HomeClient() {
       {/* ───────────── 2. DAILY OFFERS (FLASH SALE) ───────────── */}
       <DailyOffersSection />
 
-      {/* ───────────── 3. CATEGORIZED PRODUCT SECTIONS (4 ITEMS EACH) ───────────── */}
-      {loadingCategories ? (
-        // Skeleton loader for 2 initial category sections while fetching
-        <div className="py-16 mx-auto max-w-7xl px-6 lg:px-8 space-y-16">
-          {[1, 2].map((n) => (
-            <div key={n} className="space-y-6 animate-pulse">
-              <div className="flex justify-between items-end">
-                <div className="space-y-2">
-                  <div className="h-5 w-28 bg-surface rounded-full" />
-                  <div className="h-8 w-48 bg-surface rounded-xl" />
+      {/* ───────────── 3. FEATURED PRODUCTS ───────────── */}
+      <section id="featured" className="py-20 lg:py-28">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-widest text-primary mb-2 block">
+                {t("home.handpicked")}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                {t("home.featuredProducts")}
+              </h2>
+            </div>
+            <Link
+              href="/products"
+              className="group inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-muted hover:text-primary transition-colors"
+            >
+              <span>{t("home.viewAll")}</span>
+              <ChevronRight
+                className={`h-4 w-4 transition-transform ${
+                  dir === "rtl"
+                    ? "rotate-180 group-hover:-translate-x-1"
+                    : "group-hover:translate-x-1"
+                }`}
+              />
+            </Link>
+          </div>
+
+          {loadingFeatured ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl bg-card border border-border overflow-hidden animate-pulse flex flex-col"
+                >
+                  <div className="aspect-square bg-surface" />
+                  <div className="p-3 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted/20 rounded w-3/4" />
+                      <div className="h-3 bg-muted/20 rounded w-full" />
+                    </div>
+                    <div className="h-4 bg-muted/20 rounded w-1/3" />
+                    <div className="h-9 bg-muted/20 rounded-xl w-full" />
+                  </div>
                 </div>
-                <div className="h-5 w-32 bg-surface rounded-full" />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="aspect-square bg-surface rounded-2xl border border-border"
+              ))}
+            </div>
+          ) : featured.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+                {featured.map((p) => (
+                  <ProductCard
+                    key={p._id}
+                    id={p._id}
+                    name={p.name}
+                    description={p.description}
+                    price={p.price}
+                    image={p.image}
+                    category={p.category}
+                    company={p.company ?? undefined}
+                    stock={p.stock}
                   />
                 ))}
               </div>
+              <div className="flex justify-center mt-12">
+                <Link
+                  href="/products"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-blue-600 px-8 py-4 text-sm font-bold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <span>{t("home.viewAll")}</span>
+                  <ArrowRight
+                    className={`h-4 w-4 transition-transform ${
+                      dir === "rtl"
+                        ? "rotate-180 group-hover:-translate-x-1"
+                        : "group-hover:translate-x-1"
+                    }`}
+                  />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-20 rounded-2xl bg-surface/50 border border-border">
+              <p className="text-muted text-sm">{t("home.noProducts")}</p>
             </div>
-          ))}
+          )}
         </div>
-      ) : categories.length > 0 ? (
-        categories.map((cat, idx) => (
-          <CategoryProductSection
-            key={cat._id}
-            category={cat}
-            products={productsByCategory[cat.name] || []}
-            loading={loadingProducts}
-            index={idx}
-          />
-        ))
-      ) : null}
+      </section>
 
       {/* ───────────── 4. VALUES / WHY CHOOSE US ───────────── */}
       <section className="py-24 border-y border-border bg-surface/50">

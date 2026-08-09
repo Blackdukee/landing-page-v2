@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import ProductsClient from "./ProductsClient";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mohammed-essam.vercel.app";
@@ -45,7 +46,25 @@ export default function ProductsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ProductsClient />
+      <Suspense
+        fallback={
+          <div className="min-h-screen pt-32 pb-20 mx-auto max-w-7xl px-6 lg:px-8 animate-pulse">
+            <div className="h-10 w-48 bg-surface rounded-2xl mb-4" />
+            <div className="h-4 w-72 bg-surface rounded-xl mb-10" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-square bg-surface rounded-2xl border border-border"
+                />
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <ProductsClient />
+      </Suspense>
     </>
   );
 }
+

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
-import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
 import { checkAdminAuthResponse } from "@/lib/auth";
+import { InventoryEngine } from "@/modules/inventory/InventoryEngine";
 
 export async function GET(req: NextRequest) {
   const authErr = checkAdminAuthResponse(req);
@@ -29,50 +29,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order must contain at least one item" }, { status: 400 });
     }
 
-    // Track successfully reserved items for rollback if a subsequent item fails
-    const deductedItems: Array<{ productId: string; quantity: number }> = [];
+    // Atomically reserve inventory through deep InventoryEngine
+    const stockItems = items.map((i) => ({ productId: i.productId, quantity: i.quantity }));
+    const reservation = await InventoryEngine.reserveStock(stockItems);
 
-    // Atomically reserve stock item-by-item using MongoDB atomic filter { stock: { $gte: quantity } }
-    // WiredTiger engine ensures document-level atomicity, preventing race conditions
-    for (const item of items) {
-      if (!item.productId || !item.quantity || item.quantity <= 0) continue;
-
-      const updatedProduct = await Product.findOneAndUpdate(
-        { _id: item.productId, stock: { $gte: item.quantity } },
-        { $inc: { stock: -item.quantity } },
-        { returnDocument: "after" }
+    if (!reservation.success) {
+      return NextResponse.json(
+        { error: reservation.error || "عذراً، فشل حجز الكمية المطلوبة." },
+        { status: 400 }
       );
-
-      if (!updatedProduct) {
-        // Stock reservation failed! Either product doesn't exist or stock < item.quantity
-        // Roll back any previously reserved items in this order
-        if (deductedItems.length > 0) {
-          await Promise.all(
-            deductedItems.map((d) =>
-              Product.findByIdAndUpdate(d.productId, { $inc: { stock: d.quantity } })
-            )
-          );
-        }
-
-        const product = await Product.findById(item.productId).lean();
-        const productName = item.name || product?.name || "المنتج المطلوب";
-        const availableStock = product?.stock ?? 0;
-
-        return NextResponse.json(
-          {
-            error:
-              availableStock > 0
-                ? `عذراً، الكمية المتاحة من "${productName}" هي ${availableStock} فقط.`
-                : `عذراً، المنتج "${productName}" نفد من المخزن بالكامل.`,
-          },
-          { status: 400 }
-        );
-      }
-
-      deductedItems.push({ productId: item.productId, quantity: item.quantity });
     }
 
-    // All items successfully reserved stock atomically! Create the order record.
+    // Create the order record
     const order = await Order.create(body);
 
     return NextResponse.json(order, { status: 201 });

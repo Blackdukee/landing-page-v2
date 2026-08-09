@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
-import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
 import { checkAdminAuthResponse } from "@/lib/auth";
+import { InventoryEngine } from "@/modules/inventory/InventoryEngine";
 
 export async function GET(
   _req: NextRequest,
@@ -42,23 +42,21 @@ export async function PUT(
 
     const updatedOrder = await Order.findByIdAndUpdate(id, body, { returnDocument: "after" });
 
-    // If order status transitioned to "cancelled" (and was not already cancelled), restore stock
+    // If order status transitioned to "cancelled", release stock atomically through InventoryEngine
     if (
       body.status === "cancelled" &&
       existingOrder.status !== "cancelled" &&
       existingOrder.items &&
       Array.isArray(existingOrder.items)
     ) {
-      await Promise.all(
-        existingOrder.items.map((item: { productId?: string; quantity?: number }) => {
-          if (item.productId && item.quantity && item.quantity > 0) {
-            return Product.findByIdAndUpdate(item.productId, {
-              $inc: { stock: item.quantity },
-            });
-          }
-          return null;
-        })
-      );
+      const releaseItems = existingOrder.items
+        .filter((item: { productId?: string; quantity?: number }) => item.productId && item.quantity && item.quantity > 0)
+        .map((item: { productId: string; quantity: number }) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        }));
+
+      await InventoryEngine.releaseStock(releaseItems);
     }
 
     return NextResponse.json(updatedOrder);
@@ -83,18 +81,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Restore stock if deleting an order that was not already cancelled
+    // Release stock atomically if deleting an order that was not already cancelled
     if (order.status !== "cancelled" && order.items && Array.isArray(order.items)) {
-      await Promise.all(
-        order.items.map((item: { productId?: string; quantity?: number }) => {
-          if (item.productId && item.quantity && item.quantity > 0) {
-            return Product.findByIdAndUpdate(item.productId, {
-              $inc: { stock: item.quantity },
-            });
-          }
-          return null;
-        })
-      );
+      const releaseItems = order.items
+        .filter((item: { productId?: string; quantity?: number }) => item.productId && item.quantity && item.quantity > 0)
+        .map((item: { productId: string; quantity: number }) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        }));
+
+      await InventoryEngine.releaseStock(releaseItems);
     }
 
     return NextResponse.json({ message: "Order deleted and stock restored" });

@@ -1,6 +1,6 @@
 import Shift from "../../models/Shift";
 import Order from "../../models/Order";
-import { deductStockAtomic, StockItem } from "./InventorySyncEngine";
+import { InventoryEngine, StockItem } from "../inventory/InventoryEngine";
 import { calculatePOSDiscounts, DiscountItemInput, OrderDiscountInput } from "./DiscountEngine";
 
 export interface POSCheckoutItem {
@@ -70,7 +70,7 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
     quantity: item.quantity,
   }));
 
-  const stockDeductions = await deductStockAtomic(stockItems);
+  const stockDeductions = await InventoryEngine.reserveStock(stockItems);
   if (!stockDeductions.success) {
     return {
       success: false,

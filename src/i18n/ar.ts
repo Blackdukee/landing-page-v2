@@ -112,7 +112,7 @@ const ar: Record<string, string> = {
   // ── صفحة المنتجات ──
   "products.title": "المتجر",
   "products.subtitle":
-    "تصفح مجموعتنا المختارة من المنتجات عالية الجودة. فلتر حسب الفئة أو النطاق السعري أو ابحث لتجد ما تحتاجه بالضبط.",
+    "تصفح مجموعتنا المختارة من المنتجات عالية الجودة. فلتر حسب الفئة أو الشركة أو النطاق السعري أو ابحث لتجد ما تحتاجه بالضبط.",
   "products.searchPlaceholder": "ابحث عن منتجات...",
   "products.sortBy": "ترتيب حسب",
   "products.priceLowHigh": "السعر: من الأقل للأعلى",
@@ -120,6 +120,9 @@ const ar: Record<string, string> = {
   "products.nameAZ": "الاسم: أ → ي",
   "products.filters": "الفلاتر",
   "products.category": "الفئة",
+  "products.company": "الشركة / الماركة",
+  "products.allCompanies": "جميع الشركات",
+  "products.byCompany": "من {company}",
   "products.priceRange": "النطاق السعري",
   "products.allPrices": "جميع الأسعار",
   "products.under25": "أقل من 25 EGP",
@@ -137,6 +140,7 @@ const ar: Record<string, string> = {
     "حاول تعديل البحث أو الفلاتر للعثور على ما تبحث عنه.",
   "products.clearFilters": "مسح الفلاتر",
   "products.all": "الكل",
+  "products.allCategories": "جميع الفئات",
   "products.firstPage": "الصفحة الأولى",
   "products.previousPage": "الصفحة السابقة",
   "products.nextPage": "الصفحة التالية",

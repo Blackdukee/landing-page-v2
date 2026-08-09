@@ -122,9 +122,13 @@ body {
 }
 
 .animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee-scroll 28s linear infinite;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  width: max-content !important;
+  animation: marquee-scroll 32s linear infinite;
+  will-change: transform;
 }
 
 [dir="rtl"] .animate-marquee {
@@ -138,9 +142,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
     animation: none;
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
+    width: auto;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
   }
 }
 

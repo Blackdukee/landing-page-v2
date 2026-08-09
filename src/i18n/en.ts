@@ -112,7 +112,7 @@ const en = {
   // ── Products Page ──
   "products.title": "Shop",
   "products.subtitle":
-    "Browse our curated collection of quality products. Filter by category, price range, or search to find exactly what you need.",
+    "Browse our curated collection of quality products. Filter by category, brand, price range, or search to find exactly what you need.",
   "products.searchPlaceholder": "Search products...",
   "products.sortBy": "Sort by",
   "products.priceLowHigh": "Price: Low → High",
@@ -120,6 +120,9 @@ const en = {
   "products.nameAZ": "Name: A → Z",
   "products.filters": "Filters",
   "products.category": "Category",
+  "products.company": "Brand / Company",
+  "products.allCompanies": "All Brands",
+  "products.byCompany": "by {company}",
   "products.priceRange": "Price Range",
   "products.allPrices": "All Prices",
   "products.under25": "Under EGP 25",
@@ -137,6 +140,7 @@ const en = {
     "Try adjusting your search or filters to find what you're looking for.",
   "products.clearFilters": "Clear filters",
   "products.all": "All",
+  "products.allCategories": "All Categories",
   "products.firstPage": "First page",
   "products.previousPage": "Previous page",
   "products.nextPage": "Next page",

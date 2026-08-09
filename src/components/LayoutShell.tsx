@@ -33,14 +33,18 @@ function DynamicTitle() {
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+  const isCashier = pathname.startsWith("/cashier");
+  const isStandalone = isAdmin || isCashier;
 
   return (
     <LanguageProvider>
       <SiteSettingsProvider>
         <DynamicTitle />
-        {!isAdmin && <Navbar />}
-        <main className="min-h-screen">{children}</main>
-        {!isAdmin && <Footer />}
+        {!isStandalone && <Navbar />}
+        <main className={isStandalone ? "h-screen w-screen overflow-hidden" : "min-h-screen"}>
+          {children}
+        </main>
+        {!isStandalone && <Footer />}
       </SiteSettingsProvider>
     </LanguageProvider>
   );

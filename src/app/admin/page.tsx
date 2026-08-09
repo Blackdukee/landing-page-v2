@@ -27,6 +27,7 @@ import {
   Flame,
   Clock,
   Building2,
+  Upload,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings, type IDailyOfferItem } from "@/lib/SiteSettingsContext";

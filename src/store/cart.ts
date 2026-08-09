@@ -5,9 +5,13 @@ export interface CartItem {
   productId: string;
   name: string;
   price: number;
+  basePrice?: number;
   image: string;
   quantity: number;
-  stock?: number; // Product stock to validate against
+  stock?: number;
+  discountType?: "percentage" | "fixed";
+  discountValue?: number;
+  stacked?: boolean;
 }
 
 interface CartState {
@@ -23,6 +27,12 @@ interface CartState {
     quantity: number,
     stock?: number
   ) => boolean;
+  updateItemOverride: (productId: string, newPrice: number) => void;
+  updateItemDiscount: (
+    productId: string,
+    discountType?: "percentage" | "fixed",
+    discountValue?: number
+  ) => void;
   clearCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
@@ -97,6 +107,34 @@ export const useCartStore = create<CartState>()(
           ),
         });
         return true; // Successfully updated
+      },
+
+      updateItemOverride: (productId, newPrice) => {
+        set({
+          items: get().items.map((i) =>
+            i.productId === productId
+              ? {
+                  ...i,
+                  basePrice: i.basePrice ?? i.price,
+                  price: newPrice >= 0 ? newPrice : i.price,
+                }
+              : i
+          ),
+        });
+      },
+
+      updateItemDiscount: (productId, discountType, discountValue) => {
+        set({
+          items: get().items.map((i) =>
+            i.productId === productId
+              ? {
+                  ...i,
+                  discountType,
+                  discountValue: discountValue && discountValue > 0 ? discountValue : undefined,
+                }
+              : i
+          ),
+        });
       },
 
       clearCart: () => set({ items: [] }),

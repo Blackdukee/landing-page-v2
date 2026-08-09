@@ -101,3 +101,169 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
+
+/* ==========================================================================
+   Print & PDF Generation Stylesheet
+   ========================================================================== */
+
+@media print {
+  /* 1. Page Margin & Paper Setup for Thermal 80mm / A4 */
+  @page {
+    size: auto;
+    margin: 0mm;
+  }
+
+  /* 2. Global Document Reset for Print */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+    height: auto !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 3. HIDE ALL ELEMENTS ON THE PAGE BY DEFAULT */
+  body * {
+    visibility: hidden !important;
+  }
+
+  .no-print,
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 4. SHOW ONLY THE PRINTABLE RECEIPT / VOUCHER / REPORT */
+  #printable-pos-receipt,
+  #printable-pos-receipt *,
+  #printable-return-voucher,
+  #printable-return-voucher *,
+  #printable-financial-report,
+  #printable-financial-report * {
+    visibility: visible !important;
+  }
+
+  /* 5. Thermal Receipt & Voucher Positioning (80mm Thermal Paper) */
+  #printable-pos-receipt,
+  #printable-return-voucher {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-family: monospace, Courier, monospace !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  #printable-pos-receipt *,
+  #printable-return-voucher * {
+    color: #000000 !important;
+    background: transparent !important;
+    border-color: #6b7280 !important;
+    box-shadow: none !important;
+  }
+
+  #printable-pos-receipt table,
+  #printable-return-voucher table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  #printable-pos-receipt th,
+  #printable-return-voucher th,
+  #printable-pos-receipt td,
+  #printable-return-voucher td {
+    padding: 3px 0 !important;
+  }
+
+  /* 6. Financial Reports Print Layout */
+  #printable-financial-report {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  #printable-financial-report .bg-slate-800,
+  #printable-financial-report .bg-slate-800\/80,
+  #printable-financial-report .bg-slate-800\/60,
+  #printable-financial-report .bg-slate-900,
+  #printable-financial-report .bg-slate-900\/80,
+  #printable-financial-report .bg-slate-900\/60,
+  #printable-financial-report .bg-emerald-950\/20,
+  #printable-financial-report .bg-emerald-950\/60,
+  #printable-financial-report .bg-cyan-950\/80,
+  #printable-financial-report .bg-cyan-950\/60 {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+    color: #111827 !important;
+    border-radius: 8px !important;
+  }
+
+  #printable-financial-report .text-slate-100,
+  #printable-financial-report .text-slate-200,
+  #printable-financial-report .text-slate-300,
+  #printable-financial-report .text-slate-400,
+  #printable-financial-report .text-slate-500 {
+    color: #1f2937 !important;
+  }
+
+  #printable-financial-report .text-emerald-400,
+  #printable-financial-report .text-emerald-300 {
+    color: #047857 !important;
+  }
+  #printable-financial-report .text-amber-400,
+  #printable-financial-report .text-amber-500 {
+    color: #b45309 !important;
+  }
+  #printable-financial-report .text-rose-400 {
+    color: #b91c1c !important;
+  }
+  #printable-financial-report .text-cyan-400 {
+    color: #0369a1 !important;
+  }
+  #printable-financial-report .text-purple-400,
+  #printable-financial-report .text-purple-300 {
+    color: #6b21a8 !important;
+  }
+
+  #printable-financial-report table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  #printable-financial-report th {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 2px solid #9ca3af !important;
+    padding: 6px 8px !important;
+    font-weight: 700 !important;
+  }
+
+  #printable-financial-report td {
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #1f2937 !important;
+    padding: 6px 8px !important;
+  }
+}

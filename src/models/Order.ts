@@ -34,12 +34,34 @@ export interface ICustomerInfo {
   notes?: string;
 }
 
+export interface IOrderReturnItem {
+  productId: string;
+  quantity: number;
+  refundAmount: number;
+}
+
+export interface IOrderReturnRecord {
+  returnId: string;
+  shiftId: string;
+  items: IOrderReturnItem[];
+  totalRefunded: number;
+  paymentMethod: string;
+  restockToInventory: boolean;
+  reason?: string;
+  createdAt?: Date;
+}
+
 export interface IOrder extends Document {
   customerInfo: ICustomerInfo;
   items: IOrderItem[];
   totalPrice: number;
   discountDetails?: IOrderDiscountDetails;
-  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled" | "returned" | "partially_returned";
+  source?: string;
+  paymentMethod?: string;
+  shiftId?: string;
+  returns?: IOrderReturnRecord[];
+  totalRefunded?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -82,9 +104,31 @@ const OrderSchema = new Schema<IOrder>(
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled", "returned", "partially_returned"],
       default: "pending",
     },
+    source: { type: String, default: "online" },
+    paymentMethod: { type: String, default: "cash" },
+    shiftId: { type: String },
+    totalRefunded: { type: Number, default: 0 },
+    returns: [
+      {
+        returnId: { type: String },
+        shiftId: { type: String },
+        items: [
+          {
+            productId: { type: String },
+            quantity: { type: Number },
+            refundAmount: { type: Number },
+          },
+        ],
+        totalRefunded: { type: Number },
+        paymentMethod: { type: String },
+        restockToInventory: { type: Boolean },
+        reason: { type: String },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

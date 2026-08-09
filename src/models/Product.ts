@@ -13,6 +13,7 @@ export interface IProduct extends Document {
   category: string;
   company?: mongoose.Types.ObjectId | string | null;
   featured: boolean;
+  barcode?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,7 @@ const ProductSchema = new Schema<IProduct>(
     category: { type: String, required: true, default: "General" },
     company: { type: Schema.Types.ObjectId, ref: "Company", default: null },
     featured: { type: Boolean, default: false },
+    barcode: { type: String, default: "", trim: true },
   },
   { timestamps: true }
 );
@@ -37,6 +39,7 @@ const ProductSchema = new Schema<IProduct>(
 ProductSchema.index({ featured: 1, createdAt: -1 });
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ company: 1 });
+ProductSchema.index({ barcode: 1 });
 ProductSchema.index({ name: "text" });
 
 // Keep `image` in sync: when saving, if images array has entries but image is

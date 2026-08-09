@@ -78,15 +78,18 @@ export async function POST(req: NextRequest) {
       uploadExt = ".ico";
     } else {
       try {
-        // Normalize color profile to sRGB, handle orientation, resize to max 800×800, convert to WebP
-        uploadBuffer = await sharp(rawBuffer, { failOn: "none" })
-          .toColorspace("srgb")
-          .rotate()                         // auto-rotate from EXIF
+        // Robust color normalization: auto-rotate first, convert to standard sRGB, resize, and compress
+        uploadBuffer = await sharp(rawBuffer, {
+          failOn: "none",
+          unlimited: true,
+        })
+          .rotate() // Auto-orient from EXIF first
+          .toColorspace("srgb") // Convert any exotic/CMYK/Display-P3 or corrupt profiles to standard sRGB
           .resize(800, 800, {
-            fit: "inside",                  // never crops, never upscales
+            fit: "inside", // Never crops, never upscales
             withoutEnlargement: true,
           })
-          .webp({ quality: 82, effort: 6, smartSubsample: true }) // High efficiency WebP compression
+          .webp({ quality: 82, effort: 6, smartSubsample: true }) // High-efficiency WebP compression
           .toBuffer();
         uploadMime = "image/webp";
         uploadExt = ".webp";

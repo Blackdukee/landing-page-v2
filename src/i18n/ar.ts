@@ -21,6 +21,12 @@ const ar: Record<string, string> = {
 
   // ── الصفحة الرئيسية – البطل ──
   "home.badge": "مجموعة جديدة 2026",
+  "home.brandHeroBadge": "وكيل معتمد وموزع رسمي ✦",
+  "home.brandHeroLine1": "تسوق أقوى المعدات من",
+  "home.brandHeroLine2": "أشهر العلامات",
+  "home.brandHeroLine3": "التجارية العالمية",
+  "home.brandHeroDesc":
+    "اكتشف تشكيلة أصلية 100% من كبرى الشركات العالمية المتخصصة في المعدات والأدوات اليدوية والكهربائية بضمان الوكيل وشحن سريع لجميع المحافظات.",
   "home.heroLine1": "استمتع",
   "home.heroLine2": "بالتسوق",
   "home.heroLine3": "العصري",
@@ -29,6 +35,15 @@ const ar: Record<string, string> = {
     "اكتشف منتجات مميزة في كل فئة. من التكنولوجيا إلى الادوات اليدوية، جد كل ما تحتاجه في مكان واحد بجودة لا تُضاهى وتوصيل سريع.",
   "home.explore": "استكشف المجموعة",
   "home.seeFeatured": "المنتجات المميزة",
+  "home.browseByBrand": "تصفح الماركات",
+  "home.viewBrandProducts": "تصفح منتجات {brand}",
+  "home.authorizedPartner": "شريك معتمد",
+  "home.allBrands": "العلامات والشركات المعتمدة",
+  "home.viewAllInCategory": "عرض جميع منتجات {category}",
+  "home.productsCount": "({count} منتج)",
+  "home.exploreMoreCategory": "استكشف المزيد من قسم {category}",
+  "home.noCompanies": "لم يتم إضافة شركات بعد.",
+  "home.noCategoryProducts": "لا توجد منتجات متوفرة في هذا القسم حالياً.",
 
   // ── الصفحة الرئيسية – شارات الثقة ──
   "home.freeDelivery": "توصيل مجاني",

@@ -21,6 +21,12 @@ const en = {
 
   // ── Home – Hero ──
   "home.badge": "New Collection 2026",
+  "home.brandHeroBadge": "Authorized Dealer & Official Partner ✦",
+  "home.brandHeroLine1": "Shop Heavy-Duty Tools from",
+  "home.brandHeroLine2": "Leading Global",
+  "home.brandHeroLine3": "Brands",
+  "home.brandHeroDesc":
+    "Discover 100% genuine products from top global manufacturers in power and hand tools with full official warranty and fast shipping across all governorates.",
   "home.heroLine1": "Experience",
   "home.heroLine2": "modern",
   "home.heroLine3": "shopping",
@@ -29,6 +35,15 @@ const en = {
     "Discover premium products across every category. From tech to hand tools, find everything you need in one place with unbeatable quality and fast delivery.",
   "home.explore": "Explore Collection",
   "home.seeFeatured": "See Featured",
+  "home.browseByBrand": "Browse Brands",
+  "home.viewBrandProducts": "Browse {brand} Products",
+  "home.authorizedPartner": "Authorized Partner",
+  "home.allBrands": "Authorized Brands & Partners",
+  "home.viewAllInCategory": "View all {category} products",
+  "home.productsCount": "({count} items)",
+  "home.exploreMoreCategory": "Explore More in {category}",
+  "home.noCompanies": "No brands added yet.",
+  "home.noCategoryProducts": "No products available in this category yet.",
 
   // ── Home – Trust badges ──
   "home.freeDelivery": "Free Delivery",

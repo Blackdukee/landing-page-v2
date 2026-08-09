@@ -2,218 +2,136 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   ArrowRight,
-  Truck,
-  ShieldCheck,
-  Headphones,
   Star,
-  ChevronRight,
-  Sparkles,
   Package,
+  ShieldCheck,
 } from "lucide-react";
-import ProductCard from "@/components/ProductCard";
+import BrandHeroSection, { Company } from "@/components/BrandHeroSection";
+import CategoryProductSection, {
+  Category,
+  Product,
+} from "@/components/CategoryProductSection";
 import DailyOffersSection from "@/components/DailyOffersSection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  stock: number;
-  category: string;
-  featured: boolean;
-  company?: { _id: string; name: string; logo: string } | string | null;
-}
-
 export default function HomeClient() {
-  const [featured, setFeatured] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { t, dir } = useTranslation();
-  const { websiteName, freeDeliveryMinPrice, returnDays } = useSiteSettings();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
+  const { t, dir } = useTranslation();
+  const { websiteName, freeDeliveryMinPrice } = useSiteSettings();
+
+  // 1. Fetch Companies
   useEffect(() => {
-    fetch("/api/products?featured=true&limit=8")
+    fetch("/api/companies")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setFeatured(data);
-        else if (Array.isArray(data.products)) setFeatured(data.products);
+        if (Array.isArray(data)) setCompanies(data);
       })
       .catch(console.error)
-      .finally(() => setLoading(false));
+      .finally(() => setLoadingCompanies(false));
   }, []);
+
+  // 2. Fetch Categories
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCategories(data);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingCategories(false));
+  }, []);
+
+  // 3. Fetch Products for Category Sections
+  useEffect(() => {
+    fetch("/api/products")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setProducts(data);
+        else if (Array.isArray(data.products)) setProducts(data.products);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingProducts(false));
+  }, []);
+
+  // Group products by category name (max 4 per category for landing page showcase)
+  const productsByCategory = useMemo(() => {
+    const map: Record<string, Product[]> = {};
+    for (const p of products) {
+      if (!p.category) continue;
+      if (!map[p.category]) map[p.category] = [];
+      if (map[p.category].length < 4) {
+        map[p.category].push(p);
+      }
+    }
+    return map;
+  }, [products]);
 
   return (
     <>
-      {/* ───────────── HERO ───────────── */}
-      <section className="relative min-h-[100svh] flex items-center overflow-hidden">
-        {/* Background gradient mesh */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-background via-surface to-background" />
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-[128px]" />
-          <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-purple-600/15 rounded-full blur-[100px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
-        </div>
+      {/* ───────────── 1. HERO SECTION (BRANDS & SPOTLIGHT) ───────────── */}
+      <BrandHeroSection companies={companies} loading={loadingCompanies} />
 
-        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-32 pb-20">
-          <div className="flex items-center justify-center">
-            <div className="max-w-2xl text-center">
-              <span className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-xs font-medium text-shadow-primary mb-8">
-                <Sparkles className="h-3.5 w-3.5" />
-                {t("home.badge")}
-              </span>
-
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-[1.05] tracking-tight mb-6">
-                {t("home.heroLine1")}
-                <br />
-                <span className="gradient-text">{t("home.heroLine2")}</span> {t("home.heroLine3")}
-                <br />
-                {t("home.heroLine4")}
-              </h1>
-
-              <p className="text-lg text-muted max-w-lg leading-relaxed mb-10 mx-auto">
-                {t("home.heroDesc")}
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link
-                  href="/products"
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  {t("home.explore")}
-                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
-                </Link>
-                <a
-                  href="#featured"
-                  className="inline-flex items-center gap-2 rounded-full glass px-8 py-4 text-sm font-medium text-foreground transition-all hover:bg-glass-border"
-                >
-                  {t("home.seeFeatured")}
-                </a>
-              </div>
-
-              {/* Trust badges */}
-              <div className="flex flex-wrap justify-center gap-8 mt-14 pt-8 border-t border-border">
-                {[
-                  { icon: Truck, text: t("home.freeDelivery"), sub: t("home.freeDeliverySub", { price: String(freeDeliveryMinPrice) }) },
-                  { icon: ShieldCheck, text: t("home.easyReturns"), sub: t("home.easyReturnsSub", { days: String(returnDays) }) },
-                  { icon: Headphones, text: t("home.support"), sub: t("home.supportSub") },
-                ].map(({ icon: Icon, text, sub }) => (
-                  <div key={text} className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{text}</p>
-                      <p className="text-[11px] text-muted">{sub}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10">
-          <div className="flex flex-col items-center gap-2 animate-bounce motion-reduce:animate-none">
-            <span className="text-[10px] uppercase tracking-widest text-muted">
-              {t("home.scroll")}
-            </span>
-            <div className="h-8 w-px bg-gradient-to-b from-primary/40 to-transparent" />
-          </div>
-        </div>
-      </section>
-
-      {/* ───────────── DAILY OFFERS ───────────── */}
+      {/* ───────────── 2. DAILY OFFERS (FLASH SALE) ───────────── */}
       <DailyOffersSection />
 
-      {/* ───────────── FEATURED ───────────── */}
-      <section id="featured" className="py-24 lg:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-primary mb-2 block">
-                {t("home.handpicked")}
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                {t("home.featuredProducts")}
-              </h2>
-            </div>
-            <Link
-              href="/products"
-              className="group inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-primary transition-colors"
-            >
-              {t("home.viewAll")}
-              <ChevronRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl bg-card border border-border overflow-hidden animate-pulse motion-reduce:animate-none flex flex-col"
-                >
-                  <div className="aspect-square bg-surface" />
-                  <div className="p-3 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
-                    <div className="space-y-2">
-                      <div className="h-4 bg-muted/20 rounded w-3/4" />
-                      <div className="h-3 bg-muted/20 rounded w-full" />
-                    </div>
-                    <div className="h-4 bg-muted/20 rounded w-1/3" />
-                    <div className="h-9 bg-muted/20 rounded-xl w-full" />
-                  </div>
+      {/* ───────────── 3. CATEGORIZED PRODUCT SECTIONS (4 ITEMS EACH) ───────────── */}
+      {loadingCategories ? (
+        // Skeleton loader for 2 initial category sections while fetching
+        <div className="py-16 mx-auto max-w-7xl px-6 lg:px-8 space-y-16">
+          {[1, 2].map((n) => (
+            <div key={n} className="space-y-6 animate-pulse">
+              <div className="flex justify-between items-end">
+                <div className="space-y-2">
+                  <div className="h-5 w-28 bg-surface rounded-full" />
+                  <div className="h-8 w-48 bg-surface rounded-xl" />
                 </div>
-              ))}
-            </div>
-          ) : featured.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-                {featured.map((p) => (
-                  <ProductCard
-                    key={p._id}
-                    id={p._id}
-                    name={p.name}
-                    description={p.description}
-                    price={p.price}
-                    image={p.image}
-                    category={p.category}
-                    company={p.company ?? undefined}
-                    stock={p.stock}
+                <div className="h-5 w-32 bg-surface rounded-full" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square bg-surface rounded-2xl border border-border"
                   />
                 ))}
               </div>
-              <div className="flex justify-center mt-12">
-                <Link
-                  href="/products"
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-8 py-4 text-sm font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  {t("home.viewAll")}
-                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
-                </Link>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-muted">
-                {t("home.noProducts")}
-              </p>
             </div>
-          )}
+          ))}
         </div>
-      </section>
+      ) : categories.length > 0 ? (
+        categories.map((cat, idx) => (
+          <CategoryProductSection
+            key={cat._id}
+            category={cat}
+            products={productsByCategory[cat.name] || []}
+            loading={loadingProducts}
+            index={idx}
+          />
+        ))
+      ) : null}
 
-      {/* ───────────── VALUES / FEATURES ───────────── */}
+      {/* ───────────── 4. VALUES / WHY CHOOSE US ───────────── */}
       <section className="py-24 border-y border-border bg-surface/50">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              {t("home.whyChoose")} <span className="gradient-text">{t("home.whyChooseBrand", { shopName: websiteName })}</span>{t("home.whyChooseSuffix")}
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 text-foreground">
+              {t("home.whyChoose")}{" "}
+              <span className="gradient-text">
+                {t("home.whyChooseBrand", { shopName: websiteName })}
+              </span>
+              {t("home.whyChooseSuffix")}
             </h2>
-            <p className="text-muted max-w-2xl mx-auto text-sm leading-relaxed">
+            <p className="text-muted max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
               {t("home.whyChooseDesc")}
             </p>
           </div>
@@ -228,7 +146,9 @@ export default function HomeClient() {
               {
                 icon: Package,
                 title: t("home.fastShipping"),
-                desc: t("home.fastShippingDesc", { price: String(freeDeliveryMinPrice) }),
+                desc: t("home.fastShippingDesc", {
+                  price: String(freeDeliveryMinPrice),
+                }),
               },
               {
                 icon: ShieldCheck,
@@ -238,12 +158,14 @@ export default function HomeClient() {
             ].map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
-                className="group relative rounded-2xl glass p-8 transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
+                className="group relative rounded-3xl glass p-8 transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
-                  <Icon className="h-6 w-6" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-6 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                  <Icon className="h-7 w-7" />
                 </div>
-                <h3 className="text-base font-semibold mb-2 text-foreground">{title}</h3>
+                <h3 className="text-lg font-bold mb-2 text-foreground">
+                  {title}
+                </h3>
                 <p className="text-sm text-muted leading-relaxed">{desc}</p>
               </div>
             ))}
@@ -251,33 +173,44 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* ───────────── CTA BANNER ───────────── */}
-      <section className="py-24 lg:py-32">
+      {/* ───────────── 5. CTA BANNER ───────────── */}
+      <section className="py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden">
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border">
             <Image
               src="https://images.unsplash.com/photo-1676311396794-f14881e9daaa?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Shopping"
+              alt="Shopping Banner"
               width={1400}
               height={600}
-              className="w-full h-64 sm:h-80 lg:h-96 object-cover"
+              className="w-full h-72 sm:h-80 lg:h-96 object-cover"
             />
-            <div className={`absolute inset-0 ${dir === "rtl" ? "bg-gradient-to-l" : "bg-gradient-to-r"} from-background/95 via-background/70 to-transparent flex items-center`}>
+            <div
+              className={`absolute inset-0 ${
+                dir === "rtl" ? "bg-gradient-to-l" : "bg-gradient-to-r"
+              } from-background/95 via-background/80 to-transparent flex items-center`}
+            >
               <div className="px-8 sm:px-14 max-w-lg">
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground mb-4 leading-tight">
                   {t("home.ctaLine1")}
                   <br />
-                  <span className="gradient-text">{t("home.ctaLine2")}</span> {t("home.ctaLine3")}
+                  <span className="gradient-text">{t("home.ctaLine2")}</span>{" "}
+                  {t("home.ctaLine3")}
                 </h2>
-                <p className="text-sm text-muted mb-6 leading-relaxed">
+                <p className="text-xs sm:text-sm text-muted mb-6 leading-relaxed">
                   {t("home.ctaDesc", { price: String(freeDeliveryMinPrice) })}
                 </p>
                 <Link
                   href="/products"
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-primary/25"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-blue-600 px-8 py-3.5 text-sm font-bold text-white transition-all hover:shadow-lg hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  {t("home.shopNow")}
-                  <ArrowRight className={`h-4 w-4 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
+                  <span>{t("home.shopNow")}</span>
+                  <ArrowRight
+                    className={`h-4 w-4 transition-transform ${
+                      dir === "rtl"
+                        ? "rotate-180 group-hover:-translate-x-1"
+                        : "group-hover:translate-x-1"
+                    }`}
+                  />
                 </Link>
               </div>
             </div>

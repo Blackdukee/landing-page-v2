@@ -3,12 +3,16 @@ import dbConnect from "@/lib/mongodb";
 import Category from "@/models/Category";
 import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
+import { checkAdminAuthResponse } from "@/lib/auth";
 
 // PUT update a category
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     await dbConnect();
     const { id } = await params;
@@ -66,6 +70,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     await dbConnect();
     const { id } = await params;

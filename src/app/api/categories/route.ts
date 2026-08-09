@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Category from "@/models/Category";
 import { logError } from "@/lib/apiError";
+import { checkAdminAuthResponse } from "@/lib/auth";
 
 // GET all categories
 export async function GET() {
@@ -17,6 +18,9 @@ export async function GET() {
 
 // POST create a new category
 export async function POST(req: NextRequest) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     await dbConnect();
     const body = await req.json();

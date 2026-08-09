@@ -3,8 +3,12 @@ import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
+import { checkAdminAuthResponse } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     await dbConnect();
     const orders = await Order.find().sort({ createdAt: -1 }).limit(200).lean();

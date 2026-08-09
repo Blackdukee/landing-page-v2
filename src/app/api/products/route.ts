@@ -3,6 +3,7 @@ import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 import Company from "@/models/Company";
 import { logError } from "@/lib/apiError";
+import { checkAdminAuthResponse } from "@/lib/auth";
 
 // Ensure Company model is registered
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -64,6 +65,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     await dbConnect();
     const body = await req.json();

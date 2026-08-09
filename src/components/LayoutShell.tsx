@@ -34,17 +34,17 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
   const isCashier = pathname.startsWith("/cashier");
-  const isStandalone = isAdmin || isCashier;
+  const hideNavigation = isAdmin || isCashier;
 
   return (
     <LanguageProvider>
       <SiteSettingsProvider>
         <DynamicTitle />
-        {!isStandalone && <Navbar />}
-        <main className={isStandalone ? "h-screen w-screen overflow-hidden" : "min-h-screen"}>
+        {!hideNavigation && <Navbar />}
+        <main className={isCashier ? "h-screen w-screen overflow-hidden" : "min-h-screen"}>
           {children}
         </main>
-        {!isStandalone && <Footer />}
+        {!hideNavigation && <Footer />}
       </SiteSettingsProvider>
     </LanguageProvider>
   );

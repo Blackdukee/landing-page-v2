@@ -5,6 +5,7 @@ import Category from "@/models/Category";
 import Company from "@/models/Company";
 import ImageKit from "@imagekit/nodejs";
 import { logError } from "@/lib/apiError";
+import { checkAdminAuthResponse } from "@/lib/auth";
 
 // Ensure Company model is registered
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -48,6 +49,9 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     await dbConnect();
     const { id } = await params;
@@ -134,9 +138,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
+
   try {
     await dbConnect();
     const { id } = await params;

@@ -40,9 +40,18 @@ export const metadata: Metadata = {
     siteName: "QuesnaShop | متجر قصنا",
     locale: "ar_EG",
     type: "website",
+    images: [
+      {
+        url: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
+        width: 1200,
+        height: 630,
+        alt: "QuesnaShop - متجر قصنا لأدوات TOTAL في مصر",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png"],
   },
   icons: {
     icon: [

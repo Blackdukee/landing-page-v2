@@ -3,28 +3,13 @@ import dbConnect from "@/lib/mongodb";
 import Company from "@/models/Company";
 import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
-
-function checkAdminAuth(req: NextRequest) {
-  const token = req.cookies.get("admin-token")?.value;
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  try {
-    const user = JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
-    if (user.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-  } catch {
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-  }
-  return null;
-}
+import { checkAdminAuthResponse } from "@/lib/auth";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = checkAdminAuth(req);
+  const authError = checkAdminAuthResponse(req);
   if (authError) return authError;
 
   try {
@@ -58,7 +43,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = checkAdminAuth(req);
+  const authError = checkAdminAuthResponse(req);
   if (authError) return authError;
 
   try {

@@ -4,6 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
 import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
+import { checkAdminAuthResponse } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -60,21 +61,10 @@ export async function GET() {
 
 // PUT — admin only, updates site settings
 export async function PUT(req: NextRequest) {
-  try {
-    // Check admin auth
-    const token = req.cookies.get("admin-token")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    try {
-      const user = JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
-      if (user.role !== "admin") {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-    } catch {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
+  const authErr = checkAdminAuthResponse(req);
+  if (authErr) return authErr;
 
+  try {
     await dbConnect();
     const body = await req.json();
     const update: Record<string, unknown> = {};

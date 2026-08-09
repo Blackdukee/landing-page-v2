@@ -3,23 +3,14 @@ import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { logError } from "@/lib/apiError";
+import { verifyAdminSession, createSignedToken, setAdminCookie } from "@/lib/auth";
 
 export async function PUT(req: NextRequest) {
   try {
     // Check admin auth
-    const token = req.cookies.get("admin-token")?.value;
-    if (!token) {
+    const tokenUser = verifyAdminSession(req);
+    if (!tokenUser || tokenUser.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    let tokenUser: { id: string; email: string; role: string };
-    try {
-      tokenUser = JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
-      if (tokenUser.role !== "admin") {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-    } catch {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     await dbConnect();
@@ -34,7 +25,7 @@ export async function PUT(req: NextRequest) {
     }
 
     // Find user in DB
-    const user = await User.findById(tokenUser.id);
+    const user = await User.findById(tokenUser.id || tokenUser._id);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -81,22 +72,24 @@ export async function PUT(req: NextRequest) {
     await user.save();
 
     // Re-issue cookie with updated info
-    const newToken = Buffer.from(
-      JSON.stringify({ id: user._id, email: user.email, role: user.role })
-    ).toString("base64");
+    const userId = user._id.toString();
+    const userEmail = user.email;
+    const userRole = user.role || "admin";
+
+    const newToken = createSignedToken({
+      id: userId,
+      _id: userId,
+      email: userEmail,
+      name: "Admin",
+      role: userRole,
+    });
 
     const response = NextResponse.json({
       message: "Account updated successfully",
-      user: { email: user.email, role: user.role },
+      user: { email: userEmail, role: userRole },
     });
 
-    response.cookies.set("admin-token", newToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
+    setAdminCookie(response, newToken);
 
     return response;
   } catch (error) {

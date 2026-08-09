@@ -183,7 +183,7 @@ export default function FinancialReportsTab() {
             <div className="flex justify-between items-start gap-6 dir-rtl">
               <div>
                 <h1 className="text-xl font-black text-slate-900">
-                  كاش إير POS - متجر قصنا TOTAL | QuesnaShop
+                  كاش إير POS - M L N TOOLS | متجر M L N TOOLS
                 </h1>
                 <h2 className="text-base font-bold text-slate-700 mt-1">
                   بيان التقارير والإحصائيات المالية التفصيلية (Financial Report Statement)

@@ -22,7 +22,7 @@ export async function generateMetadata(
   const { id } = await params;
   const product = await getProduct(id);
   if (!product) {
-    return { title: "المنتج غير موجود | QuesnaShop" };
+    return { title: "المنتج غير موجود | M L N TOOLS" };
   }
 
   const companyName =
@@ -31,12 +31,12 @@ export async function generateMetadata(
       : undefined;
 
   const title = companyName
-    ? `${product.name} | ${companyName} | QuesnaShop`
-    : `${product.name} | QuesnaShop`;
+    ? `${product.name} | ${companyName} | M L N TOOLS`
+    : `${product.name} | M L N TOOLS`;
 
   const description =
     product.description?.slice(0, 155) ||
-    `اشتر ${product.name} بأفضل سعر في مصر. توصيل سريع عبر QuesnaShop.`;
+    `اشتر ${product.name} بأفضل سعر في مصر. توصيل سريع عبر M L N TOOLS.`;
 
   const images = (product.images?.length ? product.images : [product.image])
     .filter(Boolean)

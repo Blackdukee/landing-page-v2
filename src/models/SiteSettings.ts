@@ -67,7 +67,7 @@ const DailyOfferSchema = new Schema<IDailyOffer>(
 
 const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
-    websiteName: { type: String, default: "QuesnaShop" },
+    websiteName: { type: String, default: "M L N TOOLS" },
     favicon: { type: String, default: "" },
     whatsappNumber: { type: String, default: "+201203441866" },
     freeDeliveryMinPrice: { type: Number, default: 99 },

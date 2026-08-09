@@ -1231,7 +1231,7 @@ export default function AdminDashboard() {
                 value={siteName}
                 onChange={(e) => setSiteName(e.target.value)}
                 className={inputClass}
-                placeholder="QuesnaShop"
+                placeholder="M L N TOOLS"
               />
             </div>
             <div>

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     canonical: `${BASE_URL}/products`,
   },
   openGraph: {
-    title: "جميع الأدوات والمنتجات | TOTAL مصر | QuesnaShop",
+    title: "جميع الأدوات والمنتجات | TOTAL مصر | M L N TOOLS",
     description:
       "تصفح مجموعتنا الكاملة من معدات وأدوات TOTAL الكهربائية واليدوية. أفضل الأسعار وشحن سريع لكافة المحافظات.",
     type: "website",

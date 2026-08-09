@@ -60,7 +60,7 @@ interface SiteSettingsContextValue extends SiteSettings {
 const defaultSocialLinks: SocialLinks = { instagram: "", twitter: "", email: "" };
 
 const defaultSettings: SiteSettings = {
-  websiteName: "QuesnaShop",
+  websiteName: "M L N TOOLS",
   favicon: "",
   whatsappNumber: "+201203441866",
   freeDeliveryMinPrice: 99,

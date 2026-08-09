@@ -237,7 +237,7 @@ export default function AdminOrdersPage() {
   const handleCopyWhatsApp = async () => {
     if (!discountOrder) return;
     const { originalTotal, finalTotal, savings } = calcDiscount();
-    const storeName = websiteName || "QuesnaShop";
+    const storeName = websiteName || "M L N TOOLS";
 
     const itemLines = discountOrder.items
       .map((item) => {

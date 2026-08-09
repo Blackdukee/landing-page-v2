@@ -657,7 +657,7 @@ export default function POSCartPanel({
               className="bg-white text-slate-950 p-4 rounded-xl text-xs font-mono space-y-3 shadow-inner border border-slate-200"
             >
               <div className="text-center border-b border-dashed border-slate-400 pb-2">
-                <h2 className="text-base font-black text-slate-900">كاش إير POS - QuesnaShop</h2>
+                <h2 className="text-base font-black text-slate-900">كاش إير POS - M L N TOOLS</h2>
                 <p className="text-[11px] text-slate-600">فاتورة بيع مباشرة</p>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة: #{receiptData.orderId}</p>
                 <p className="text-[10px] text-slate-500">التاريخ: {receiptData.date}</p>

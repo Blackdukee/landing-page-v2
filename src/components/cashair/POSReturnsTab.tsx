@@ -304,7 +304,7 @@ export default function POSReturnsTab() {
               className="bg-white text-slate-950 p-4 rounded-xl text-xs font-mono space-y-3 border border-slate-200 shadow-inner"
             >
               <div className="text-center border-b border-dashed border-slate-400 pb-2">
-                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - QuesnaShop POS</h3>
+                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - M L N TOOLS POS</h3>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة الأصلية: #{selectedReturn.orderId.slice(-6).toUpperCase()}</p>
                 <p className="text-[10px] text-slate-500">
                   التاريخ: {new Date(selectedReturn.createdAt).toLocaleString("ar-EG")}

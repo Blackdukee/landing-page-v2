@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
-  title: "QuesnaShop | متجر قصنا الإلكتروني - أجهزة وأدوات TOTAL في مصر",
+  title: "M L N TOOLS | متجر M L N TOOLS الإلكتروني - أجهزة وأدوات TOTAL في مصر",
   description:
     "تسوق أفضل المعدات والأدوات الكهربائية واليدوية من TOTAL. بضاعة أصلية، أسعار منافسة، وشحن سريع لجميع المحافظات.",
   openGraph: {
-    title: "QuesnaShop | متجر قصنا الإلكتروني",
+    title: "M L N TOOLS | متجر M L N TOOLS الإلكتروني",
     description:
       "تسوق أفضل المعدات والأدوات الكهربائية واليدوية من TOTAL. بضاعة أصلية وشحن سريع لجميع المحافظات.",
     type: "website",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         url: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
         width: 1200,
         height: 630,
-        alt: "QuesnaShop - متجر قصنا لأدوات TOTAL في مصر",
+        alt: "M L N TOOLS - متجر M L N TOOLS لأدوات TOTAL في مصر",
       },
     ],
   },

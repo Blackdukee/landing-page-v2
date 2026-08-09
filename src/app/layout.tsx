@@ -24,11 +24,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mohammed-essam.ver
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "QuesnaShop | متجر قصنا الإلكتروني لأدوات TOTAL في مصر",
-    template: "%s | QuesnaShop",
+    default: "M L N TOOLS | متجر M L N TOOLS لأدوات TOTAL في مصر",
+    template: "%s | M L N TOOLS",
   },
   description:
-    "متجر قصنا الإلكتروني - أفضل أسعار أدوات ومعدات TOTAL الكهربائية واليدوية في مصر. بضاعة أصلية وتوصيل سريع لكافة المحافظات.",
+    "متجر M L N TOOLS - أفضل أسعار أدوات ومعدات TOTAL الكهربائية واليدوية في مصر. بضاعة أصلية وتوصيل سريع لكافة المحافظات.",
   alternates: {
     canonical: SITE_URL,
     languages: {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    siteName: "QuesnaShop | متجر قصنا",
+    siteName: "M L N TOOLS | متجر M L N TOOLS",
     locale: "ar_EG",
     type: "website",
     images: [
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
         url: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
         width: 1200,
         height: 630,
-        alt: "QuesnaShop - متجر قصنا لأدوات TOTAL في مصر",
+        alt: "M L N TOOLS - متجر M L N TOOLS لأدوات TOTAL في مصر",
       },
     ],
   },
@@ -85,8 +85,8 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                name: "QuesnaShop",
-                alternateName: "متجر قصنا",
+                name: "M L N TOOLS",
+                alternateName: "متجر M L N TOOLS",
                 url: SITE_URL,
                 potentialAction: {
                   "@type": "SearchAction",
@@ -97,8 +97,8 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                name: "QuesnaShop",
-                alternateName: "متجر قصنا",
+                name: "M L N TOOLS",
+                alternateName: "متجر M L N TOOLS",
                 url: SITE_URL,
                 logo: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
                 contactPoint: {

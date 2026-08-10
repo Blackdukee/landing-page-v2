@@ -78,7 +78,7 @@ export default function ReturnsModal({
       } else {
         setSearchError(data.error || "فشل البحث عن الفاتورة.");
       }
-    } catch (err) {
+    } catch {
       setSearchError("خطأ في الاتصال بالخادم عند البحث.");
     } finally {
       setIsSearching(false);
@@ -117,7 +117,7 @@ export default function ReturnsModal({
     }
 
     const itemsToReturn = Object.entries(returnQuantities)
-      .filter(([_, qty]) => qty > 0)
+      .filter(([, qty]) => qty > 0)
       .map(([productId, quantity]) => ({ productId, quantity }));
 
     if (itemsToReturn.length === 0) {
@@ -173,7 +173,7 @@ export default function ReturnsModal({
       } else {
         setSubmitError(data.error || "فشل معالجة مرتجع الفاتورة");
       }
-    } catch (err) {
+    } catch {
       setSubmitError("خطأ في الخادم عند إرسال المرتجع.");
     } finally {
       setIsSubmitting(false);

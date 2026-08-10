@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, ArrowRight, Tag, Sparkles } from "lucide-react";
+import { ChevronRight, ArrowRight, Tag } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useTranslation } from "@/i18n/LanguageContext";
 

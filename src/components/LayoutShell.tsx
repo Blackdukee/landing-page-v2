@@ -8,7 +8,7 @@ import { LanguageProvider } from "@/i18n/LanguageContext";
 import { SiteSettingsProvider, useSiteSettings } from "@/lib/SiteSettingsContext";
 
 function DynamicTitle() {
-  const { websiteName, favicon } = useSiteSettings();
+  const { favicon } = useSiteSettings();
 
   useEffect(() => {
     if (!favicon) return;

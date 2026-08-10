@@ -10,7 +10,6 @@ import {
   X,
   Save,
   Package,
-  ImageIcon,
   ChevronDown,
   ArrowUpDown,
   Upload,
@@ -54,7 +53,7 @@ const emptyProduct = {
   images: [] as string[],
   imageFileIds: [] as string[],
   stock: 0,
-  category: "General",
+  category: "عام",
   company: "",
   featured: false,
 };
@@ -107,10 +106,12 @@ export default function AdminProductsPage() {
       .catch(console.error);
   }, []);
 
-  const categoryNames = useMemo(
-    () => categories.map((c) => c.name),
-    [categories]
-  );
+  const categoryNames = useMemo(() => {
+    const list = categories.map((c) => c.name).filter(Boolean);
+    const unique = Array.from(new Set(list));
+    if (unique.length === 0) unique.push("عام");
+    return unique;
+  }, [categories]);
 
   const filtered = useMemo(() => {
     let result = products;
@@ -173,7 +174,10 @@ export default function AdminProductsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyProduct);
+    setForm({
+      ...emptyProduct,
+      category: categories[0]?.name || "عام",
+    });
     setUploadError("");
     setDragOver(false);
     newUploadsRef.current = [];
@@ -199,7 +203,7 @@ export default function AdminProductsPage() {
       images: imgs,
       imageFileIds: fileIds,
       stock: product.stock,
-      category: product.category,
+      category: product.category === "General" ? "عام" : (product.category || "عام"),
       company: companyId,
       featured: product.featured,
     });
@@ -471,10 +475,13 @@ export default function AdminProductsPage() {
                           return (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-2 py-0.5 text-[11px] font-medium text-foreground">
                               {compObj.logo && (
-                                <img
+                                <Image
                                   src={compObj.logo}
                                   alt={compObj.name}
+                                  width={14}
+                                  height={14}
                                   className="h-3.5 w-3.5 rounded-full object-cover shrink-0"
+                                  unoptimized
                                 />
                               )}
                               <span>{compObj.name}</span>
@@ -617,14 +624,11 @@ export default function AdminProductsPage() {
                   onChange={(e) => updateField("category", e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
                 >
-                  <option value="General">{t("admin.products.general" as TranslationKey)}</option>
-                  {categoryNames.map(
-                    (cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    )
-                  )}
+                  {categoryNames.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
 

@@ -111,10 +111,13 @@ export default function ProductCard({
               return (
                 <span className="inline-flex items-center gap-1 rounded-full bg-black/65 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white border border-white/20 shadow-sm">
                   {compObj.logo && (
-                    <img
+                    <Image
                       src={compObj.logo}
                       alt={compObj.name}
+                      width={14}
+                      height={14}
                       className="h-3.5 w-3.5 rounded-full object-cover shrink-0"
+                      unoptimized
                     />
                   )}
                   <span>{compObj.name}</span>

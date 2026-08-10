@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ShoppingBag,
   Search,
-  Filter,
   RefreshCw,
   Eye,
   CheckCircle2,
@@ -15,8 +14,6 @@ import {
   Printer,
   Globe,
   Store,
-  CreditCard,
-  Banknote,
   User,
   Phone,
   MapPin,
@@ -40,7 +37,7 @@ export default function POSOrdersTab() {
   const [editCustomerPhone, setEditCustomerPhone] = useState("");
   const [editCustomerAddress, setEditCustomerAddress] = useState("");
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       let url = `/api/cashair/orders?limit=100`;
@@ -59,11 +56,11 @@ export default function POSOrdersTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, statusFilter, sourceFilter]);
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter, sourceFilter]);
+  }, [fetchOrders]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

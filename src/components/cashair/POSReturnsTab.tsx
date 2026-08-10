@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   RotateCcw,
   Search,
   RefreshCw,
   Eye,
-  CheckCircle2,
   DollarSign,
   Printer,
   PackageCheck,
@@ -28,20 +27,7 @@ export default function POSReturnsTab() {
   // Selected Return Voucher for Detail View
   const [selectedReturn, setSelectedReturn] = useState<any | null>(null);
 
-  const handleDeleteReturn = async (returnId: string) => {
-    if (!confirm("هل أنت متأكد من رغبتك في حذف سجل المرتجع هذا نهائياً من النظام؟")) return;
-    try {
-      const res = await fetch(`/api/cashair/returns/${returnId}`, { method: "DELETE" });
-      if (res.ok) {
-        setSelectedReturn(null);
-        fetchReturns();
-      }
-    } catch {
-      // Ignore error
-    }
-  };
-
-  const fetchReturns = async () => {
+  const fetchReturns = useCallback(async () => {
     setLoading(true);
     try {
       let url = `/api/cashair/returns/list?limit=100`;
@@ -59,11 +45,24 @@ export default function POSReturnsTab() {
     } finally {
       setLoading(false);
     }
+  }, [search, paymentFilter, restockFilter]);
+
+  const handleDeleteReturn = async (returnId: string) => {
+    if (!confirm("هل أنت متأكد من رغبتك في حذف سجل المرتجع هذا نهائياً من النظام؟")) return;
+    try {
+      const res = await fetch(`/api/cashair/returns/${returnId}`, { method: "DELETE" });
+      if (res.ok) {
+        setSelectedReturn(null);
+        fetchReturns();
+      }
+    } catch {
+      // Ignore error
+    }
   };
 
   useEffect(() => {
     fetchReturns();
-  }, [paymentFilter, restockFilter]);
+  }, [fetchReturns]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

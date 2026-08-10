@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo } from "react";
 import {
   Truck,
@@ -97,10 +98,13 @@ export default function BrandHeroSection({
                   {/* Logo Container */}
                   <div className="md:col-span-5 flex justify-center">
                     <div className="relative h-32 w-full max-w-[240px] flex items-center justify-center p-5 rounded-2xl bg-white shadow-md border border-border overflow-hidden transition-transform duration-500 group-hover:scale-105">
-                      <img
+                      <Image
                         src={comp.logo}
                         alt={comp.name}
+                        width={200}
+                        height={80}
                         className="max-h-full max-w-full object-contain"
+                        unoptimized
                       />
                     </div>
                   </div>
@@ -163,10 +167,13 @@ export default function BrandHeroSection({
                 {/* Logo */}
                 <div className="flex flex-col items-center text-center my-3">
                   <div className="relative h-20 w-44 flex items-center justify-center p-3 rounded-2xl bg-white shadow-xs border border-border mb-4 overflow-hidden transition-transform duration-300 group-hover:scale-105">
-                    <img
+                    <Image
                       src={comp.logo}
                       alt={comp.name}
+                      width={160}
+                      height={60}
                       className="max-h-full max-w-full object-contain"
+                      unoptimized
                     />
                   </div>
 
@@ -225,10 +232,13 @@ export default function BrandHeroSection({
                 title={comp.name}
               >
                 <div className="relative h-6 w-16 sm:h-7 sm:w-20 flex items-center justify-center">
-                  <img
+                  <Image
                     src={comp.logo}
                     alt={comp.name}
-                    className="max-h-full max-w-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                    width={80}
+                    height={28}
+                    className="max-h-full max-w-full object-contain mix-blend-multiply grayscale group-hover:grayscale-0 transition-all duration-300"
+                    unoptimized
                   />
                 </div>
                 <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">

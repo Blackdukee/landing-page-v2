@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   TrendingUp,
   DollarSign,
@@ -8,9 +8,7 @@ import {
   RotateCcw,
   Tag,
   CreditCard,
-  Building2,
   Package,
-  Calendar,
   Printer,
   RefreshCw,
   Store,
@@ -32,7 +30,7 @@ export default function FinancialReportsTab() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<any | null>(null);
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -49,16 +47,16 @@ export default function FinancialReportsTab() {
       } else {
         setError(data.error || "فشل تحميل التقارير المالية.");
       }
-    } catch (err) {
+    } catch {
       setError("خطأ في الاتصال بالخادم عند جلب التقرير المالي.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [period, startDate, endDate]);
 
   useEffect(() => {
     fetchReport();
-  }, [period]);
+  }, [fetchReport]);
 
   const handleCustomDateSubmit = (e: React.FormEvent) => {
     e.preventDefault();

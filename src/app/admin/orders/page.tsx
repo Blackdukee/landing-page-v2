@@ -288,7 +288,7 @@ ${itemLines}
     return matchesSearch && matchesStatus;
   });
 
-  const { originalTotal, finalTotal, savings } = calcDiscount();
+  const { finalTotal, savings } = calcDiscount();
 
   return (
     <div>

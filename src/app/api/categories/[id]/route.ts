@@ -90,12 +90,12 @@ export async function DELETE(
     if (action === "delete") {
       await Product.deleteMany({ category: category.name });
     } else {
-      // Default: reassign to "General"
-      await Product.updateMany({ category: category.name }, { category: "General" });
-      // Ensure "General" category exists
-      const generalExists = await Category.findOne({ slug: "general" });
+      // Default: reassign to "عام"
+      await Product.updateMany({ category: category.name }, { category: "عام" });
+      // Ensure "عام" category exists
+      const generalExists = await Category.findOne({ $or: [{ name: "عام" }, { slug: "عام" }] });
       if (!generalExists) {
-        await Category.create({ name: "General", slug: "general", description: "" });
+        await Category.create({ name: "عام", slug: "عام", description: "" });
       }
     }
 

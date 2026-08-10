@@ -185,7 +185,7 @@ export default function POSCartPanel({
       } else {
         setCheckoutError(data.error || "فشل إتمام عملية البيع");
       }
-    } catch (err: any) {
+    } catch {
       setCheckoutError("خطأ في الشبكة. يرجى المحاولة مرة أخرى.");
     } finally {
       setIsSubmitting(false);

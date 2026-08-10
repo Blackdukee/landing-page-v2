@@ -1,7 +1,21 @@
 import ImageKit from "@imagekit/nodejs";
 import type { File as ImageKitFile } from "@imagekit/nodejs/resources/files/files";
 import { createHash } from "crypto";
-import sharp from "sharp";
+
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+let sharpInstance: any = null;
+function getSharp() {
+  if (sharpInstance) return sharpInstance;
+  try {
+    sharpInstance = require("sharp");
+    return sharpInstance;
+  } catch (err) {
+    console.warn("[MediaPipeline] Sharp could not be loaded, using raw buffer fallback:", err);
+    return null;
+  }
+}
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "dummy_private_key_for_build",
@@ -61,37 +75,35 @@ export const MediaPipeline = {
 
     // 2. Pre-process with Sharp (skip SVG & ICO)
     let uploadBuffer: Buffer = rawBuffer;
-    let uploadMime: string = file.type || (isIco ? "image/x-icon" : "image/png");
     let uploadExt: string = isIco ? ".ico" : isSvg ? ".svg" : ".webp";
 
     if (isSvg) {
       uploadBuffer = rawBuffer;
-      uploadMime = "image/svg+xml";
       uploadExt = ".svg";
     } else if (isIco) {
       uploadBuffer = rawBuffer;
-      uploadMime = "image/x-icon";
       uploadExt = ".ico";
     } else {
       try {
-        uploadBuffer = await sharp(rawBuffer, {
-          failOn: "none",
-          unlimited: true,
-        })
-          .rotate() // Auto-orient from EXIF first
-          .toColorspace("srgb") // Convert any exotic/CMYK/Display-P3 or corrupt profiles to sRGB
-          .resize(800, 800, {
-            fit: "inside",
-            withoutEnlargement: true,
+        const sharp = await getSharp();
+        if (sharp) {
+          uploadBuffer = await sharp(rawBuffer, {
+            failOn: "none",
+            unlimited: true,
           })
-          .webp({ quality: 82, effort: 6, smartSubsample: true })
-          .toBuffer();
-        uploadMime = "image/webp";
-        uploadExt = ".webp";
+            .rotate() // Auto-orient from EXIF first
+            .toColorspace("srgb") // Convert any exotic/CMYK/Display-P3 or corrupt profiles to sRGB
+            .resize(800, 800, {
+              fit: "inside",
+              withoutEnlargement: true,
+            })
+            .webp({ quality: 82, effort: 6, smartSubsample: true })
+            .toBuffer();
+          uploadExt = ".webp";
+        }
       } catch (sharpError) {
         console.warn("[MediaPipeline] Sharp optimization fallback to raw buffer:", sharpError);
         uploadBuffer = rawBuffer;
-        uploadMime = file.type;
         uploadExt = file.name.slice(file.name.lastIndexOf(".")) || ".png";
       }
     }

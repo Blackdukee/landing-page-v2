@@ -996,10 +996,13 @@ export default function AdminDashboard() {
                 </label>
                 {newCatIcon && (
                   <div className="relative group">
-                    <img
+                    <Image
                       src={newCatIcon}
                       alt="Category Icon Preview"
-                      className="h-9 w-9 rounded-xl border border-primary/40 bg-surface object-contain p-1"
+                      width={36}
+                      height={36}
+                      className="h-9 w-9 rounded-xl border border-primary/40 bg-surface object-contain p-1 mix-blend-multiply"
+                      unoptimized
                     />
                     <button
                       type="button"
@@ -1107,7 +1110,14 @@ export default function AdminDashboard() {
                         </label>
                         {editCatIcon && (
                           <div className="relative">
-                            <img src={editCatIcon} alt="Cat Icon" className="h-7 w-7 rounded border border-primary/40 bg-surface object-contain p-0.5" />
+                            <Image
+                              src={editCatIcon}
+                              alt="Cat Icon"
+                              width={28}
+                              height={28}
+                              className="h-7 w-7 rounded border border-primary/40 bg-surface object-contain p-0.5 mix-blend-multiply"
+                              unoptimized
+                            />
                             <button
                               type="button"
                               onClick={() => setEditCatIcon("")}
@@ -1124,7 +1134,14 @@ export default function AdminDashboard() {
                       <div className="flex-1 min-w-0 flex items-center gap-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface border border-border overflow-hidden shrink-0">
                           {cat.icon ? (
-                            <img src={cat.icon} alt={cat.name} className="h-full w-full object-contain p-1" />
+                            <Image
+                              src={cat.icon}
+                              alt={cat.name}
+                              width={36}
+                              height={36}
+                              className="h-full w-full object-contain p-1 mix-blend-multiply"
+                              unoptimized
+                            />
                           ) : (
                             <Tag className="h-4 w-4 text-muted" />
                           )}
@@ -1229,7 +1246,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-4">
                 {newCompanyLogo && (
                   <div className="relative h-12 w-12 rounded-xl border border-border bg-surface flex items-center justify-center overflow-hidden shrink-0">
-                    <Image src={newCompanyLogo} alt={newCompanyName || "Company Logo"} width={48} height={48} className="object-contain p-1" />
+                    <Image src={newCompanyLogo} alt={newCompanyName || "Company Logo"} width={48} height={48} className="object-contain p-1 mix-blend-multiply" />
                     <button
                       type="button"
                       onClick={() => setNewCompanyLogo("")}
@@ -1297,7 +1314,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-white/5 border border-border shrink-0 flex items-center justify-center p-1">
                       {comp.logo ? (
-                        <Image src={comp.logo} alt={comp.name} width={36} height={36} className="object-contain max-h-full max-w-full" />
+                        <Image src={comp.logo} alt={comp.name} width={36} height={36} className="object-contain max-h-full max-w-full mix-blend-multiply" />
                       ) : (
                         <Building2 className="h-5 w-5 text-muted" />
                       )}

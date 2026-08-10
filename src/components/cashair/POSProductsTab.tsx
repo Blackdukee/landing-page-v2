@@ -1,15 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   Package,
   Search,
   RefreshCw,
   PackagePlus,
   Tag,
-  Building2,
-  DollarSign,
-  Layers,
   AlertTriangle,
   CheckCircle2,
   XCircle,
@@ -227,13 +225,13 @@ export default function POSProductsTab() {
                   <tr key={prod._id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={prod.image || "/placeholder.png"}
+                        <Image
+                          src={prod.image || "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png"}
                           alt={prod.name}
+                          width={40}
+                          height={40}
                           className="w-10 h-10 object-cover rounded-lg bg-slate-800 border border-slate-700 shrink-0"
-                          onError={(e) => {
-                            (e.target as HTMLElement).setAttribute("style", "display:none;");
-                          }}
+                          unoptimized
                         />
                         <div>
                           <p className="font-bold text-slate-100 flex items-center gap-1.5">

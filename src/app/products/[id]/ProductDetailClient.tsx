@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -204,10 +205,13 @@ export default function ProductDetailClient({ initialProduct }: Props) {
                     return (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-black/65 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-white border border-white/20 shadow-sm">
                         {comp.logo && (
-                          <img
+                          <Image
                             src={comp.logo}
                             alt={comp.name}
+                            width={16}
+                            height={16}
                             className="h-4 w-4 rounded-full object-cover shrink-0"
+                            unoptimized
                           />
                         )}
                         <span>{comp.name}</span>
@@ -252,10 +256,13 @@ export default function ProductDetailClient({ initialProduct }: Props) {
                 return (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-semibold text-primary">
                     {comp.logo && (
-                      <img
+                      <Image
                         src={comp.logo}
                         alt={comp.name}
+                        width={16}
+                        height={16}
                         className="h-4 w-4 rounded-full object-cover shrink-0"
+                        unoptimized
                       />
                     )}
                     <span>{comp.name}</span>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import {
   Search,
   SlidersHorizontal,
@@ -57,7 +58,6 @@ const PRODUCTS_PER_PAGE = 12;
 
 export default function ProductsClient() {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   // Read URL params
   const initialCompany = searchParams.get("company") || "All";
@@ -122,7 +122,17 @@ export default function ProductsClient() {
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          setCategories(data);
+          const normalized = data.map((c) => ({
+            ...c,
+            name: c.name === "General" || c.name === "general" ? "عام" : c.name,
+          }));
+          const seen = new Set<string>();
+          const unique = normalized.filter((c) => {
+            if (seen.has(c.name)) return false;
+            seen.add(c.name);
+            return true;
+          });
+          setCategories(unique);
         }
       })
       .catch(console.error);
@@ -226,7 +236,8 @@ export default function ProductsClient() {
 
     const map = new Map<string, Product[]>();
     for (const p of filteredProducts) {
-      const cat = p.category || "أخرى";
+      let cat = p.category || "عام";
+      if (cat === "General" || cat === "general") cat = "عام";
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(p);
     }
@@ -240,7 +251,11 @@ export default function ProductsClient() {
   const categoryIconMap = useMemo(() => {
     const map = new Map<string, string>();
     categories.forEach((cat) => {
-      if (cat.name && cat.icon) map.set(cat.name, cat.icon);
+      const name = (cat.name === "General" || cat.name === "general") ? "عام" : cat.name;
+      if (name && cat.icon) {
+        map.set(name, cat.icon);
+        map.set(cat.name, cat.icon);
+      }
     });
     return map;
   }, [categories]);
@@ -317,10 +332,13 @@ export default function ProductsClient() {
             {activeCompanyObj && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-bold text-foreground border border-border">
                 {activeCompanyObj.logo && (
-                  <img
+                  <Image
                     src={activeCompanyObj.logo}
                     alt={activeCompanyObj.name}
-                    className="h-3.5 w-3.5 object-contain rounded-full"
+                    width={14}
+                    height={14}
+                    className="h-3.5 w-3.5 object-contain rounded-full mix-blend-multiply"
+                    unoptimized
                   />
                 )}
                 <span>{activeCompanyObj.name}</span>
@@ -453,12 +471,15 @@ export default function ProductsClient() {
                     }`}
                   >
                     {comp.logo && (
-                      <img
+                      <Image
                         src={comp.logo}
                         alt={comp.name}
+                        width={16}
+                        height={16}
                         className={`h-4 w-4 object-contain rounded-full ${
-                          activeCompany === comp._id ? "" : "grayscale"
+                          activeCompany === comp._id ? "bg-white/90 p-0.5" : "mix-blend-multiply grayscale"
                         }`}
+                        unoptimized
                       />
                     )}
                     <span>{comp.name}</span>
@@ -498,7 +519,16 @@ export default function ProductsClient() {
                   }`}
                 >
                   {cat.icon && (
-                    <img src={cat.icon} alt={cat.name} className="h-4 w-4 object-contain" />
+                    <Image
+                      src={cat.icon}
+                      alt={cat.name}
+                      width={16}
+                      height={16}
+                      className={`h-4 w-4 object-contain rounded-full ${
+                        activeCategory === cat.name ? "bg-white/90 p-0.5" : "mix-blend-multiply"
+                      }`}
+                      unoptimized
+                    />
                   )}
                   <span>{cat.name}</span>
                 </button>
@@ -614,27 +644,32 @@ export default function ProductsClient() {
                 >
                   {/* Category Header */}
                   <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-border/70">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold overflow-hidden p-1.5 border border-primary/20">
-                        {catIcon ? (
-                          <img
+                    <div className="flex items-center gap-3.5">
+                      {catIcon ? (
+                        <div className="relative h-14 w-14 sm:h-16 sm:w-16 shrink-0 flex items-center justify-center">
+                          <Image
                             src={catIcon}
                             alt={categoryName}
-                            className="h-full w-full object-contain"
+                            width={64}
+                            height={64}
+                            className="h-full w-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
+                            unoptimized
                           />
-                        ) : (
-                          <Tag className="h-5 w-5" />
-                        )}
+                        </div>
+                      ) : (
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                          <Tag className="h-6 w-6" />
+                        </div>
+                      )}
+                      <div>
+                        <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+                          {categoryName}
+                        </h2>
+                        <span className="text-xs text-muted font-medium block mt-0.5">
+                          ({catProds.length} منتج متوفر)
+                        </span>
                       </div>
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-extrabold text-foreground">
-                        {categoryName}
-                      </h2>
-                      <span className="text-xs text-muted font-medium">
-                        ({catProds.length} منتج متوفر)
-                      </span>
                     </div>
-                  </div>
 
                   <button
                     onClick={() => handleCategoryChange(categoryName)}

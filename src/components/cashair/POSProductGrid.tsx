@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, X, Package, Tag, Building2, Plus, Check, SlidersHorizontal, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import { Search, X, Package, Tag, Building2, Plus, Check, RefreshCw } from "lucide-react";
 
 export interface POSProduct {
   _id: string;
@@ -56,7 +57,7 @@ export default function POSProductGrid({
       } else {
         setError(data.error || "فشل تحميل المنتجات");
       }
-    } catch (err) {
+    } catch {
       setError("خطأ في شبكة الاتصال أثناء تحميل الكتالوج");
     } finally {
       setLoading(false);
@@ -335,11 +336,13 @@ export default function POSProductGrid({
                   {/* Soft Integrated Product Image Card */}
                   <div className="relative w-full aspect-square bg-white rounded-xl p-2.5 flex items-center justify-center overflow-hidden shadow-inner border border-slate-200/20 mb-2">
                     {product.image ? (
-                      <img
+                      <Image
                         src={product.image}
                         alt={product.name}
-                        style={{ maxHeight: "120px", maxWidth: "100%", objectFit: "contain" }}
+                        width={120}
+                        height={120}
                         className="max-h-28 max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        unoptimized
                       />
                     ) : (
                       <Package className="w-10 h-10 text-slate-300" />

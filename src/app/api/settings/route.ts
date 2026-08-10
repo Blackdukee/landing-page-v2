@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import dbConnect from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
-import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
 import { checkAdminAuthResponse } from "@/lib/auth";
 

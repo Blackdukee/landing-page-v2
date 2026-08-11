@@ -8,13 +8,11 @@ import {
   SlidersHorizontal,
   X,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Tag,
   Award,
   Sparkles,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -67,6 +65,10 @@ export default function ProductsClient() {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [companies, setCompanies] = useState<CompanyItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
 
   // Filter States
   const [search, setSearch] = useState("");
@@ -75,12 +77,21 @@ export default function ProductsClient() {
   const [activePriceRange, setActivePriceRange] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState("default");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  const { t, locale, dir } = useTranslation();
+  const { t, locale } = useTranslation();
   const { priceRangeFilters } = useSiteSettings();
   const abortRef = useRef<AbortController | null>(null);
+  const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
+
+  // Track scroll position for sticky toolbar styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Sync state when URL params change
   useEffect(() => {
@@ -88,7 +99,6 @@ export default function ProductsClient() {
     const urlCategory = searchParams.get("category") || "All";
     setActiveCompany(urlCompany);
     setActiveCategory(urlCategory);
-    setCurrentPage(1);
   }, [searchParams]);
 
   // Update URL helper
@@ -150,25 +160,21 @@ export default function ProductsClient() {
       .catch(console.error);
   }, []);
 
-  // 3. Fetch Products based on Category & Company
+  // 3. Initial Fetch / Refetch when Category or Company changes
   useEffect(() => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
     setLoading(true);
+    setCurrentPage(1);
+    setHasMore(true);
 
     const params = new URLSearchParams();
     if (activeCategory !== "All") params.set("category", activeCategory);
     if (activeCompany !== "All") params.set("company", activeCompany);
-    
-    // In categorized sections view (browsing all categories), fetch all catalog products (up to 100)
-    // so every category displays its complete set of products rather than truncating at page 1
-    const isAllCategories = activeCategory === "All";
-    const fetchLimit = isAllCategories ? 100 : PRODUCTS_PER_PAGE;
-    
-    params.set("page", String(currentPage));
-    params.set("limit", String(fetchLimit));
+    params.set("page", "1");
+    params.set("limit", String(PRODUCTS_PER_PAGE));
 
     fetch(`/api/products?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
@@ -176,9 +182,11 @@ export default function ProductsClient() {
         if (data.products && Array.isArray(data.products)) {
           setProducts(data.products);
           setPagination(data.pagination);
+          setHasMore(data.pagination ? data.pagination.page < data.pagination.totalPages : false);
         } else if (Array.isArray(data)) {
           setProducts(data);
           setPagination(null);
+          setHasMore(false);
         }
         setLoading(false);
       })
@@ -190,7 +198,65 @@ export default function ProductsClient() {
       });
 
     return () => controller.abort();
-  }, [activeCategory, activeCompany, currentPage]);
+  }, [activeCategory, activeCompany]);
+
+  // 4. Fetch Next Page on Scroll
+  const fetchMoreProducts = useCallback(() => {
+    if (loading || loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+
+    const params = new URLSearchParams();
+    if (activeCategory !== "All") params.set("category", activeCategory);
+    if (activeCompany !== "All") params.set("company", activeCompany);
+    params.set("page", String(nextPage));
+    params.set("limit", String(PRODUCTS_PER_PAGE));
+
+    fetch(`/api/products?${params.toString()}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts((prev) => {
+            const existingIds = new Set(prev.map((p) => p._id));
+            const uniqueNew = data.products.filter((p: Product) => !existingIds.has(p._id));
+            return [...prev, ...uniqueNew];
+          });
+          setCurrentPage(nextPage);
+          setPagination(data.pagination);
+          setHasMore(data.pagination ? nextPage < data.pagination.totalPages : false);
+        } else {
+          setHasMore(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load more products:", err);
+      })
+      .finally(() => {
+        setLoadingMore(false);
+      });
+  }, [loading, loadingMore, hasMore, currentPage, activeCategory, activeCompany]);
+
+  // 5. Intersection Observer for Infinite Scrolling
+  useEffect(() => {
+    if (!hasMore || loading || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          fetchMoreProducts();
+        }
+      },
+      { rootMargin: "350px" }
+    );
+
+    const target = loadMoreTriggerRef.current;
+    if (target) observer.observe(target);
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [hasMore, loading, loadingMore, fetchMoreProducts]);
 
   // Client-side filtering for search, price, and sorting
   const filteredProducts = useMemo(() => {
@@ -223,43 +289,6 @@ export default function ProductsClient() {
     return filtered;
   }, [products, search, activePriceRange, sortBy, priceRanges]);
 
-  // Group products by category when viewing "All" categories without search/price filters
-  const isCategorizedSectionsView =
-    activeCategory === "All" &&
-    !search &&
-    activePriceRange === 0 &&
-    sortBy === "default" &&
-    currentPage === 1;
-
-  const categorizedGroups = useMemo(() => {
-    if (!isCategorizedSectionsView) return [];
-
-    const map = new Map<string, Product[]>();
-    for (const p of filteredProducts) {
-      let cat = p.category || "عام";
-      if (cat === "General" || cat === "general") cat = "عام";
-      if (!map.has(cat)) map.set(cat, []);
-      map.get(cat)!.push(p);
-    }
-
-    return Array.from(map.entries()).map(([catName, prods]) => ({
-      categoryName: catName,
-      products: prods,
-    }));
-  }, [isCategorizedSectionsView, filteredProducts]);
-
-  const categoryIconMap = useMemo(() => {
-    const map = new Map<string, string>();
-    categories.forEach((cat) => {
-      const name = (cat.name === "General" || cat.name === "general") ? "عام" : cat.name;
-      if (name && cat.icon) {
-        map.set(name, cat.icon);
-        map.set(cat.name, cat.icon);
-      }
-    });
-    return map;
-  }, [categories]);
-
   const activeFiltersCount =
     (activeCategory !== "All" ? 1 : 0) +
     (activeCompany !== "All" ? 1 : 0) +
@@ -272,58 +301,28 @@ export default function ProductsClient() {
     setSortBy("default");
     setActiveCategory("All");
     setActiveCompany("All");
-    setCurrentPage(1);
     updateUrlParams("All", "All");
   };
 
   const handleCategoryChange = (cat: string) => {
-    if (cat === activeCategory && currentPage === 1) return;
+    if (cat === activeCategory) return;
     setActiveCategory(cat);
-    setCurrentPage(1);
     updateUrlParams(cat, activeCompany);
   };
 
   const handleCompanyChange = (comp: string) => {
-    if (comp === activeCompany && currentPage === 1) return;
+    if (comp === activeCompany) return;
     setActiveCompany(comp);
-    setCurrentPage(1);
     updateUrlParams(activeCategory, comp);
-  };
-
-  const goToPage = (page: number) => {
-    if (pagination && page >= 1 && page <= pagination.totalPages) {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const getPageNumbers = () => {
-    if (!pagination) return [];
-    const { totalPages } = pagination;
-    const pages: (number | "...")[] = [];
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (currentPage > 3) pages.push("...");
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (currentPage < totalPages - 2) pages.push("...");
-      pages.push(totalPages);
-    }
-
-    return pages;
   };
 
   const activeCompanyObj = companies.find((c) => c._id === activeCompany);
 
   return (
     <div className="pt-28 pb-20">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header Title */}
-        <div className="mb-10 text-start">
+        <div className="mb-6 sm:mb-8 text-start">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-bold border border-primary/20">
               <Sparkles className="h-3 w-3" />
@@ -345,7 +344,7 @@ export default function ProductsClient() {
                 <button
                   onClick={() => handleCompanyChange("All")}
                   aria-label="Remove brand filter"
-                  className="ms-1 hover:text-red-500 transition-colors"
+                  className="ms-1 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -358,7 +357,7 @@ export default function ProductsClient() {
                 <button
                   onClick={() => handleCategoryChange("All")}
                   aria-label="Remove category filter"
-                  className="ms-1 hover:text-red-500 transition-colors"
+                  className="ms-1 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -366,7 +365,7 @@ export default function ProductsClient() {
             )}
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-3">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-2 sm:mb-3">
             {activeCompanyObj
               ? `منتجات ${activeCompanyObj.name}`
               : activeCategory !== "All"
@@ -374,57 +373,70 @@ export default function ProductsClient() {
               : t("products.title")}
           </h1>
 
-          <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-base text-muted max-w-2xl leading-relaxed">
             {activeCompanyObj?.description || t("products.subtitle")}
           </p>
         </div>
 
-        {/* Search, Sort & Mobile Filters Toggle Bar */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-            <input
-              type="text"
-              aria-label={t("products.searchPlaceholder") || "Search products"}
-              placeholder={t("products.searchPlaceholder")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-border bg-surface ps-10 pe-10 py-3 text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                aria-label="Clear search input"
-                className="absolute end-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+        {/* ───────────── STICKY SEARCH, SORT & FILTERS TOOLBAR ───────────── */}
+        <div
+          className={`sticky top-[64px] sm:top-[70px] z-30 transition-all duration-300 mb-6 ${
+            isScrolled
+              ? "bg-background/95 backdrop-blur-xl border-b border-border py-3 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+              : "py-2"
+          }`}
+        >
+          <div className="flex items-center gap-2 sm:gap-3 max-w-7xl mx-auto">
+            {/* Search Input (Takes remaining space) */}
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+              <input
+                type="text"
+                aria-label={t("products.searchPlaceholder") || "Search products"}
+                placeholder={t("products.searchPlaceholder")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-10 sm:h-11 rounded-2xl border border-border bg-surface ps-9 pe-9 text-xs sm:text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  aria-label="Clear search input"
+                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer p-0.5"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
 
-          <div className="flex gap-3">
-            <div className="relative">
+            {/* Sort Dropdown */}
+            <div className="relative shrink-0">
               <select
                 value={sortBy}
                 aria-label={t("products.sortBy") || "Sort products"}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none rounded-2xl border border-border bg-surface px-5 py-3 pe-11 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
+                className="h-10 sm:h-11 appearance-none rounded-2xl border border-border bg-surface ps-3 pe-8 text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer max-w-[120px] sm:max-w-none"
               >
                 <option value="default">{t("products.sortBy")}</option>
                 <option value="price-asc">{t("products.priceLowHigh")}</option>
                 <option value="price-desc">{t("products.priceHighLow")}</option>
                 <option value="name">{t("products.nameAZ")}</option>
               </select>
-              <ChevronDown className="absolute end-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+              <ChevronDown className="absolute end-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
             </div>
 
+            {/* Filter Toggle Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               aria-label={t("products.filters") || "Toggle filters"}
-              className="sm:hidden inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground hover:bg-card-hover transition-colors"
+              className={`h-10 sm:h-11 shrink-0 inline-flex items-center gap-1.5 sm:gap-2 rounded-2xl border px-3 sm:px-4 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                showFilters || activeFiltersCount > 0
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border bg-surface text-foreground hover:bg-card-hover"
+              }`}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              {t("products.filters")}
+              <span className="hidden sm:inline">{t("products.filters")}</span>
               {activeFiltersCount > 0 && (
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                   {activeFiltersCount}
@@ -432,131 +444,164 @@ export default function ProductsClient() {
               )}
             </button>
           </div>
-        </div>
 
-        {/* ───────────── FILTERS CONTAINER ───────────── */}
-        <div
-          className={`space-y-6 mb-10 p-6 rounded-3xl bg-surface/50 border border-border/80 ${
-            showFilters ? "block" : "hidden sm:block"
-          }`}
-        >
-          {/* 1. Companies / Brands Filter */}
-          {companies.length > 0 && (
-            <div>
-              <div className="flex items-center gap-1.5 mb-3">
-                <Award className="h-3.5 w-3.5 text-primary" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
-                  {t("products.company")}
-                </h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleCompanyChange("All")}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
-                    activeCompany === "All"
-                      ? "bg-primary text-white shadow-sm shadow-primary/20"
-                      : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
-                  }`}
-                >
-                  {t("products.allCompanies")}
-                </button>
-                {companies.map((comp) => (
+          {/* ───────────── EXPANDABLE FILTERS PANEL ───────────── */}
+          {showFilters && (
+            <div className="mt-3 p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface border border-border/80 shadow-lg space-y-5 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[70vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-3 border-b border-border/70">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-bold text-foreground">
+                    {t("products.filters")}
+                  </h3>
+                  {activeFiltersCount > 0 && (
+                    <span className="text-xs text-primary font-bold">
+                      ({activeFiltersCount})
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  {activeFiltersCount > 0 && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                    >
+                      {t("products.clearAllFilters")}
+                    </button>
+                  )}
                   <button
-                    key={comp._id}
-                    onClick={() => handleCompanyChange(comp._id)}
-                    className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
-                      activeCompany === comp._id
-                        ? "bg-primary text-white shadow-sm shadow-primary/20 border border-primary"
+                    onClick={() => setShowFilters(false)}
+                    aria-label="Close filters"
+                    className="p-1 rounded-xl text-muted hover:text-foreground hover:bg-card transition-colors cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 1. Companies / Brands Filter */}
+              {companies.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <Award className="h-3.5 w-3.5 text-primary" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted">
+                      {t("products.company")}
+                    </h4>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleCompanyChange("All")}
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                        activeCompany === "All"
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {t("products.allCompanies")}
+                    </button>
+                    {companies.map((comp) => (
+                      <button
+                        key={comp._id}
+                        onClick={() => handleCompanyChange(comp._id)}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                          activeCompany === comp._id
+                            ? "bg-primary text-white shadow-xs border border-primary"
+                            : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {comp.logo && (
+                          <Image
+                            src={comp.logo}
+                            alt={comp.name}
+                            width={16}
+                            height={16}
+                            className={`h-3.5 w-3.5 object-contain rounded-full ${
+                              activeCompany === comp._id
+                                ? "bg-white/90 p-0.5"
+                                : "mix-blend-multiply grayscale"
+                            }`}
+                            unoptimized
+                          />
+                        )}
+                        <span>{comp.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 2. Category Filter */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <Tag className="h-3.5 w-3.5 text-primary" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted">
+                    {t("products.category")}
+                  </h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleCategoryChange("All")}
+                    className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                      activeCategory === "All"
+                        ? "bg-primary text-white shadow-xs"
                         : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
                     }`}
                   >
-                    {comp.logo && (
-                      <Image
-                        src={comp.logo}
-                        alt={comp.name}
-                        width={16}
-                        height={16}
-                        className={`h-4 w-4 object-contain rounded-full ${
-                          activeCompany === comp._id ? "bg-white/90 p-0.5" : "mix-blend-multiply grayscale"
-                        }`}
-                        unoptimized
-                      />
-                    )}
-                    <span>{comp.name}</span>
+                    {t("products.allCategories")}
                   </button>
-                ))}
+                  {categories.map((cat) => (
+                    <button
+                      key={cat._id}
+                      onClick={() => handleCategoryChange(cat.name)}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                        activeCategory === cat.name
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {cat.icon && (
+                        <Image
+                          src={cat.icon}
+                          alt={cat.name}
+                          width={16}
+                          height={16}
+                          className={`h-3.5 w-3.5 object-contain rounded-full ${
+                            activeCategory === cat.name
+                              ? "bg-white/90 p-0.5"
+                              : "mix-blend-multiply"
+                          }`}
+                          unoptimized
+                        />
+                      )}
+                      <span>{cat.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Price Range Filter */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-2.5">
+                  {t("products.priceRange")}
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {priceRanges.map((range, idx) => (
+                    <button
+                      key={range.label}
+                      onClick={() => setActivePriceRange(idx)}
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                        activePriceRange === idx
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {range.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
-
-          {/* 2. Category Filter */}
-          <div>
-            <div className="flex items-center gap-1.5 mb-3">
-              <Tag className="h-3.5 w-3.5 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
-                {t("products.category")}
-              </h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => handleCategoryChange("All")}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
-                  activeCategory === "All"
-                    ? "bg-primary text-white shadow-sm shadow-primary/20"
-                    : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
-                }`}
-              >
-                {t("products.allCategories")}
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat._id}
-                  onClick={() => handleCategoryChange(cat.name)}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
-                    activeCategory === cat.name
-                      ? "bg-primary text-white shadow-sm shadow-primary/20"
-                      : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
-                  }`}
-                >
-                  {cat.icon && (
-                    <Image
-                      src={cat.icon}
-                      alt={cat.name}
-                      width={16}
-                      height={16}
-                      className={`h-4 w-4 object-contain rounded-full ${
-                        activeCategory === cat.name ? "bg-white/90 p-0.5" : "mix-blend-multiply"
-                      }`}
-                      unoptimized
-                    />
-                  )}
-                  <span>{cat.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 3. Price Range Filter */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted mb-3">
-              {t("products.priceRange")}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {priceRanges.map((range, idx) => (
-                <button
-                  key={range.label}
-                  onClick={() => setActivePriceRange(idx)}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
-                    activePriceRange === idx
-                      ? "bg-primary text-white shadow-sm shadow-primary/20"
-                      : "bg-card border border-border text-muted hover:text-foreground hover:border-primary/40"
-                  }`}
-                >
-                  {range.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Results count & Clear filters bar */}
@@ -564,13 +609,9 @@ export default function ProductsClient() {
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
             <p className="text-xs sm:text-sm text-muted font-medium">
               {t("products.productsFound", {
-                count: activeCategory === "All" && !search && activePriceRange === 0 && pagination
-                  ? pagination.total
-                  : filteredProducts.length,
+                count: pagination ? pagination.total : filteredProducts.length,
                 s:
-                  (activeCategory === "All" && !search && activePriceRange === 0 && pagination
-                    ? pagination.total
-                    : filteredProducts.length) !== 1
+                  (pagination ? pagination.total : filteredProducts.length) !== 1
                     ? "s"
                     : "",
               })}
@@ -632,81 +673,9 @@ export default function ProductsClient() {
               {t("products.clearFilters")}
             </button>
           </div>
-        ) : isCategorizedSectionsView && categorizedGroups.length > 0 ? (
-          /* ───────────── CATEGORY SECTIONS VIEW ───────────── */
-          <div className="space-y-16">
-            {categorizedGroups.map(({ categoryName, products: catProds }) => {
-              const catIcon = categoryIconMap.get(categoryName);
-              return (
-                <section
-                  key={categoryName}
-                  className="p-6 sm:p-8 rounded-3xl bg-surface/30 border border-border/80"
-                >
-                  {/* Category Header */}
-                  <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-border/70">
-                    <div className="flex items-center gap-3.5">
-                      {catIcon ? (
-                        <div className="relative h-14 w-14 sm:h-16 sm:w-16 shrink-0 flex items-center justify-center">
-                          <Image
-                            src={catIcon}
-                            alt={categoryName}
-                            width={64}
-                            height={64}
-                            className="h-full w-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
-                            unoptimized
-                          />
-                        </div>
-                      ) : (
-                        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-                          <Tag className="h-6 w-6" />
-                        </div>
-                      )}
-                      <div>
-                        <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
-                          {categoryName}
-                        </h2>
-                        <span className="text-xs text-muted font-medium block mt-0.5">
-                          ({catProds.length} منتج متوفر)
-                        </span>
-                      </div>
-                    </div>
-
-                  <button
-                    onClick={() => handleCategoryChange(categoryName)}
-                    className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-primary hover:underline cursor-pointer"
-                  >
-                    <span>عرض المزيد في {categoryName}</span>
-                    <ChevronRight
-                      className={`h-4 w-4 ${
-                        dir === "rtl" ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Products Grid for this category (Preview up to 4 items) */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-                  {catProds.slice(0, 4).map((p) => (
-                    <ProductCard
-                      key={p._id}
-                      id={p._id}
-                      name={p.name}
-                      description={p.description}
-                      price={p.price}
-                      image={p.image}
-                      category={p.category}
-                      company={p.company ?? undefined}
-                      stock={p.stock}
-                    />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
-          </div>
         ) : (
-          /* ───────────── STANDARD FILTERED PRODUCT GRID ───────────── */
           <>
+            {/* Products Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
               {filteredProducts.map((p) => (
                 <ProductCard
@@ -723,85 +692,38 @@ export default function ProductsClient() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="mt-14 flex items-center justify-center">
-                <nav
-                  className="inline-flex items-center gap-1.5 rounded-2xl bg-card border border-border p-2 shadow-xs"
-                  aria-label="Pagination"
-                >
-                  <button
-                    onClick={() => goToPage(1)}
-                    disabled={currentPage === 1}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-surface hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title={t("products.firstPage")}
-                    aria-label={t("products.firstPage") || "First page"}
+            {/* Loading More Skeletons */}
+            {loadingMore && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 mt-6">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-3xl bg-card border border-border overflow-hidden animate-pulse flex flex-col"
                   >
-                    <ChevronsLeft
-                      className={`h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                    <div className="aspect-square bg-surface" />
+                    <div className="p-4 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted/20 rounded w-3/4" />
+                        <div className="h-3 bg-muted/20 rounded w-full" />
+                      </div>
+                      <div className="h-4 bg-muted/20 rounded w-1/3" />
+                      <div className="h-10 bg-muted/20 rounded-2xl w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-                  <button
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-surface hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title={t("products.previousPage")}
-                    aria-label={t("products.previousPage") || "Previous page"}
-                  >
-                    <ChevronLeft
-                      className={`h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`}
-                    />
-                  </button>
+            {/* Infinite Scroll Sentinel */}
+            <div ref={loadMoreTriggerRef} className="h-10 w-full pointer-events-none" />
 
-                  {getPageNumbers().map((pageNum, idx) =>
-                    pageNum === "..." ? (
-                      <span
-                        key={`ellipsis-${idx}`}
-                        className="flex h-9 w-9 items-center justify-center text-xs text-muted font-bold"
-                      >
-                        ...
-                      </span>
-                    ) : (
-                      <button
-                        key={pageNum}
-                        onClick={() => goToPage(pageNum as number)}
-                        aria-label={`Go to page ${pageNum}`}
-                        className={`flex h-9 min-w-[2.25rem] items-center justify-center rounded-xl px-2 text-xs font-bold transition-all cursor-pointer ${
-                          currentPage === pageNum
-                            ? "bg-primary text-white shadow-xs"
-                            : "text-muted hover:bg-surface hover:text-foreground"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    )
-                  )}
-
-                  <button
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === pagination.totalPages}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-surface hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title={t("products.nextPage")}
-                    aria-label={t("products.nextPage") || "Next page"}
-                  >
-                    <ChevronRight
-                      className={`h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`}
-                    />
-                  </button>
-
-                  <button
-                    onClick={() => goToPage(pagination.totalPages)}
-                    disabled={currentPage === pagination.totalPages}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:bg-surface hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title={t("products.lastPage")}
-                    aria-label={t("products.lastPage") || "Last page"}
-                  >
-                    <ChevronsRight
-                      className={`h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                </nav>
+            {/* End of list completion indicator */}
+            {!hasMore && filteredProducts.length > 0 && (
+              <div className="mt-12 mb-6 flex flex-col items-center justify-center text-center py-6 border-t border-border/60">
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <span>{t("products.reachedEnd")}</span>
+                </div>
               </div>
             )}
           </>

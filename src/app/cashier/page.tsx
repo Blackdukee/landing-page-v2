@@ -19,7 +19,6 @@ import {
   Globe,
   ShoppingBag,
   Store,
-  Clock,
   Sparkles,
   Package,
 } from "lucide-react";
@@ -60,7 +59,7 @@ export default function CashierPOSPage() {
       } else {
         setActiveShift(null);
       }
-    } catch (err) {
+    } catch {
       setActiveShift(null);
     } finally {
       setLoadingShift(false);

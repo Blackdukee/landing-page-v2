@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import BrandHeroSection, { Company } from "@/components/BrandHeroSection";
+import BrandTickerAndTrustBadges from "@/components/BrandTickerAndTrustBadges";
 import ProductCard from "@/components/ProductCard";
 import DailyOffersSection from "@/components/DailyOffersSection";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -62,11 +63,14 @@ export default function HomeClient() {
 
   return (
     <>
-      {/* ───────────── 1. HERO SECTION (BRANDS & SPOTLIGHT) ───────────── */}
+      {/* ───────────── 1. HERO SECTION (BRANDS TABLE GRID) ───────────── */}
       <BrandHeroSection companies={companies} loading={loadingCompanies} />
 
       {/* ───────────── 2. DAILY OFFERS (FLASH SALE) ───────────── */}
       <DailyOffersSection />
+
+      {/* ───────────── MOVING BRANDS TICKER & TRUST BADGES ───────────── */}
+      <BrandTickerAndTrustBadges companies={companies} />
 
       {/* ───────────── 3. FEATURED PRODUCTS ───────────── */}
       <section id="featured" className="py-20 lg:py-28">

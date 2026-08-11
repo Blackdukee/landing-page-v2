@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Clock,
   UserCheck,
   DollarSign,
   AlertTriangle,
@@ -43,11 +42,11 @@ export default function ShiftModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeShift) {
+    if (activeShift && isOpen) {
       setCashierName(activeShift.cashierName || "كاشير 1");
       setActualCash(activeShift.expectedCash !== undefined ? activeShift.expectedCash.toString() : "");
     }
-  }, [activeShift]);
+  }, [activeShift, isOpen]);
 
   if (!isOpen) return null;
 
@@ -88,7 +87,7 @@ export default function ShiftModal({
       } else {
         setError(data.error || "فشل فتح وردية جديدة.");
       }
-    } catch (err) {
+    } catch {
       setError("خطأ في الاتصال بالخادم عند فتح الوردية.");
     } finally {
       setIsSubmitting(false);
@@ -128,7 +127,7 @@ export default function ShiftModal({
       } else {
         setError(data.error || "فشل إغلاق الوردية.");
       }
-    } catch (err) {
+    } catch {
       setError("خطأ في الاتصال بالخادم عند إغلاق الوردية.");
     } finally {
       setIsSubmitting(false);

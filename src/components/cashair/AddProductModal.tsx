@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   PackagePlus,
   X,
@@ -365,7 +366,14 @@ export default function AddProductModal({
 
             {imageUrl && (
               <div className="mt-2 flex items-center gap-3 bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <img src={imageUrl} alt="معاينة" className="w-10 h-10 object-cover rounded-lg" />
+                <Image
+                  src={imageUrl}
+                  alt="معاينة"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 object-cover rounded-lg"
+                  unoptimized
+                />
                 <span className="text-[11px] text-emerald-400 font-semibold truncate flex-1">
                   تم تعيين الصورة بنجاح
                 </span>

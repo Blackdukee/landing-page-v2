@@ -66,7 +66,7 @@ export async function deleteCategoryAndCascade(categoryId: string): Promise<{ su
     return { success: false, error: "Category not found" };
   }
 
-  // Re-assign orphaned products to "General"
-  await Product.updateMany({ category: category.name }, { $set: { category: "General" } });
+  // Re-assign orphaned products to "عام"
+  await Product.updateMany({ category: category.name }, { $set: { category: "عام" } });
   return { success: true };
 }

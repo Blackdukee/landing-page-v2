@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../../lib/mongodb";
 import Product from "../../../../models/Product";
-import Company from "../../../../models/Company";
 import { logError } from "../../../../lib/apiError";
 
 export async function GET(req: NextRequest) {

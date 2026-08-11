@@ -38,7 +38,6 @@ export const CatalogEngine = {
 
     const { featured, category, company, search, page = 1, limit = 0 } = params;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: any = {};
     if (featured) filter.featured = true;
     if (category) filter.category = category;

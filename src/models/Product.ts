@@ -27,7 +27,7 @@ const ProductSchema = new Schema<IProduct>(
     images: { type: [String], default: [] },
     imageFileIds: { type: [String], default: [] },
     stock: { type: Number, required: true, default: 0 },
-    category: { type: String, required: true, default: "General" },
+    category: { type: String, required: true, default: "عام" },
     company: { type: Schema.Types.ObjectId, ref: "Company", default: null },
     featured: { type: Boolean, default: false },
     barcode: { type: String, default: "", trim: true },

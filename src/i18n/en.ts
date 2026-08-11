@@ -38,7 +38,8 @@ const en = {
   "home.browseByBrand": "Browse Brands",
   "home.viewBrandProducts": "Browse {brand} Products",
   "home.authorizedPartner": "Authorized Partner",
-  "home.allBrands": "Authorized Brands & Partners",
+  "home.allBrands": "Our Brands",
+  "home.ourBrands": "Our Brands",
   "home.viewAllInCategory": "View all {category} products",
   "home.productsCount": "({count} items)",
   "home.exploreMoreCategory": "Explore More in {category}",
@@ -145,6 +146,8 @@ const en = {
   "products.previousPage": "Previous page",
   "products.nextPage": "Next page",
   "products.lastPage": "Last page",
+  "products.reachedEnd": "You've seen all products",
+  "products.loadingMore": "Loading more products...",
 
   // ── Product Detail ──
   "detail.productNotFound": "Product Not Found",

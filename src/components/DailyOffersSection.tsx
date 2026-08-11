@@ -36,7 +36,7 @@ function formatRemainingTime(targetMs: number, currentMs: number) {
 
 export default function DailyOffersSection() {
   const { dailyOffers, loading } = useSiteSettings();
-  const { t, dir } = useTranslation();
+  const { t } = useTranslation();
   const addItem = useCartStore((s) => s.addItem);
   const getItemQuantity = useCartStore((s) => s.getItemQuantity);
   const canAddMore = useCartStore((s) => s.canAddMore);

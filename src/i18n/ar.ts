@@ -38,7 +38,8 @@ const ar: Record<string, string> = {
   "home.browseByBrand": "تصفح الماركات",
   "home.viewBrandProducts": "تصفح منتجات {brand}",
   "home.authorizedPartner": "شريك معتمد",
-  "home.allBrands": "العلامات والشركات المعتمدة",
+  "home.allBrands": "علاماتنا التجارية",
+  "home.ourBrands": "علاماتنا التجارية",
   "home.viewAllInCategory": "عرض جميع منتجات {category}",
   "home.productsCount": "({count} منتج)",
   "home.exploreMoreCategory": "استكشف المزيد من قسم {category}",
@@ -145,6 +146,8 @@ const ar: Record<string, string> = {
   "products.previousPage": "الصفحة السابقة",
   "products.nextPage": "الصفحة التالية",
   "products.lastPage": "الصفحة الأخيرة",
+  "products.reachedEnd": "لقد شاهدت جميع المنتجات",
+  "products.loadingMore": "جاري تحميل المزيد من المنتجات...",
 
   // ── تفاصيل المنتج ──
   "detail.productNotFound": "المنتج غير موجود",

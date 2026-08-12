@@ -198,7 +198,7 @@ export default function FinancialReportsTab() {
             </div>
           </div>
           {/* Main KPI Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3">
             {/* Gross Sales */}
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-400 mb-2">
@@ -233,35 +233,58 @@ export default function FinancialReportsTab() {
             </div>
 
             {/* Net Revenue */}
-            <div className="bg-slate-800/80 border border-emerald-500/40 rounded-xl p-3.5 flex flex-col justify-between bg-emerald-950/20">
-              <div className="flex items-center justify-between text-emerald-400 mb-2">
-                <span className="text-xs font-bold">صافي الأرباح والإيرادات</span>
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-400 mb-2">
+                <span className="text-xs font-semibold">صافي الإيرادات (المحصل)</span>
+                <DollarSign className="w-4 h-4 text-cyan-400" />
               </div>
-              <p className="text-lg font-black text-emerald-400">
+              <p className="text-base font-black text-cyan-300">
                 {(report.netRevenue || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">ج.م</span>
               </p>
             </div>
 
-            {/* Orders Count */}
+            {/* Cost of Goods Sold (COGS) */}
+            <div className="bg-slate-800/80 border border-amber-500/30 rounded-xl p-3.5 flex flex-col justify-between bg-amber-950/10">
+              <div className="flex items-center justify-between text-amber-400 mb-2">
+                <span className="text-xs font-bold">تكلفة البضاعة المباعة (سعر الشراء)</span>
+                <Package className="w-4 h-4 text-amber-400" />
+              </div>
+              <p className="text-base font-black text-amber-300">
+                {(report.totalCostOfGoodsSold || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">ج.م</span>
+              </p>
+            </div>
+
+            {/* Gross / Net Profit */}
+            <div className="bg-slate-800/80 border border-emerald-500/50 rounded-xl p-3.5 flex flex-col justify-between bg-emerald-950/30 shadow-lg shadow-emerald-950/40">
+              <div className="flex items-center justify-between text-emerald-400 mb-2">
+                <span className="text-xs font-black">صافي الأرباح المحققة</span>
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+              </div>
+              <p className={`text-lg font-black ${(report.grossProfit ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                {(report.grossProfit || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">ج.م</span>
+              </p>
+            </div>
+
+            {/* Profit Margin */}
+            <div className="bg-slate-800/80 border border-purple-500/30 rounded-xl p-3.5 flex flex-col justify-between bg-purple-950/10">
+              <div className="flex items-center justify-between text-purple-400 mb-2">
+                <span className="text-xs font-bold">هامش الربح (Profit Margin)</span>
+                <TrendingUp className="w-4 h-4 text-purple-400" />
+              </div>
+              <p className="text-base font-black text-purple-300">
+                {(report.profitMargin || 0).toFixed(1)}%
+              </p>
+            </div>
+
+            {/* Orders Count & AOV */}
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-semibold">عدد الطلبات</span>
+                <span className="text-xs font-semibold">عدد الطلبات (متوسط الطلب)</span>
                 <ShoppingCart className="w-4 h-4 text-indigo-400" />
               </div>
               <p className="text-base font-extrabold text-slate-100">
                 {(report.totalOrdersCount || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">طلب</span>
-              </p>
-            </div>
-
-            {/* AOV */}
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-semibold">متوسط قيمة الطلب (AOV)</span>
-                <CreditCard className="w-4 h-4 text-purple-400" />
-              </div>
-              <p className="text-base font-extrabold text-purple-300">
-                {(report.averageOrderValue || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">ج.م</span>
+                <span className="text-xs text-indigo-300 font-normal mr-2">({(report.averageOrderValue || 0).toLocaleString()} ج.م/طلب)</span>
               </p>
             </div>
           </div>
@@ -393,26 +416,34 @@ export default function FinancialReportsTab() {
                   <thead>
                     <tr className="border-b border-slate-700 text-slate-400">
                       <th className="py-2 px-1">المنتج</th>
-                      <th className="py-2 text-center">الكمية المباعة</th>
+                      <th className="py-2 text-center">الكمية</th>
                       <th className="py-2 text-left">الإيراد</th>
+                      <th className="py-2 text-left">التكلفة</th>
+                      <th className="py-2 text-left">صافي الربح</th>
                     </tr>
                   </thead>
                   <tbody>
                     {report.topProducts && report.topProducts.length > 0 ? (
                       report.topProducts.map((p: any, idx: number) => (
                         <tr key={idx} className="border-b border-slate-800/60 hover:bg-slate-800/40">
-                          <td className="py-2 px-1 font-semibold text-slate-200 truncate max-w-[140px]">
+                          <td className="py-2 px-1 font-semibold text-slate-200 truncate max-w-[130px]">
                             {p.name}
                           </td>
                           <td className="py-2 text-center font-bold text-amber-400">{p.quantity}</td>
-                          <td className="py-2 text-left font-bold text-emerald-400">
+                          <td className="py-2 text-left font-bold text-cyan-400">
                             {p.revenue.toLocaleString()} ج.م
+                          </td>
+                          <td className="py-2 text-left font-semibold text-slate-400">
+                            {(p.cost || 0).toLocaleString()} ج.م
+                          </td>
+                          <td className={`py-2 text-left font-extrabold ${(p.profit ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                            {(p.profit || 0).toLocaleString()} ج.م
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={3} className="py-4 text-center text-slate-500">
+                        <td colSpan={5} className="py-4 text-center text-slate-500">
                           لا توجد مبيعات مسجلة خلال الفترة
                         </td>
                       </tr>

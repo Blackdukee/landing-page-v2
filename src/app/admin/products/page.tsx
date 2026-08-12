@@ -30,6 +30,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
+  costPrice?: number;
   image: string;
   images: string[];
   imageFileIds: string[];
@@ -49,6 +50,7 @@ const emptyProduct = {
   name: "",
   description: "",
   price: 0,
+  costPrice: 0,
   image: "",
   images: [] as string[],
   imageFileIds: [] as string[],
@@ -199,6 +201,7 @@ export default function AdminProductsPage() {
       name: product.name,
       description: product.description,
       price: product.price,
+      costPrice: product.costPrice || 0,
       image: product.image,
       images: imgs,
       imageFileIds: fileIds,
@@ -421,40 +424,57 @@ export default function AdminProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface/50">
-                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                <tr className="border-b border-border">
+                  <th className="px-5 py-3 text-start font-medium text-muted">
                     {t("admin.products.product" as TranslationKey)}
                   </th>
-                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
-                    {t("admin.products.category" as TranslationKey)}
+                  <th className="px-5 py-3 text-start font-medium text-muted">
+                    {t("admin.products.category" as TranslationKey)} / {t("admin.products.brand" as TranslationKey)}
                   </th>
-                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                  <th className="px-5 py-3 text-start font-medium text-muted">
+                    سعر الشراء
+                  </th>
+                  <th className="px-5 py-3 text-start font-medium text-muted">
                     {t("admin.products.price" as TranslationKey)}
                   </th>
-                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                  <th className="px-5 py-3 text-start font-medium text-muted">
+                    الربح المتوقع
+                  </th>
+                  <th className="px-5 py-3 text-start font-medium text-muted">
                     {t("admin.products.stock" as TranslationKey)}
                   </th>
-                  <th className="text-start px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                  <th className="px-5 py-3 text-start font-medium text-muted">
                     {t("admin.products.featured" as TranslationKey)}
                   </th>
-                  <th className="text-end px-5 py-3 text-xs font-medium text-muted uppercase tracking-wider">
+                  <th className="px-5 py-3 text-end font-medium text-muted">
                     {t("admin.products.actions" as TranslationKey)}
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filtered.map((product) => (
+                {filtered.map((product) => {
+                  const cost = product.costPrice || 0;
+                  const profit = product.price - cost;
+                  const margin = product.price > 0 ? ((profit / product.price) * 100).toFixed(0) : "0";
+
+                  return (
                   <tr key={product._id} className="hover:bg-card-hover transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-surface shrink-0">
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="40px"
-                          />
+                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-background border border-border">
+                          {product.image ? (
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-muted">
+                              <Package className="h-5 w-5" />
+                            </div>
+                          )}
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium truncate max-w-[180px] text-foreground">
@@ -490,8 +510,20 @@ export default function AdminProductsPage() {
                         })()}
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 font-medium text-foreground">
+                    <td className="px-5 py-3.5 font-medium text-amber-500 text-xs">
+                      {cost > 0 ? `EGP ${cost.toFixed(2)}` : "---"}
+                    </td>
+                    <td className="px-5 py-3.5 font-bold text-foreground">
                       EGP {product.price.toFixed(2)}
+                    </td>
+                    <td className="px-5 py-3.5 text-xs font-semibold">
+                      {cost > 0 ? (
+                        <span className={profit >= 0 ? "text-emerald-500 font-bold" : "text-danger font-black"}>
+                          {profit > 0 ? "+" : ""}EGP {profit.toFixed(2)} ({margin}%)
+                        </span>
+                      ) : (
+                        <span className="text-muted">---</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       <span
@@ -535,7 +567,8 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>
@@ -585,7 +618,21 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-amber-400 mb-1.5">
+                    سعر الشراء (التكلفة)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={form.costPrice ?? 0}
+                    onChange={(e) => updateField("costPrice", parseFloat(e.target.value) || 0)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-amber-400 font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-xs font-medium text-muted mb-1.5">
                     {t("admin.products.priceLabel" as TranslationKey)}
@@ -597,9 +644,10 @@ export default function AdminProductsPage() {
                     step="0.01"
                     value={form.price}
                     onChange={(e) => updateField("price", parseFloat(e.target.value) || 0)}
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
                   />
                 </div>
+
                 <div>
                   <label className="block text-xs font-medium text-muted mb-1.5">
                     {t("admin.products.stockLabel" as TranslationKey)}
@@ -610,10 +658,34 @@ export default function AdminProductsPage() {
                     min="0"
                     value={form.stock}
                     onChange={(e) => updateField("stock", parseInt(e.target.value) || 0)}
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
                   />
                 </div>
               </div>
+
+              {/* Expected Profit Indicator */}
+              {form.price > 0 && (form.costPrice ?? 0) > 0 && (
+                <div
+                  className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between ${
+                    form.price >= (form.costPrice ?? 0)
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : "bg-danger/10 border-danger/30 text-danger font-bold"
+                  }`}
+                >
+                  <span>
+                    {form.price >= (form.costPrice ?? 0)
+                      ? "صافي الربح المتوقع للقطعة:"
+                      : "⚠️ تحذير: سعر البيع أقل من سعر الشراء (بيع بخسارة!)"}
+                  </span>
+                  <span className="font-mono font-bold">
+                    EGP {(form.price - (form.costPrice ?? 0)).toFixed(2)} (
+                    {form.price > 0
+                      ? (((form.price - (form.costPrice ?? 0)) / form.price) * 100).toFixed(1)
+                      : 0}
+                    %)
+                  </span>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-medium text-muted mb-1.5">

@@ -201,7 +201,7 @@ describe("FinancialReportsEngine", () => {
   });
 
   describe("generateFinancialReport", () => {
-    it("should aggregate gross, discounts, refunds, net sales, channels, and payment methods", async () => {
+    it("should aggregate gross, discounts, refunds, net sales, cost of goods, gross profit, channels, and payment methods", async () => {
       const orderAggregateSpy = vi.spyOn(Order, "aggregate");
       const shiftAggregateSpy = vi.spyOn(Shift, "aggregate");
 
@@ -211,6 +211,7 @@ describe("FinancialReportsEngine", () => {
           grossSales: 2000,
           totalDiscounts: 200,
           totalRefunds: 100,
+          totalCost: 1000,
           totalOrdersCount: 8,
           posRevenue: 1200,
           posOrdersCount: 5,
@@ -225,8 +226,8 @@ describe("FinancialReportsEngine", () => {
 
       // 2. Top Products
       orderAggregateSpy.mockResolvedValueOnce([
-        { _id: "prod-101", name: "Polo Shirt", quantity: 10, revenue: 1000 },
-        { _id: "prod-102", name: "Jeans", quantity: 5, revenue: 700 },
+        { _id: "prod-101", name: "Polo Shirt", quantity: 10, revenue: 1000, cost: 600 },
+        { _id: "prod-102", name: "Jeans", quantity: 5, revenue: 700, cost: 400 },
       ]);
 
       // 3. Category Sales
@@ -259,6 +260,11 @@ describe("FinancialReportsEngine", () => {
       expect(report.totalRefunds).toBe(100);
       // netSales = 2000 - 200 - 100 = 1700
       expect(report.netSales).toBe(1700);
+      expect(report.totalCostOfGoodsSold).toBe(1000);
+      // grossProfit = 1700 - 1000 = 700
+      expect(report.grossProfit).toBe(700);
+      // profitMargin = (700 / 1700) * 100 ≈ 41.18%
+      expect(report.profitMargin).toBe(41.18);
       expect(report.totalOrdersCount).toBe(8);
 
       // Channel Breakdown
@@ -302,6 +308,9 @@ describe("FinancialReportsEngine", () => {
         name: "Polo Shirt",
         quantity: 10,
         revenue: 1000,
+        cost: 600,
+        profit: 400,
+        margin: 40,
       });
 
       // Shift Metrics

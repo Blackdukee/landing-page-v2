@@ -39,6 +39,7 @@ export default function AddProductModal({
 }: AddProductModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [costPrice, setCostPrice] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("10");
   const [category, setCategory] = useState("عام");
@@ -67,6 +68,9 @@ export default function AddProductModal({
       if (productToEdit) {
         setName(productToEdit.name || "");
         setDescription(productToEdit.description || "");
+        setCostPrice(
+          productToEdit.costPrice !== undefined ? productToEdit.costPrice.toString() : ""
+        );
         setPrice(productToEdit.price !== undefined ? productToEdit.price.toString() : "");
         setStock(productToEdit.stock !== undefined ? productToEdit.stock.toString() : "10");
         setCategory(productToEdit.category || "عام");
@@ -78,6 +82,7 @@ export default function AddProductModal({
       } else {
         setName("");
         setDescription("");
+        setCostPrice("");
         setPrice("");
         setStock("10");
         setCategory("عام");
@@ -150,6 +155,7 @@ export default function AddProductModal({
       setError("يرجى إدخال سعر بيع صحيح");
       return;
     }
+    const numCostPrice = parseFloat(costPrice) || 0;
     const numStock = parseInt(stock, 10);
     if (isNaN(numStock) || numStock < 0) {
       setError("يرجى إدخال كمية مخزون صحيحة");
@@ -171,6 +177,7 @@ export default function AddProductModal({
           name: name.trim(),
           description: description.trim() || name.trim(),
           price: numPrice,
+          costPrice: numCostPrice,
           stock: numStock,
           category: category.trim() || "عام",
           company: companyId || null,
@@ -194,6 +201,12 @@ export default function AddProductModal({
       setIsSubmitting(false);
     }
   };
+
+  // Live profit calculation
+  const parsedPrice = parseFloat(price) || 0;
+  const parsedCost = parseFloat(costPrice) || 0;
+  const expectedProfit = parsedPrice - parsedCost;
+  const expectedMargin = parsedPrice > 0 ? ((expectedProfit / parsedPrice) * 100).toFixed(1) : "0";
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
@@ -239,21 +252,20 @@ export default function AddProductModal({
               <FontAwesomeBarcodeIcon className="w-3.5 h-3.5 text-amber-400" />
               <span>رمز الباركود (Barcode):</span>
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2">
               <input
                 type="text"
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
-                placeholder="أدخل أو امسح الباركود..."
-                className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-amber-400 font-bold focus:outline-none focus:border-amber-500"
+                placeholder="ادخل او امسح كود الباركود..."
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-amber-500"
               />
               <button
                 type="button"
                 onClick={generateAutoBarcode}
-                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl shrink-0 transition-all flex items-center gap-1.5"
+                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 rounded-xl text-[11px] font-bold shrink-0 transition-all"
               >
-                <FontAwesomeBarcodeIcon className="w-3.5 h-3.5 text-amber-400" />
-                <span>توليد باركود تلقائي</span>
+                توليد باركود تلقائي
               </button>
             </div>
           </div>
@@ -270,8 +282,24 @@ export default function AddProductModal({
             />
           </div>
 
-          {/* Price & Stock Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Price, Cost & Stock Grid */}
+          <div className="grid grid-cols-3 gap-2.5">
+            {/* Cost Price */}
+            <div>
+              <label className="text-slate-300 font-bold block mb-1 flex items-center gap-1">
+                <DollarSign className="w-3.5 h-3.5 text-amber-400" /> سعر الشراء (التكلفة):
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={costPrice}
+                onChange={(e) => setCostPrice(e.target.value)}
+                placeholder="500"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-amber-400 font-extrabold focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
+            {/* Selling Price */}
             <div>
               <label className="text-slate-300 font-bold block mb-1 flex items-center gap-1">
                 <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> سعر البيع (EGP *):
@@ -287,9 +315,10 @@ export default function AddProductModal({
               />
             </div>
 
+            {/* Stock */}
             <div>
               <label className="text-slate-300 font-bold block mb-1 flex items-center gap-1">
-                <Layers className="w-3.5 h-3.5 text-amber-400" /> كمية المخزون الافتتاحية (*):
+                <Layers className="w-3.5 h-3.5 text-cyan-400" /> كمية المخزون (*):
               </label>
               <input
                 type="number"
@@ -297,10 +326,28 @@ export default function AddProductModal({
                 onChange={(e) => setStock(e.target.value)}
                 placeholder="10"
                 required
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-amber-400 font-extrabold focus:outline-none focus:border-amber-500"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-cyan-300 font-extrabold focus:outline-none focus:border-amber-500"
               />
             </div>
           </div>
+
+          {/* Expected Profit & Margin Indicator */}
+          {parsedPrice > 0 && parsedCost > 0 && (
+            <div
+              className={`p-2.5 rounded-xl border flex items-center justify-between text-[11px] font-bold ${
+                expectedProfit >= 0
+                  ? "bg-emerald-950/50 border-emerald-500/40 text-emerald-300"
+                  : "bg-rose-950/60 border-rose-500/50 text-rose-300"
+              }`}
+            >
+              <span>
+                {expectedProfit >= 0 ? "صافي الربح المتوقع للقطعة:" : "⚠️ تحذير: بيع بخسارة!"}
+              </span>
+              <span className="font-mono font-black">
+                {expectedProfit.toLocaleString()} ج.م ({expectedMargin}%)
+              </span>
+            </div>
+          )}
 
           {/* Category & Brand Grid */}
           <div className="grid grid-cols-2 gap-3">

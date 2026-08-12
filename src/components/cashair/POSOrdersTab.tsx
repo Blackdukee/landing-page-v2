@@ -19,6 +19,7 @@ import {
   MapPin,
   Trash2,
   Pencil,
+  AlertCircle,
 } from "lucide-react";
 
 export default function POSOrdersTab() {
@@ -461,15 +462,30 @@ export default function POSOrdersTab() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-900">
-                      {selectedOrder.items?.map((it: any, i: number) => (
-                        <tr key={i} className="text-slate-300">
-                          <td className="py-2 font-semibold">{it.name}</td>
-                          <td className="py-2 text-center font-bold text-amber-400">{it.quantity}</td>
-                          <td className="py-2 text-left font-bold text-emerald-400">
-                            {(it.price * it.quantity).toLocaleString()} ج.م
-                          </td>
-                        </tr>
-                      ))}
+                      {selectedOrder.items?.map((it: any, i: number) => {
+                        const isLoss = it.costPrice && it.costPrice > 0 && it.price < it.costPrice;
+                        return (
+                          <tr key={i} className="text-slate-300">
+                            <td className="py-2.5 font-semibold">
+                              <div>
+                                <span>{it.name}</span>
+                                {isLoss && (
+                                  <div className="flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-950/80 border border-rose-500/40 px-2 py-0.5 rounded-md w-fit mt-1 animate-pulse">
+                                    <AlertCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                                    <span>
+                                      تحذير: بيع بأقل من سعر الشراء ({it.costPrice} ج.م) | خسارة: {((it.costPrice - it.price) * it.quantity).toLocaleString()} ج.م
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2.5 text-center font-bold text-amber-400">{it.quantity}</td>
+                            <td className="py-2.5 text-left font-bold text-emerald-400">
+                              {(it.price * it.quantity).toLocaleString()} ج.م
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
 

@@ -5,6 +5,7 @@ export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
+  costPrice?: number;
   image: string;
   images: string[];
   /** ImageKit fileIds parallel to the `images` array — used to delete from ImageKit on removal */
@@ -23,6 +24,7 @@ const ProductSchema = new Schema<IProduct>(
     name: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
+    costPrice: { type: Number, default: 0 },
     image: { type: String, default: "" },
     images: { type: [String], default: [] },
     imageFileIds: { type: [String], default: [] },

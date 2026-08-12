@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
+import Product from "@/models/Product";
 import { logError } from "@/lib/apiError";
 import { checkAdminAuthResponse } from "@/lib/auth";
 import { InventoryEngine } from "@/modules/inventory/InventoryEngine";
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const body = await req.json();
 
-    const items: Array<{ productId: string; name?: string; quantity: number }> = body.items || [];
+    const items: Array<{ productId: string; name?: string; quantity: number; costPrice?: number }> = body.items || [];
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Order must contain at least one item" }, { status: 400 });
     }
@@ -39,6 +40,16 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Enrich items with costPrice from catalog if not provided
+    const productIds = items.map((i) => i.productId);
+    const productDocs = await Product.find({ _id: { $in: productIds } }, "_id costPrice").lean();
+    const costMap = new Map(productDocs.map((p) => [String(p._id), p.costPrice || 0]));
+
+    body.items = items.map((item) => ({
+      ...item,
+      costPrice: item.costPrice !== undefined ? item.costPrice : (costMap.get(String(item.productId)) || 0),
+    }));
 
     // Create the order record
     const order = await Order.create(body);

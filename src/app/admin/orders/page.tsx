@@ -22,6 +22,7 @@ interface OrderItem {
   productId: string;
   name: string;
   price: number;
+  costPrice?: number;
   quantity: number;
 }
 
@@ -545,6 +546,15 @@ ${itemLines}
                             دمج مع الخصم الحالي
                           </label>
                         </div>
+
+                        {/* Below Cost / Loss Warning */}
+                        {item.costPrice !== undefined && item.costPrice > 0 && finalUnit < item.costPrice && (
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-danger bg-danger/10 border border-danger/30 px-3 py-1.5 rounded-lg animate-pulse">
+                            <span>
+                              ⚠️ تحذير: سعر البيع ({finalUnit.toFixed(2)} ج.م) أقل من سعر الشراء ({item.costPrice.toFixed(2)} ج.م) — بيع بخسارة {((item.costPrice - finalUnit) * item.quantity).toFixed(2)} ج.م!
+                            </span>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -696,7 +706,17 @@ ${itemLines}
                         <p className="font-medium text-foreground">{item.name}</p>
                         <p className="text-xs text-muted">
                           {t("admin.orders.qty" as TranslationKey)}: {item.quantity} &times; EGP {item.price.toFixed(2)}
+                          {item.costPrice !== undefined && item.costPrice > 0 && (
+                            <span className="ms-2 text-amber-500 font-medium">
+                              (شراء: EGP {item.costPrice.toFixed(2)})
+                            </span>
+                          )}
                         </p>
+                        {item.costPrice !== undefined && item.costPrice > 0 && item.price < item.costPrice && (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-danger bg-danger/10 border border-danger/30 px-2 py-0.5 rounded mt-1">
+                            ⚠️ بيع بأقل من سعر الشراء (خسارة: EGP {(item.costPrice - item.price).toFixed(2)}/قطعة)
+                          </div>
+                        )}
                       </div>
                       <p className="font-medium text-foreground">
                         EGP {(item.price * item.quantity).toFixed(2)}

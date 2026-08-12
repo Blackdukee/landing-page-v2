@@ -8,6 +8,7 @@ export interface POSCheckoutItem {
   name: string;
   price: number;
   basePrice?: number;
+  costPrice?: number;
   quantity: number;
   image?: string;
   discountType?: "percentage" | "fixed";
@@ -96,6 +97,7 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
     productId: item.productId,
     name: item.name,
     price: discountResult.itemAdjustments[idx].finalUnitPrice,
+    costPrice: item.costPrice || 0,
     quantity: item.quantity,
     image: item.image || "",
   }));
@@ -123,6 +125,7 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
         discountValue: item.discountValue || 0,
         stacked: item.stacked ?? true,
         basePrice: item.basePrice ?? item.price,
+        costPrice: item.costPrice || 0,
         priorPrice: item.price,
         finalPrice: discountResult.itemAdjustments[idx].finalUnitPrice,
       })),

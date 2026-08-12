@@ -9,6 +9,7 @@ export interface POSProduct {
   name: string;
   description?: string;
   price: number;
+  costPrice?: number;
   image?: string;
   images?: string[];
   stock: number;

@@ -6,6 +6,7 @@ export interface IOrderItem {
   productId: string;
   name: string;
   price: number;
+  costPrice?: number;
   quantity: number;
   image: string;
 }
@@ -16,6 +17,7 @@ export interface IOrderItemAdjustment {
   discountValue: number;
   stacked: boolean;
   basePrice: number;
+  costPrice?: number;
   priorPrice: number;
   finalPrice: number;
 }
@@ -82,6 +84,7 @@ const OrderSchema = new Schema<IOrder>(
         productId: { type: String, required: true },
         name: { type: String, required: true },
         price: { type: Number, required: true },
+        costPrice: { type: Number, default: 0 },
         quantity: { type: Number, required: true },
         image: { type: String },
       },
@@ -95,6 +98,7 @@ const OrderSchema = new Schema<IOrder>(
           discountValue: { type: Number },
           stacked: { type: Boolean },
           basePrice: { type: Number },
+          costPrice: { type: Number, default: 0 },
           priorPrice: { type: Number },
           finalPrice: { type: Number },
         },

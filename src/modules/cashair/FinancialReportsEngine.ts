@@ -40,6 +40,9 @@ export interface TopProductSale {
   name: string;
   quantity: number;
   revenue: number;
+  cost?: number;
+  profit?: number;
+  margin?: number;
 }
 
 export interface ShiftFinancialSummary {
@@ -59,6 +62,9 @@ export interface FinancialReportSummary {
   totalRefunds: number;
   netSales: number;
   netRevenue: number;
+  totalCostOfGoodsSold: number;
+  grossProfit: number;
+  profitMargin: number;
   totalOrdersCount: number;
   averageOrderValue: number;
   channelBreakdown: ChannelBreakdown;
@@ -137,7 +143,7 @@ export async function generateFinancialReport(
     orderMatchFilter.source = filter.source;
   }
 
-  // 1. Order Summary Pipeline (Gross, Discounts, Refunds, Net, Channels, Payment Methods)
+  // 1. Order Summary Pipeline (Gross, Discounts, Refunds, Net, Cost, Channels, Payment Methods)
   const summaryPipeline: any[] = [
     { $match: orderMatchFilter },
     {
@@ -148,6 +154,25 @@ export async function generateFinancialReport(
         totalRefunded: { $ifNull: ["$totalRefunded", 0] },
         originalTotal: { $ifNull: ["$discountDetails.originalTotal", "$totalPrice"] },
         finalTotal: { $ifNull: ["$discountDetails.finalTotal", "$totalPrice"] },
+        items: 1,
+      },
+    },
+    {
+      $addFields: {
+        orderCost: {
+          $sum: {
+            $map: {
+              input: "$items",
+              as: "it",
+              in: {
+                $multiply: [
+                  { $ifNull: ["$$it.costPrice", 0] },
+                  { $ifNull: ["$$it.quantity", 1] },
+                ],
+              },
+            },
+          },
+        },
       },
     },
     {
@@ -158,6 +183,7 @@ export async function generateFinancialReport(
         totalRefunded: 1,
         originalTotal: 1,
         finalTotal: 1,
+        orderCost: 1,
         discountAmount: {
           $cond: [
             { $gt: ["$originalTotal", "$finalTotal"] },
@@ -175,6 +201,7 @@ export async function generateFinancialReport(
         totalDiscounts: { $sum: "$discountAmount" },
         totalRefunds: { $sum: "$totalRefunded" },
         netRevenue: { $sum: "$netAmount" },
+        totalCost: { $sum: "$orderCost" },
         totalOrdersCount: { $sum: 1 },
         posRevenue: {
           $sum: {
@@ -230,9 +257,17 @@ export async function generateFinancialReport(
         name: { $first: "$items.name" },
         quantity: { $sum: "$items.quantity" },
         revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        cost: {
+          $sum: {
+            $multiply: [
+              { $ifNull: ["$items.costPrice", 0] },
+              "$items.quantity",
+            ],
+          },
+        },
       },
     },
-    { $sort: { quantity: -1, revenue: -1 } },
+    { $sort: { revenue: -1, quantity: -1 } },
   ];
 
   // 3. Category Sales Pipeline
@@ -377,6 +412,9 @@ export async function generateFinancialReport(
   const totalDiscounts = round2(summary.totalDiscounts || 0);
   const totalRefunds = round2(summary.totalRefunds || 0);
   const netSales = round2(grossSales - totalDiscounts - totalRefunds);
+  const totalCostOfGoodsSold = round2(summary.totalCost || 0);
+  const grossProfit = round2(netSales - totalCostOfGoodsSold);
+  const profitMargin = netSales > 0 ? round2((grossProfit / netSales) * 100) : 0;
 
   const totalOrdersCount = summary.totalOrdersCount || 0;
 
@@ -408,12 +446,21 @@ export async function generateFinancialReport(
     quantity: row.quantity || 0,
   }));
 
-  const topProducts: TopProductSale[] = (topProductsResults || []).map((row: any) => ({
-    productId: String(row._id),
-    name: row.name || "صنف غير معروف",
-    quantity: row.quantity || 0,
-    revenue: round2(row.revenue || 0),
-  }));
+  const topProducts: TopProductSale[] = (topProductsResults || []).map((row: any) => {
+    const rev = round2(row.revenue || 0);
+    const cost = round2(row.cost || 0);
+    const profit = round2(rev - cost);
+    const margin = rev > 0 ? round2((profit / rev) * 100) : 0;
+    return {
+      productId: String(row._id),
+      name: row.name || "صنف غير معروف",
+      quantity: row.quantity || 0,
+      revenue: rev,
+      cost,
+      profit,
+      margin,
+    };
+  });
 
   const shiftMetrics: ShiftFinancialSummary | undefined =
     shiftResults && shiftResults[0]
@@ -448,6 +495,9 @@ export async function generateFinancialReport(
     totalRefunds,
     netSales,
     netRevenue: netSales,
+    totalCostOfGoodsSold,
+    grossProfit,
+    profitMargin,
     totalOrdersCount,
     averageOrderValue,
     channelBreakdown,

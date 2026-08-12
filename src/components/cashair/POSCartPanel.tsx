@@ -25,6 +25,8 @@ export interface CartItemWithOverride {
   productId: string;
   name: string;
   price: number;
+  basePrice?: number;
+  costPrice?: number;
   overridePrice?: number;
   quantity: number;
   stock?: number;
@@ -137,6 +139,8 @@ export default function POSCartPanel({
             productId: item.productId,
             name: item.name,
             price: item.overridePrice !== undefined ? item.overridePrice : item.price,
+            basePrice: item.basePrice,
+            costPrice: item.costPrice || 0,
             quantity: item.quantity,
             finalUnitPrice: adj ? adj.finalUnitPrice : item.price,
           };
@@ -334,6 +338,16 @@ export default function POSCartPanel({
                           : "خصم صنف"}
                       </button>
                     </div>
+
+                    {/* Below Cost / Loss Warning Badge */}
+                    {item.costPrice !== undefined && item.costPrice > 0 && effectiveUnitPrice < item.costPrice && (
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-300 bg-rose-950/90 border border-rose-500/60 px-2 py-1 rounded-lg w-fit mt-1 animate-pulse">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                        <span>
+                          تحذير: سعر البيع أقل من سعر الشراء ({item.costPrice} ج.م) | خسارة: {(item.costPrice - effectiveUnitPrice).toLocaleString()} ج.م/ق
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -346,36 +360,48 @@ export default function POSCartPanel({
 
                 {/* Inline Price Override input */}
                 {editingPriceProductId === item.productId && (
-                  <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-lg border border-amber-500/40">
-                    <span className="text-[11px] text-slate-300 font-medium">سعر جديد:</span>
-                    <input
-                      type="number"
-                      value={tempOverridePrice}
-                      onChange={(e) => setTempOverridePrice(e.target.value)}
-                      className="w-20 bg-slate-950 border border-slate-700 text-xs px-2 py-1 rounded text-amber-400 font-bold focus:outline-none"
-                    />
-                    <button
-                      onClick={() => {
-                        const parsed = parseFloat(tempOverridePrice);
-                        onUpdatePrice(
-                          item.productId,
-                          isNaN(parsed) || parsed < 0 ? undefined : parsed
-                        );
-                        setEditingPriceProductId(null);
-                      }}
-                      className="px-2.5 py-1 bg-amber-500 text-slate-950 text-[10px] font-bold rounded-md"
-                    >
-                      حفظ
-                    </button>
-                    <button
-                      onClick={() => {
-                        onUpdatePrice(item.productId, undefined);
-                        setEditingPriceProductId(null);
-                      }}
-                      className="px-2 py-1 bg-slate-800 text-slate-400 text-[10px] rounded-md hover:text-slate-200"
-                    >
-                      إلغاء
-                    </button>
+                  <div className="flex flex-col gap-1.5 bg-slate-900 p-2.5 rounded-xl border border-amber-500/40">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-300 font-medium">سعر جديد:</span>
+                      <input
+                        type="number"
+                        value={tempOverridePrice}
+                        onChange={(e) => setTempOverridePrice(e.target.value)}
+                        className="w-20 bg-slate-950 border border-slate-700 text-xs px-2 py-1 rounded text-amber-400 font-bold focus:outline-none"
+                      />
+                      <button
+                        onClick={() => {
+                          const parsed = parseFloat(tempOverridePrice);
+                          onUpdatePrice(
+                            item.productId,
+                            isNaN(parsed) || parsed < 0 ? undefined : parsed
+                          );
+                          setEditingPriceProductId(null);
+                        }}
+                        className="px-2.5 py-1 bg-amber-500 text-slate-950 text-[10px] font-bold rounded-md"
+                      >
+                        حفظ
+                      </button>
+                      <button
+                        onClick={() => {
+                          onUpdatePrice(item.productId, undefined);
+                          setEditingPriceProductId(null);
+                        }}
+                        className="px-2 py-1 bg-slate-800 text-slate-400 text-[10px] rounded-md hover:text-slate-200"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+
+                    {item.costPrice !== undefined &&
+                      item.costPrice > 0 &&
+                      parseFloat(tempOverridePrice) > 0 &&
+                      parseFloat(tempOverridePrice) < item.costPrice && (
+                        <span className="text-[10px] text-rose-400 font-semibold flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          تنبيه: هذا السعر أقل من سعر الشراء ({item.costPrice} ج.م)
+                        </span>
+                      )}
                   </div>
                 )}
 

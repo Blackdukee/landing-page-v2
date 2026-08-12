@@ -206,7 +206,9 @@ export default function POSProductsTab() {
                 <th className="py-3 px-3">المنتج</th>
                 <th className="py-3 px-3">القسم</th>
                 <th className="py-3 px-3">الماركة</th>
-                <th className="py-3 px-3">سعر البيع</th>
+                <th className="py-3 px-3 text-left">سعر الشراء</th>
+                <th className="py-3 px-3 text-left">سعر البيع</th>
+                <th className="py-3 px-3 text-left">الربح المتوقع</th>
                 <th className="py-3 px-3 text-center">المخزون الحالي</th>
                 <th className="py-3 px-3 text-center">حالة الصنف</th>
                 <th className="py-3 px-3 text-center">الإجراءات</th>
@@ -220,6 +222,9 @@ export default function POSProductsTab() {
                   typeof prod.company === "object" && prod.company !== null
                     ? prod.company.name
                     : "---";
+                const cost = prod.costPrice || 0;
+                const profit = (prod.price || 0) - cost;
+                const margin = prod.price > 0 ? ((profit / prod.price) * 100).toFixed(0) : "0";
 
                 return (
                   <tr key={prod._id} className="hover:bg-slate-800/40 transition-colors">
@@ -263,8 +268,20 @@ export default function POSProductsTab() {
                       </span>
                     </td>
                     <td className="py-3 px-3 text-slate-300 font-semibold">{companyName}</td>
-                    <td className="py-3 px-3 font-extrabold text-emerald-400 text-sm">
+                    <td className="py-3 px-3 text-left font-bold text-amber-400 text-xs">
+                      {cost > 0 ? `${cost.toLocaleString()} ج.م` : "---"}
+                    </td>
+                    <td className="py-3 px-3 text-left font-extrabold text-emerald-400 text-sm">
                       {(prod.price || 0).toLocaleString()} ج.م
+                    </td>
+                    <td className="py-3 px-3 text-left font-bold text-xs">
+                      {cost > 0 ? (
+                        <span className={profit >= 0 ? "text-emerald-400" : "text-rose-400 font-black"}>
+                          {profit > 0 ? "+" : ""}{profit.toLocaleString()} ج.م ({margin}%)
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">---</span>
+                      )}
                     </td>
                     <td className="py-3 px-3 text-center font-black text-sm">
                       <span

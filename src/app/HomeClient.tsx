@@ -69,9 +69,6 @@ export default function HomeClient() {
       {/* ───────────── 2. DAILY OFFERS (FLASH SALE) ───────────── */}
       <DailyOffersSection />
 
-      {/* ───────────── MOVING BRANDS TICKER & TRUST BADGES ───────────── */}
-      <BrandTickerAndTrustBadges companies={companies} />
-
       {/* ───────────── 3. FEATURED PRODUCTS ───────────── */}
       <section id="featured" className="py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -132,6 +129,7 @@ export default function HomeClient() {
                     category={p.category}
                     company={p.company ?? undefined}
                     stock={p.stock}
+                    viewMode="card"
                   />
                 ))}
               </div>
@@ -158,6 +156,9 @@ export default function HomeClient() {
           )}
         </div>
       </section>
+
+      {/* ───────────── MOVING BRANDS TICKER & TRUST BADGES ───────────── */}
+      <BrandTickerAndTrustBadges companies={companies} />
 
       {/* ───────────── 4. VALUES / WHY CHOOSE US ───────────── */}
       <section className="py-24 border-y border-border bg-surface/50">

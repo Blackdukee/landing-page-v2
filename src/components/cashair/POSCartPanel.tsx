@@ -214,7 +214,7 @@ export default function POSCartPanel({
   ];
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-slate-900/60 text-slate-100 rounded-2xl border border-slate-800/80 p-4 shadow-2xl backdrop-blur-xl overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 bg-slate-900/60 text-slate-100 rounded-2xl border border-slate-800/80 p-3 sm:p-4 shadow-2xl backdrop-blur-xl overflow-hidden">
       {/* Sidebar Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 shrink-0">
         <div className="flex items-center gap-2">

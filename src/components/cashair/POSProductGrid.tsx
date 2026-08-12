@@ -141,28 +141,30 @@ export default function POSProductGrid({
   }, [products, selectedCategory, selectedCompany, searchTerm]);
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-slate-900/60 rounded-2xl border border-slate-800/80 p-4 shadow-2xl backdrop-blur-xl overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 bg-slate-900/60 rounded-2xl border border-slate-800/80 p-2.5 sm:p-4 shadow-2xl backdrop-blur-xl overflow-hidden">
       {/* Top Search & Filter Toolbar */}
-      <div className="space-y-2.5 pb-3 border-b border-slate-800/70 shrink-0">
+      <div className="space-y-2.5 pb-2.5 sm:pb-3 border-b border-slate-800/70 shrink-0">
         {/* Hardware Barcode Scanner Direct Input */}
-        <form onSubmit={handleBarcodeScanSubmit} className="flex items-center gap-2">
+        <form onSubmit={handleBarcodeScanSubmit} className="flex items-center gap-1.5 sm:gap-2">
           <div className="relative flex-1">
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-amber-400">
-              <FontAwesomeBarcodeIcon className="w-4 h-4 text-amber-400" />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-400">
+              <FontAwesomeBarcodeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
             </span>
             <input
               type="text"
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
-              placeholder="امسح الباركود بجهاز السكانر للإدخال التلقائي والإضافة المباشرة للسلة..."
-              className="w-full pr-10 pl-3 py-2 bg-amber-950/20 border border-amber-500/40 rounded-xl text-amber-300 placeholder-amber-400/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-mono text-xs shadow-inner"
+              placeholder="امسح الباركود بجهاز السكانر للإضافة المباشرة..."
+              className="w-full pr-9 sm:pr-10 pl-3 py-1.5 sm:py-2 bg-amber-950/20 border border-amber-500/40 rounded-xl text-amber-300 placeholder-amber-400/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-mono text-xs shadow-inner"
             />
           </div>
           <button
             type="submit"
-            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all shrink-0 flex items-center gap-1.5"
+            className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all shrink-0 flex items-center gap-1.5"
           >
-            <FontAwesomeBarcodeIcon className="w-3.5 h-3.5" /> إضافة بقارئ الباركود
+            <FontAwesomeBarcodeIcon className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">إضافة بقارئ الباركود</span>
+            <span className="sm:hidden">إضافة</span>
           </button>
         </form>
 
@@ -292,7 +294,7 @@ export default function POSProductGrid({
             <p className="text-[11px] text-slate-500">جرب البحث بكلمات مختلفة أو تغيير الفلاتر</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 pb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3 pb-20 lg:pb-4">
             {filteredProducts.map((product) => {
               const qtyInCart = getItemQuantityInCart(product._id);
               const companyName =

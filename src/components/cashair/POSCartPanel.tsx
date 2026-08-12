@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   X,
   AlertCircle,
+  AlertTriangle,
   Edit3,
 } from "lucide-react";
 import { calculatePOSDiscounts, OrderDiscountInput } from "@/modules/cashair/DiscountEngine";
@@ -92,6 +93,9 @@ export default function POSCartPanel({
 
   // Completed sale receipt modal state
   const [receiptData, setReceiptData] = useState<any | null>(null);
+  const [persistentLowStockAlerts, setPersistentLowStockAlerts] = useState<
+    Array<{ productId: string; name: string; remainingStock: number; isOutOfStock: boolean }>
+  >([]);
 
   // Calculate totals via DiscountEngine
   const totals = useMemo(() => {
@@ -164,6 +168,11 @@ export default function POSCartPanel({
       const data = await res.json();
 
       if (data.success) {
+        const lowStock = Array.isArray(data.lowStockAlerts) ? data.lowStockAlerts : [];
+        if (lowStock.length > 0) {
+          setPersistentLowStockAlerts(lowStock);
+        }
+
         setReceiptData({
           orderId: data.orderId || data.order?._id || "POS-" + Date.now().toString().slice(-6),
           receiptText: data.receiptText,
@@ -174,6 +183,7 @@ export default function POSCartPanel({
           customerName,
           cashierName,
           date: new Date().toLocaleString("ar-EG"),
+          lowStockAlerts: lowStock,
         });
 
         onClearCart();
@@ -221,6 +231,44 @@ export default function POSCartPanel({
           </button>
         )}
       </div>
+
+      {/* Persistent Low Stock Alerts Banner */}
+      {persistentLowStockAlerts.length > 0 && (
+        <div className="mx-1 my-2 p-2.5 bg-amber-950/80 border border-amber-500/50 rounded-xl text-amber-300 text-xs shadow-lg space-y-1.5 shrink-0">
+          <div className="flex items-center justify-between font-bold">
+            <div className="flex items-center gap-1.5 text-amber-400">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 animate-pulse" />
+              <span>تنبيه: اقتراب نفاد المخزون</span>
+            </div>
+            <button
+              onClick={() => setPersistentLowStockAlerts([])}
+              className="text-amber-400/70 hover:text-amber-200 p-0.5"
+              title="إغلاق التنبيه"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="space-y-1 max-h-28 overflow-y-auto scrollbar-thin scrollbar-thumb-amber-800">
+            {persistentLowStockAlerts.map((alt, idx) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between text-[11px] bg-slate-950/70 px-2 py-1 rounded-lg border border-amber-500/20"
+              >
+                <span className="truncate max-w-[170px] text-slate-200 font-medium">{alt.name}</span>
+                <span
+                  className={`font-black px-1.5 py-0.5 rounded text-[10px] ${
+                    alt.isOutOfStock
+                      ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                      : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                  }`}
+                >
+                  {alt.isOutOfStock ? "نفد (0)" : `متبقي ${alt.remainingStock} ق`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Cart Items List Area */}
       <div className="flex-1 min-h-0 overflow-y-auto py-2.5 space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-700/60">
@@ -721,6 +769,37 @@ export default function POSCartPanel({
                 شكراً لزيارتكم متجر قويسنا - نتمنى لكم يوماً سعيداً
               </div>
             </div>
+
+            {/* Low Stock Warning Callout inside Modal */}
+            {receiptData.lowStockAlerts && receiptData.lowStockAlerts.length > 0 && (
+              <div className="p-3 bg-amber-950/80 border border-amber-500/50 rounded-xl text-xs space-y-2 text-right no-print">
+                <div className="flex items-center gap-1.5 text-amber-400 font-extrabold">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                  <span>تنبيه: أصناف انخفض مخزونها بعد هذه الفاتورة ({receiptData.lowStockAlerts.length})</span>
+                </div>
+                <div className="space-y-1 max-h-28 overflow-y-auto scrollbar-thin scrollbar-thumb-amber-800">
+                  {receiptData.lowStockAlerts.map((alt: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between text-[11px] px-2.5 py-1.5 rounded-lg bg-slate-950/80 border border-slate-800"
+                    >
+                      <span className="text-slate-200 font-medium truncate max-w-[210px]">
+                        {alt.name}
+                      </span>
+                      <span
+                        className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                          alt.isOutOfStock
+                            ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                            : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                        }`}
+                      >
+                        {alt.isOutOfStock ? "نفد من المخزن (0)" : `متبقي ${alt.remainingStock} قطع`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Print & Share Actions */}
             <div className="flex items-center gap-2 pt-2 no-print">

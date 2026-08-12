@@ -13,6 +13,8 @@ import {
   Sparkles,
   Loader2,
   CheckCircle2,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -69,6 +71,9 @@ export default function ProductsClient() {
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+
+  // View Mode State
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Filter States
   const [search, setSearch] = useState("");
@@ -386,9 +391,9 @@ export default function ProductsClient() {
               : "py-2"
           }`}
         >
-          <div className="flex items-center gap-2 sm:gap-3 max-w-7xl mx-auto">
-            {/* Search Input (Takes remaining space) */}
-            <div className="relative flex-1 min-w-0">
+          <div className="flex flex-col gap-2.5 max-w-7xl mx-auto">
+            {/* Row 1: Full-width Search Bar */}
+            <div className="relative w-full">
               <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
               <input
                 type="text"
@@ -396,53 +401,82 @@ export default function ProductsClient() {
                 placeholder={t("products.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 sm:h-11 rounded-2xl border border-border bg-surface ps-9 pe-9 text-xs sm:text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                className="w-full h-11 rounded-2xl border border-border bg-surface ps-10 pe-10 text-xs sm:text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all shadow-2xs"
               />
               {search && (
                 <button
                   onClick={() => setSearch("")}
                   aria-label="Clear search input"
-                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer p-0.5"
+                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer p-1"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
 
-            {/* Sort Dropdown */}
-            <div className="relative shrink-0">
-              <select
-                value={sortBy}
-                aria-label={t("products.sortBy") || "Sort products"}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="h-10 sm:h-11 appearance-none rounded-2xl border border-border bg-surface ps-3 pe-8 text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer max-w-[120px] sm:max-w-none"
-              >
-                <option value="default">{t("products.sortBy")}</option>
-                <option value="price-asc">{t("products.priceLowHigh")}</option>
-                <option value="price-desc">{t("products.priceHighLow")}</option>
-                <option value="name">{t("products.nameAZ")}</option>
-              </select>
-              <ChevronDown className="absolute end-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-            </div>
+            {/* Row 2: Controls Toolbar (View Switcher, Sort Dropdown, Filter Button) */}
+            <div className="flex items-center justify-between gap-2 sm:gap-3 w-full">
+              {/* Start: View Mode Switcher */}
+              <div className="flex items-center rounded-2xl border border-border bg-surface p-1 shrink-0">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  aria-label="Grid View"
+                  className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                    viewMode === "grid"
+                      ? "bg-primary text-white shadow-2xs"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  aria-label="List View"
+                  className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                    viewMode === "list"
+                      ? "bg-primary text-white shadow-2xs"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
 
-            {/* Filter Toggle Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              aria-label={t("products.filters") || "Toggle filters"}
-              className={`h-10 sm:h-11 shrink-0 inline-flex items-center gap-1.5 sm:gap-2 rounded-2xl border px-3 sm:px-4 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                showFilters || activeFiltersCount > 0
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-border bg-surface text-foreground hover:bg-card-hover"
-              }`}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("products.filters")}</span>
-              {activeFiltersCount > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
+              {/* Middle: Sort Dropdown */}
+              <div className="relative flex-1 max-w-[180px] sm:max-w-[220px]">
+                <select
+                  value={sortBy}
+                  aria-label={t("products.sortBy") || "Sort products"}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full h-10 sm:h-11 appearance-none rounded-2xl border border-border bg-surface ps-3.5 pe-8 text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer truncate"
+                >
+                  <option value="default">{t("products.sortBy")}</option>
+                  <option value="price-asc">{t("products.priceLowHigh")}</option>
+                  <option value="price-desc">{t("products.priceHighLow")}</option>
+                  <option value="name">{t("products.nameAZ")}</option>
+                </select>
+                <ChevronDown className="absolute end-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+              </div>
+
+              {/* End: Filter Toggle Button */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                aria-label={t("products.filters") || "Toggle filters"}
+                className={`h-10 sm:h-11 shrink-0 inline-flex items-center gap-1.5 sm:gap-2 rounded-2xl border px-3.5 sm:px-4 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                  showFilters || activeFiltersCount > 0
+                    ? "border-primary/40 bg-primary/10 text-primary font-bold"
+                    : "border-border bg-surface text-foreground hover:bg-card-hover"
+                }`}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                <span>{t("products.filters")}</span>
+                {activeFiltersCount > 0 && (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* ───────────── EXPANDABLE FILTERS PANEL ───────────── */}
@@ -636,24 +670,41 @@ export default function ProductsClient() {
 
         {/* ───────────── PRODUCT DISPLAY ───────────── */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="rounded-3xl bg-card border border-border overflow-hidden animate-pulse flex flex-col"
-              >
-                <div className="aspect-square bg-surface" />
-                <div className="p-4 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted/20 rounded w-3/4" />
+          viewMode === "grid" ? (
+            <div className="border border-border/80 rounded-2xl overflow-hidden bg-border/40 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[1px]">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-card flex flex-col h-full p-4 sm:p-5 animate-pulse justify-between space-y-3 rounded-none"
+                >
+                  <div className="aspect-square bg-surface rounded-lg" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-muted/20 rounded w-3/4 mx-auto" />
                     <div className="h-3 bg-muted/20 rounded w-full" />
                   </div>
-                  <div className="h-4 bg-muted/20 rounded w-1/3" />
-                  <div className="h-10 bg-muted/20 rounded-2xl w-full" />
+                  <div className="h-4 bg-muted/20 rounded w-1/3 mx-auto" />
+                  <div className="h-10 bg-muted/20 rounded-lg w-full" />
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl bg-card border border-border p-4 animate-pulse flex flex-col sm:flex-row gap-4 items-center"
+                >
+                  <div className="w-full sm:w-48 aspect-square bg-surface rounded-xl shrink-0" />
+                  <div className="flex-1 space-y-3 w-full">
+                    <div className="h-3 bg-muted/20 rounded w-1/4" />
+                    <div className="h-4 bg-muted/20 rounded w-1/2" />
+                    <div className="h-3 bg-muted/20 rounded w-3/4" />
+                    <div className="h-10 bg-muted/20 rounded-2xl w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-24 rounded-3xl bg-surface/40 border border-border">
             <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-surface mb-4">
@@ -675,43 +726,81 @@ export default function ProductsClient() {
           </div>
         ) : (
           <>
-            {/* Products Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {filteredProducts.map((p) => (
-                <ProductCard
-                  key={p._id}
-                  id={p._id}
-                  name={p.name}
-                  description={p.description}
-                  price={p.price}
-                  image={p.image}
-                  category={p.category}
-                  company={p.company ?? undefined}
-                  stock={p.stock}
-                />
-              ))}
-            </div>
-
-            {/* Loading More Skeletons */}
-            {loadingMore && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 mt-6">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-3xl bg-card border border-border overflow-hidden animate-pulse flex flex-col"
-                  >
-                    <div className="aspect-square bg-surface" />
-                    <div className="p-4 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
-                      <div className="space-y-2">
-                        <div className="h-4 bg-muted/20 rounded w-3/4" />
-                        <div className="h-3 bg-muted/20 rounded w-full" />
-                      </div>
-                      <div className="h-4 bg-muted/20 rounded w-1/3" />
-                      <div className="h-10 bg-muted/20 rounded-2xl w-full" />
-                    </div>
+            {/* Products Display */}
+            {viewMode === "grid" ? (
+              <div className="border border-border/80 rounded-2xl overflow-hidden bg-border/40 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[1px]">
+                {filteredProducts.map((p) => (
+                  <div key={p._id} className="bg-card flex flex-col h-full">
+                    <ProductCard
+                      id={p._id}
+                      name={p.name}
+                      description={p.description}
+                      price={p.price}
+                      image={p.image}
+                      category={p.category}
+                      company={p.company ?? undefined}
+                      stock={p.stock}
+                      viewMode="grid"
+                    />
                   </div>
                 ))}
               </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {filteredProducts.map((p) => (
+                  <ProductCard
+                    key={p._id}
+                    id={p._id}
+                    name={p.name}
+                    description={p.description}
+                    price={p.price}
+                    image={p.image}
+                    category={p.category}
+                    company={p.company ?? undefined}
+                    stock={p.stock}
+                    viewMode="list"
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Loading More Skeletons */}
+            {loadingMore && (
+              viewMode === "grid" ? (
+                <div className="border border-border/80 rounded-2xl overflow-hidden bg-border/40 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[1px] mt-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-card flex flex-col h-full p-4 sm:p-5 animate-pulse justify-between space-y-3 rounded-none"
+                    >
+                      <div className="aspect-square bg-surface rounded-lg" />
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 bg-muted/20 rounded w-3/4 mx-auto" />
+                        <div className="h-3 bg-muted/20 rounded w-full" />
+                      </div>
+                      <div className="h-4 bg-muted/20 rounded w-1/3 mx-auto" />
+                      <div className="h-10 bg-muted/20 rounded-lg w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 mt-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl bg-card border border-border p-4 animate-pulse flex flex-col sm:flex-row gap-4 items-center"
+                    >
+                      <div className="w-full sm:w-48 aspect-square bg-surface rounded-xl shrink-0" />
+                      <div className="flex-1 space-y-3 w-full">
+                        <div className="h-3 bg-muted/20 rounded w-1/4" />
+                        <div className="h-4 bg-muted/20 rounded w-1/2" />
+                        <div className="h-3 bg-muted/20 rounded w-3/4" />
+                        <div className="h-10 bg-muted/20 rounded-2xl w-32" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
             )}
 
             {/* Infinite Scroll Sentinel */}

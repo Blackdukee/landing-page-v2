@@ -3,9 +3,12 @@ import {
   restockStockAtomic,
   StockItem,
   DeductStockResult,
+  LowStockAlert,
+  LOW_STOCK_THRESHOLD,
 } from "../cashair/InventorySyncEngine";
 
-export type { StockItem, DeductStockResult };
+export type { StockItem, DeductStockResult, LowStockAlert };
+export { LOW_STOCK_THRESHOLD };
 
 /**
  * Deep Inventory Engine Module:

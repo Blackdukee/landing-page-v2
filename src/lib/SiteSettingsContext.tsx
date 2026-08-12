@@ -42,6 +42,7 @@ export interface IDailyOfferItem {
 interface SiteSettings {
   websiteName: string;
   favicon: string;
+  location: string;
   whatsappNumber: string;
   freeDeliveryMinPrice: number;
   shippingCost: number;
@@ -62,6 +63,7 @@ const defaultSocialLinks: SocialLinks = { instagram: "", twitter: "", email: "" 
 const defaultSettings: SiteSettings = {
   websiteName: "M L N TOOLS",
   favicon: "",
+  location: "قويسنا، المنوفية، مصر",
   whatsappNumber: "+201203441866",
   freeDeliveryMinPrice: 99,
   shippingCost: 9.99,
@@ -90,6 +92,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
           setSettings({
             websiteName: data.websiteName,
             favicon: data.favicon || "",
+            location: typeof data.location === "string" ? data.location : defaultSettings.location,
             whatsappNumber: data.whatsappNumber || defaultSettings.whatsappNumber,
             freeDeliveryMinPrice: typeof data.freeDeliveryMinPrice === "number" ? data.freeDeliveryMinPrice : defaultSettings.freeDeliveryMinPrice,
             shippingCost: typeof data.shippingCost === "number" ? data.shippingCost : defaultSettings.shippingCost,

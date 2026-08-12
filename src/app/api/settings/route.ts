@@ -72,6 +72,10 @@ export async function PUT(req: NextRequest) {
       update.websiteName = body.websiteName.trim();
     }
 
+    if (typeof body.location === "string") {
+      update.location = body.location.trim();
+    }
+
     if (typeof body.whatsappNumber === "string" && body.whatsappNumber.trim()) {
       update.whatsappNumber = normalizeWhatsAppNumber(body.whatsappNumber);
     }

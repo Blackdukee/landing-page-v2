@@ -28,6 +28,7 @@ import {
   Clock,
   Building2,
   Upload,
+  MapPin,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings, type IDailyOfferItem } from "@/lib/SiteSettingsContext";
@@ -191,6 +192,7 @@ export default function AdminDashboard() {
 
   // Site settings state
   const [siteName, setSiteName] = useState("");
+  const [location, setLocation] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [faviconUrl, setFaviconUrl] = useState("");
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
@@ -240,6 +242,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!siteSettings.loading) {
       setSiteName(siteSettings.websiteName);
+      setLocation(typeof siteSettings.location === "string" ? siteSettings.location : "");
       setWhatsapp(displayWhatsAppNumber(siteSettings.whatsappNumber));
       setFaviconUrl(siteSettings.favicon || "");
       setFreeDeliveryMinPrice(siteSettings.freeDeliveryMinPrice ?? 99);
@@ -255,7 +258,7 @@ export default function AdminDashboard() {
         setHeroInitialized(true);
       }
     }
-  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.shippingCost, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, siteSettings.dailyOffers, heroInitialized]);
+  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.location, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.shippingCost, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, siteSettings.dailyOffers, heroInitialized]);
 
   useEffect(() => {
     Promise.all([
@@ -487,6 +490,7 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           websiteName: siteName,
+          location,
           whatsappNumber: normalizeWhatsAppNumber(whatsapp),
           favicon: faviconUrl,
           freeDeliveryMinPrice,
@@ -1351,7 +1355,7 @@ export default function AdminDashboard() {
           <h2 className="font-semibold text-sm text-foreground">{t("admin.dashboard.siteSettings" as TranslationKey)}</h2>
         </div>
         <div className="p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-xs font-medium text-muted mb-1.5 block">
                 {t("admin.dashboard.websiteName" as TranslationKey)}
@@ -1363,6 +1367,22 @@ export default function AdminDashboard() {
                 className={inputClass}
                 placeholder="M L N TOOLS"
               />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted mb-1.5 block">
+                {t("admin.dashboard.location" as TranslationKey)}
+              </label>
+              <div className="relative">
+                <MapPin className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                  placeholder="قويسنا، المنوفية، مصر"
+                />
+              </div>
+              <p className="text-[11px] text-muted/60 mt-1">{t("admin.dashboard.locationHint" as TranslationKey)}</p>
             </div>
             <div>
               <label className="text-xs font-medium text-muted mb-1.5 block">

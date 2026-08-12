@@ -148,6 +148,8 @@ const en = {
   "products.lastPage": "Last page",
   "products.reachedEnd": "You've seen all products",
   "products.loadingMore": "Loading more products...",
+  "products.viewGrid": "Grid View",
+  "products.viewList": "List View",
 
   // ── Product Detail ──
   "detail.productNotFound": "Product Not Found",
@@ -174,6 +176,9 @@ const en = {
   "card.soldOut": "Sold out",
   "card.addToCart": "Add to cart",
   "card.onlyLeft": "Only {count} left",
+  "card.saveAmount": "Save {amount}",
+  "card.inStockStatus": "In Stock",
+  "card.outOfStockStatus": "Out of Stock",
 
   // ── Cart Page ──
   "cart.emptyTitle": "Your cart is empty",
@@ -319,6 +324,8 @@ const en = {
   // ── Admin – Dashboard: Site Settings ──
   "admin.dashboard.siteSettings": "Site Settings",
   "admin.dashboard.websiteName": "Website Name",
+  "admin.dashboard.location": "Store Location / Address",
+  "admin.dashboard.locationHint": "Displayed in the footer and bottom of the landing page (e.g. Quesna, Menoufia, Egypt)",
   "admin.dashboard.whatsappNumber": "WhatsApp Number",
   "admin.dashboard.saveSiteSettings": "Save Settings",
   "admin.dashboard.saving": "Saving...",

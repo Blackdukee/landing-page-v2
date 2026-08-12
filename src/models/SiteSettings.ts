@@ -25,6 +25,7 @@ export interface IDailyOffer {
 export interface ISiteSettings extends Document {
   websiteName: string;
   favicon: string;
+  location: string;
   whatsappNumber: string;
   freeDeliveryMinPrice: number;
   shippingCost: number;
@@ -69,6 +70,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
     websiteName: { type: String, default: "M L N TOOLS" },
     favicon: { type: String, default: "" },
+    location: { type: String, default: "قويسنا، المنوفية، مصر" },
     whatsappNumber: { type: String, default: "+201203441866" },
     freeDeliveryMinPrice: { type: Number, default: 99 },
     shippingCost: { type: Number, default: 9.99 },

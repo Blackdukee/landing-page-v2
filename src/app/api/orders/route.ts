@@ -43,7 +43,13 @@ export async function POST(req: NextRequest) {
     // Create the order record
     const order = await Order.create(body);
 
-    return NextResponse.json(order, { status: 201 });
+    return NextResponse.json(
+      {
+        ...order.toObject(),
+        lowStockAlerts: reservation.lowStockAlerts || [],
+      },
+      { status: 201 }
+    );
   } catch (error) {
     const details = logError("POST /api/orders", error);
     return NextResponse.json({ error: "Failed to create order", details }, { status: 500 });

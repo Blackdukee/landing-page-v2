@@ -97,40 +97,39 @@ export default function HomeClient() {
           </div>
 
           {loadingFeatured ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="border border-border/80 rounded-2xl overflow-hidden bg-border/40 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[1px]">
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl bg-card border border-border overflow-hidden animate-pulse flex flex-col"
+                  className="bg-card flex flex-col h-full p-4 sm:p-5 animate-pulse justify-between space-y-3 rounded-none"
                 >
-                  <div className="aspect-square bg-surface" />
-                  <div className="p-3 sm:p-5 flex flex-1 flex-col justify-between space-y-3">
-                    <div className="space-y-2">
-                      <div className="h-4 bg-muted/20 rounded w-3/4" />
-                      <div className="h-3 bg-muted/20 rounded w-full" />
-                    </div>
-                    <div className="h-4 bg-muted/20 rounded w-1/3" />
-                    <div className="h-9 bg-muted/20 rounded-xl w-full" />
+                  <div className="aspect-square bg-surface rounded-lg" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-muted/20 rounded w-3/4 mx-auto" />
+                    <div className="h-3 bg-muted/20 rounded w-full" />
                   </div>
+                  <div className="h-4 bg-muted/20 rounded w-1/3 mx-auto" />
+                  <div className="h-10 bg-muted/20 rounded-lg w-full" />
                 </div>
               ))}
             </div>
           ) : featured.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+              <div className="border border-border/80 rounded-2xl overflow-hidden bg-border/40 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[1px]">
                 {featured.map((p) => (
-                  <ProductCard
-                    key={p._id}
-                    id={p._id}
-                    name={p.name}
-                    description={p.description}
-                    price={p.price}
-                    image={p.image}
-                    category={p.category}
-                    company={p.company ?? undefined}
-                    stock={p.stock}
-                    viewMode="card"
-                  />
+                  <div key={p._id} className="bg-card flex flex-col h-full">
+                    <ProductCard
+                      id={p._id}
+                      name={p.name}
+                      description={p.description}
+                      price={p.price}
+                      image={p.image}
+                      category={p.category}
+                      company={p.company ?? undefined}
+                      stock={p.stock}
+                      viewMode="grid"
+                    />
+                  </div>
                 ))}
               </div>
               <div className="flex justify-center mt-12">

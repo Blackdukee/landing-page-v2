@@ -148,6 +148,8 @@ const ar: Record<string, string> = {
   "products.lastPage": "الصفحة الأخيرة",
   "products.reachedEnd": "لقد شاهدت جميع المنتجات",
   "products.loadingMore": "جاري تحميل المزيد من المنتجات...",
+  "products.viewGrid": "عرض شبكي",
+  "products.viewList": "عرض قائمة",
 
   // ── تفاصيل المنتج ──
   "detail.productNotFound": "المنتج غير موجود",
@@ -174,6 +176,9 @@ const ar: Record<string, string> = {
   "card.soldOut": "نفذت الكمية",
   "card.addToCart": "أضف للسلة",
   "card.onlyLeft": "متبقي {count} فقط",
+  "card.saveAmount": "وفر {amount}",
+  "card.inStockStatus": "متوفرة",
+  "card.outOfStockStatus": "غير متوفر",
 
   // ── صفحة السلة ──
   "cart.emptyTitle": "سلتك فارغة",
@@ -319,6 +324,8 @@ const ar: Record<string, string> = {
   // ── الإدارة – لوحة التحكم: إعدادات الموقع ──
   "admin.dashboard.siteSettings": "إعدادات الموقع",
   "admin.dashboard.websiteName": "اسم الموقع",
+  "admin.dashboard.location": "موقع / عنوان المتجر",
+  "admin.dashboard.locationHint": "يظهر في أسفل الصفحة الرئيسية وفوتر الموقع (مثل: قويسنا، المنوفية، مصر)",
   "admin.dashboard.whatsappNumber": "رقم واتساب",
   "admin.dashboard.saveSiteSettings": "حفظ الإعدادات",
   "admin.dashboard.saving": "جاري الحفظ...",

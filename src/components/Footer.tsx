@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Sparkles, Instagram, Twitter, Mail } from "lucide-react";
+import { Sparkles, Instagram, Twitter, Mail, MapPin } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function Footer() {
   const { t } = useTranslation();
-  const { websiteName, favicon, socialLinks } = useSiteSettings();
+  const { websiteName, favicon, socialLinks, location } = useSiteSettings();
 
   const hasAnySocial = socialLinks.instagram || socialLinks.twitter || socialLinks.email;
+  const storeLocation = location?.trim();
 
   return (
     <footer className="border-t border-border bg-surface">
@@ -30,9 +31,17 @@ export default function Footer() {
                 {websiteName}
               </span>
             </Link>
-            <p className="text-sm text-muted max-w-sm leading-relaxed">
+            <p className="text-sm text-muted max-w-sm leading-relaxed mb-3">
               {t("footer.tagline")}
             </p>
+
+            {storeLocation ? (
+              <div className="inline-flex items-center gap-1.5 text-xs text-muted font-medium bg-card px-3 py-1.5 rounded-full border border-border/80">
+                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>{storeLocation}</span>
+              </div>
+            ) : null}
+
             {hasAnySocial && (
               <div className="flex gap-4 mt-6">
                 {socialLinks.instagram && (
@@ -65,7 +74,6 @@ export default function Footer() {
                   {t("footer.allProducts")}
                 </Link>
               </li>
-    
             </ul>
           </div>
 
@@ -85,8 +93,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                {/* take the client to whatsapp chat with the store's number get the phone number from .env */}
-                  <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
+                <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors duration-200">
                   {t("footer.contact")}
                 </a>
               </li>
@@ -96,7 +103,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted">
-            {t("footer.copyright", { year: String(new Date().getFullYear()), shopName: websiteName })} · قويسنا، المنوفية، مصر
+            {t("footer.copyright", { year: String(new Date().getFullYear()), shopName: websiteName })}{storeLocation ? ` · ${storeLocation}` : ""}
           </p>
           <p className="text-xs text-muted">
             معدات وأدوات TOTAL الأصلية · شحن سريع لجميع المحافظات

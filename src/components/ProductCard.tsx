@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Plus, AlertCircle, Flame } from "lucide-react";
+import { ShoppingBag, Plus, AlertCircle } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useState } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
-interface ProductCardProps {
+export interface ProductCardProps {
   id: string;
   name: string;
   description: string;
@@ -17,6 +17,7 @@ interface ProductCardProps {
   category: string;
   company?: { _id: string; name: string; logo: string } | string;
   stock: number;
+  viewMode?: "grid" | "list";
 }
 
 export default function ProductCard({
@@ -28,13 +29,14 @@ export default function ProductCard({
   category,
   company,
   stock,
+  viewMode = "grid",
 }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const getItemQuantity = useCartStore((s) => s.getItemQuantity);
   const canAddMore = useCartStore((s) => s.canAddMore);
   const [added, setAdded] = useState(false);
   const [error, setError] = useState("");
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { dailyOffers } = useSiteSettings();
 
   // Check active daily offer
@@ -48,6 +50,9 @@ export default function ProductCard({
   const salePrice = activeOffer
     ? Number((price * (1 - discountPercentage / 100)).toFixed(2))
     : price;
+  const savingsAmount = activeOffer
+    ? Number((price - salePrice).toFixed(2))
+    : 0;
 
   // Check quantity already in cart
   const quantityInCart = getItemQuantity(id);
@@ -60,7 +65,11 @@ export default function ProductCard({
 
     if (isOutOfStock) return;
 
-    const success = addItem({ productId: id, name, price: salePrice, image }, stock, 1);
+    const success = addItem(
+      { productId: id, name, price: salePrice, image },
+      stock,
+      1
+    );
     if (!success) {
       setError(t("cart.insufficientStock"));
       setTimeout(() => setError(""), 3000);
@@ -71,128 +80,186 @@ export default function ProductCard({
     }
   };
 
-  const buttonLabel = isOutOfStock
-    ? t("card.soldOut")
-    : quantityInCart > 0
-    ? `${t("card.addToCart")} (${quantityInCart})`
-    : t("card.addToCart");
+  // Determine brand / company name
+  const companyName =
+    (typeof company === "object" && company !== null
+      ? company.name
+      : typeof company === "string"
+      ? company
+      : "") || category;
+
+  const formattedPrice = price.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const formattedSalePrice = salePrice.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const formattedSavings = savingsAmount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const isList = viewMode === "list";
 
   return (
-    <Link href={`/products/${id}`} className="block group">
-      <article className="relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
-        {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-surface">
+    <Link href={`/products/${id}`} className="block group h-full">
+      <article
+        className={`relative flex ${
+          isList ? "flex-col sm:flex-row items-stretch" : "flex-col"
+        } rounded-xl bg-card border border-border overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg h-full`}
+      >
+        {/* Product Image Area */}
+        <div
+          className={`relative aspect-square bg-white dark:bg-card overflow-hidden p-4 flex items-center justify-center shrink-0 ${
+            isList ? "w-full sm:w-48" : "w-full"
+          }`}
+        >
           <Image
             src={image}
             alt={name}
             fill
-            className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* Error notification */}
-          {error && (
-            <div className="absolute bottom-3 start-3 end-3 z-10 flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-[11px] font-medium text-white shadow-md border border-red-700">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0 text-white" />
-              {error}
-            </div>
+          {/* Savings Badge */}
+          {activeOffer && savingsAmount > 0 && (
+            <span className="absolute top-2 start-2 z-10 inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-[11px] font-extrabold text-white shadow-sm">
+              {locale === "ar"
+                ? `وفر EGP ${formattedSavings}`
+                : `Save EGP ${formattedSavings}`}
+            </span>
           )}
 
-          {/* Category & Company badges */}
-          <div className="absolute top-3 start-3 z-10 flex items-center gap-1.5 flex-wrap max-w-[calc(100%-4rem)]">
-            <span className="rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white border border-white/20 shadow-sm">
-              {category}
-            </span>
-            {(() => {
-              const compObj = typeof company === "object" && company !== null ? company : null;
-              if (!compObj || !compObj.name) return null;
-              return (
-                <span className="inline-flex items-center gap-1 rounded-full bg-black/65 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white border border-white/20 shadow-sm">
-                  {compObj.logo && (
-                    <Image
-                      src={compObj.logo}
-                      alt={compObj.name}
-                      width={14}
-                      height={14}
-                      className="h-3.5 w-3.5 rounded-full object-cover shrink-0"
-                      unoptimized
-                    />
-                  )}
-                  <span>{compObj.name}</span>
-                </span>
-              );
-            })()}
-          </div>
-
-          {/* Daily Offer Discount Badge */}
-          {activeOffer && (
-            <span className="absolute top-3 end-3 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-600 via-amber-600 to-orange-500 text-white px-2.5 py-1 text-[10px] font-black shadow-md shadow-red-500/20 backdrop-blur-sm animate-pulse motion-reduce:animate-none">
-              <Flame className="h-3 w-3 fill-white text-white shrink-0" />
-              <span>-{discountPercentage}% {t("home.off")}</span>
-            </span>
+          {/* Cart error alert */}
+          {error && (
+            <div className="absolute bottom-2 start-2 end-2 z-20 flex items-center gap-1.5 rounded-md bg-red-600 px-2.5 py-1.5 text-[11px] font-medium text-white shadow-md border border-red-700">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0 text-white" />
+              <span>{error}</span>
+            </div>
           )}
         </div>
 
-        {/* Info */}
-        <div className="flex flex-1 flex-col justify-between p-3 sm:p-5">
-          <div>
-            <h3 className="font-semibold text-sm leading-snug mb-1 line-clamp-1 text-foreground">
+        {/* Card Content Area */}
+        <div
+          className={`flex flex-1 flex-col justify-between p-4 ${
+            isList ? "text-start items-start" : "text-center items-center"
+          }`}
+        >
+          {/* Top section: Brand & Title */}
+          <div className="w-full">
+            {/* Brand / Company Name */}
+            <p
+              className={`text-[11px] sm:text-xs font-bold text-muted-foreground/70 uppercase tracking-wider mb-1 ${
+                isList ? "text-start" : "text-center"
+              }`}
+            >
+              {companyName}
+            </p>
+
+            {/* Product Title */}
+            <h3
+              className={`text-xs sm:text-sm font-bold text-foreground leading-snug line-clamp-3 ${
+                isList ? "text-start" : "text-center min-h-[2.5rem] flex items-center justify-center"
+              }`}
+            >
               {name}
             </h3>
-            <p className="text-xs text-muted leading-relaxed line-clamp-2 mb-3">
-              {description}
-            </p>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className={`text-base font-bold tracking-tight ${activeOffer ? "text-amber-500 dark:text-amber-400" : "gradient-text"}`}>
-                EGP {salePrice.toFixed(2)}
-              </span>
-              {activeOffer && (
-                <span className="text-xs text-muted/70 line-through">
-                  EGP {price.toFixed(2)}
-                </span>
-              )}
-            </div>
-            {!isOutOfStock && stock > 0 && stock - quantityInCart <= 5 && (
-              <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
-                {t("card.onlyLeft", { count: stock - quantityInCart })}
-              </span>
+
+            {isList && description && (
+              <p className="text-xs text-muted-foreground line-clamp-2 mt-2">
+                {description}
+              </p>
             )}
           </div>
 
-          {/* Add to Cart button - visible and accessible on all viewports */}
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={isOutOfStock}
-            aria-label={buttonLabel}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3.5 py-2.5 mt-3 text-xs font-semibold text-white shadow-sm hover:bg-primary/90 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {added ? (
-              <>
-                <ShoppingBag className="h-4 w-4 shrink-0" />
-                <span>
-                  {t("card.added")} {quantityInCart > 0 ? `(${quantityInCart})` : ""}
+          {/* Bottom section: Stock, Pricing, Action Button */}
+          <div className="w-full mt-3 flex flex-col gap-2">
+            {/* Stock Availability Indicator */}
+            <div
+              className={`flex items-center gap-1.5 text-xs font-semibold ${
+                isList ? "justify-start" : "justify-center"
+              }`}
+            >
+              {!isOutOfStock ? (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    {locale === "ar" ? "متوفرة" : t("card.inStockStatus")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+                  <span className="text-red-600 dark:text-red-400">
+                    {locale === "ar" ? "غير متوفر" : t("card.outOfStockStatus")}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Pricing Breakdown */}
+            <div
+              className={`flex items-baseline gap-2 flex-wrap ${
+                isList ? "justify-start" : "justify-center"
+              }`}
+            >
+              {activeOffer ? (
+                <>
+                  <span className="text-red-600 font-extrabold text-sm sm:text-base">
+                    EGP {formattedSalePrice}
+                  </span>
+                  <span className="text-xs text-muted-foreground/70 line-through">
+                    EGP {formattedPrice}
+                  </span>
+                </>
+              ) : (
+                <span className="text-primary font-extrabold text-sm sm:text-base">
+                  EGP {formattedPrice}
                 </span>
-              </>
-            ) : isOutOfStock ? (
-              <span>{t("card.soldOut")}</span>
-            ) : (
-              <>
-                <Plus className="h-4 w-4 shrink-0" />
-                <span>
-                  {t("card.addToCart")}{" "}
-                  {quantityInCart > 0 ? `(${quantityInCart})` : ""}
-                </span>
-              </>
-            )}
-          </button>
+              )}
+            </div>
+
+            {/* Action Button */}
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={isOutOfStock}
+              aria-label={
+                isOutOfStock
+                  ? t("card.soldOut")
+                  : quantityInCart > 0
+                  ? `${t("card.addToCart")} (${quantityInCart})`
+                  : t("card.addToCart")
+              }
+              className="bg-[#0096c7] hover:bg-[#0077b6] text-white font-bold py-2.5 px-3 rounded-lg w-full text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {added ? (
+                <>
+                  <ShoppingBag className="h-4 w-4 shrink-0" />
+                  <span>
+                    {t("card.added")} {quantityInCart > 0 ? `(${quantityInCart})` : ""}
+                  </span>
+                </>
+              ) : isOutOfStock ? (
+                <span>{t("card.soldOut")}</span>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 shrink-0" />
+                  <span>
+                    {t("card.addToCart")}{" "}
+                    {quantityInCart > 0 ? `(${quantityInCart})` : ""}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </article>
     </Link>
   );
 }
+
 

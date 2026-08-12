@@ -17,7 +17,7 @@ export interface ProductCardProps {
   category: string;
   company?: { _id: string; name: string; logo: string } | string;
   stock: number;
-  viewMode?: "grid" | "list";
+  viewMode?: "grid" | "list" | "card";
 }
 
 export default function ProductCard({
@@ -102,13 +102,18 @@ export default function ProductCard({
   });
 
   const isList = viewMode === "list";
+  const isCard = viewMode === "card";
 
   return (
     <Link href={`/products/${id}`} className="block group h-full">
       <article
         className={`relative flex ${
-          isList ? "flex-col sm:flex-row items-stretch" : "flex-col"
-        } rounded-xl bg-card border border-border overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg h-full`}
+          isList
+            ? "flex-col sm:flex-row items-stretch rounded-xl border border-border"
+            : isCard
+            ? "flex-col rounded-2xl border border-border"
+            : "flex-col rounded-none border-0 shadow-none"
+        } bg-card overflow-hidden transition-all duration-300 hover:bg-surface/60 h-full`}
       >
         {/* Product Image Area */}
         <div

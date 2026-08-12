@@ -129,6 +129,7 @@ export default function CategoryProductSection({
                   category={p.category}
                   company={p.company ?? undefined}
                   stock={p.stock}
+                  viewMode="card"
                 />
               ))}
             </div>

@@ -672,15 +672,15 @@ export default function ProductsClient() {
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className="bg-card flex flex-col h-full p-4 sm:p-5 animate-pulse justify-between space-y-3"
+                  className="bg-card flex flex-col h-full p-4 sm:p-5 animate-pulse justify-between space-y-3 rounded-none"
                 >
-                  <div className="aspect-square bg-surface rounded-xl" />
+                  <div className="aspect-square bg-surface rounded-lg" />
                   <div className="space-y-2 flex-1">
                     <div className="h-4 bg-muted/20 rounded w-3/4 mx-auto" />
                     <div className="h-3 bg-muted/20 rounded w-full" />
                   </div>
                   <div className="h-4 bg-muted/20 rounded w-1/3 mx-auto" />
-                  <div className="h-10 bg-muted/20 rounded-2xl w-full" />
+                  <div className="h-10 bg-muted/20 rounded-lg w-full" />
                 </div>
               ))}
             </div>
@@ -768,15 +768,15 @@ export default function ProductsClient() {
                   {[...Array(4)].map((_, i) => (
                     <div
                       key={i}
-                      className="bg-card flex flex-col h-full p-4 sm:p-5 animate-pulse justify-between space-y-3"
+                      className="bg-card flex flex-col h-full p-4 sm:p-5 animate-pulse justify-between space-y-3 rounded-none"
                     >
-                      <div className="aspect-square bg-surface rounded-xl" />
+                      <div className="aspect-square bg-surface rounded-lg" />
                       <div className="space-y-2 flex-1">
                         <div className="h-4 bg-muted/20 rounded w-3/4 mx-auto" />
                         <div className="h-3 bg-muted/20 rounded w-full" />
                       </div>
                       <div className="h-4 bg-muted/20 rounded w-1/3 mx-auto" />
-                      <div className="h-10 bg-muted/20 rounded-2xl w-full" />
+                      <div className="h-10 bg-muted/20 rounded-lg w-full" />
                     </div>
                   ))}
                 </div>

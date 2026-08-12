@@ -1,6 +1,6 @@
 import Shift from "../../models/Shift";
 import Order from "../../models/Order";
-import { InventoryEngine, StockItem } from "../inventory/InventoryEngine";
+import { InventoryEngine, StockItem, LowStockAlert } from "../inventory/InventoryEngine";
 import { calculatePOSDiscounts, DiscountItemInput, OrderDiscountInput } from "./DiscountEngine";
 
 export interface POSCheckoutItem {
@@ -36,6 +36,7 @@ export interface POSSaleResult {
   receiptText?: string;
   whatsappUrl?: string;
   error?: string;
+  lowStockAlerts?: LowStockAlert[];
 }
 
 /**
@@ -194,5 +195,6 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
     finalTotal,
     receiptText,
     whatsappUrl,
+    lowStockAlerts: stockDeductions.lowStockAlerts || [],
   };
 }

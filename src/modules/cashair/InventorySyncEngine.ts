@@ -1,9 +1,18 @@
 import mongoose from "mongoose";
 import Product from "../../models/Product";
 
+export const LOW_STOCK_THRESHOLD = 5;
+
 export interface StockItem {
   productId: string;
   quantity: number;
+}
+
+export interface LowStockAlert {
+  productId: string;
+  name: string;
+  remainingStock: number;
+  isOutOfStock: boolean;
 }
 
 export interface DeductStockResult {
@@ -12,14 +21,20 @@ export interface DeductStockResult {
   failedProductName?: string;
   availableStock?: number;
   error?: string;
+  lowStockAlerts?: LowStockAlert[];
 }
 
 /**
  * Deducts stock atomically for an array of items.
- * If any item deduction fails (matchedCount === 0), previously updated items are rolled back.
+ * If any item deduction fails (stock < quantity or product missing), previously updated items are rolled back.
+ * Returns low stock alerts for any items whose remaining stock is <= LOW_STOCK_THRESHOLD.
  */
-export async function deductStockAtomic(items: StockItem[]): Promise<DeductStockResult> {
+export async function deductStockAtomic(
+  items: StockItem[],
+  lowStockThreshold: number = LOW_STOCK_THRESHOLD
+): Promise<DeductStockResult> {
   const updatedItems: StockItem[] = [];
+  const lowStockAlerts: LowStockAlert[] = [];
 
   for (const item of items) {
     if (!item.productId || !item.quantity || item.quantity <= 0) continue;
@@ -59,9 +74,27 @@ export async function deductStockAtomic(items: StockItem[]): Promise<DeductStock
     }
 
     updatedItems.push(item);
+
+    // Fetch remaining stock to check for low stock warning
+    try {
+      const product = mongoose.Types.ObjectId.isValid(item.productId)
+        ? await Product.findById(item.productId).lean()
+        : null;
+
+      if (product && typeof product.stock === "number" && product.stock <= lowStockThreshold) {
+        lowStockAlerts.push({
+          productId: product._id.toString(),
+          name: product.name || "منتج",
+          remainingStock: product.stock,
+          isOutOfStock: product.stock <= 0,
+        });
+      }
+    } catch {
+      // Non-fatal if product lookup fails
+    }
   }
 
-  return { success: true };
+  return { success: true, lowStockAlerts };
 }
 
 /**

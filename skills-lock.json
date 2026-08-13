@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "ai-image-generation": {
+      "source": "prime-skills/runcomfy-agent-skills",
+      "sourceType": "github",
+      "skillPath": "ai-image-generation/SKILL.md",
+      "computedHash": "06f41b40b32a080bc38536156b80a7d4a3175e1b1eeece55fc125e54bee467f3"
+    },
     "research": {
       "source": "mattpocock/skills",
       "sourceType": "github",

@@ -56,12 +56,12 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
+        url: "/favicon.png",
         type: "image/png",
       },
     ],
-    shortcut: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
-    apple: "https://ik.imagekit.io/quesnashop/novashop/products/1000093409_u6nycgY0y.png",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
   },
   verification: {
     google: "korNU0jPHceVjjKsjIsJiIdtm7YGTU-V2-5_IPhz2Qs",

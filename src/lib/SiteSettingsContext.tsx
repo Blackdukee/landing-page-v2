@@ -62,7 +62,7 @@ const defaultSocialLinks: SocialLinks = { instagram: "", twitter: "", email: "" 
 
 const defaultSettings: SiteSettings = {
   websiteName: "M L N TOOLS",
-  favicon: "",
+  favicon: "/favicon.png",
   location: "قويسنا، المنوفية، مصر",
   whatsappNumber: "+201203441866",
   freeDeliveryMinPrice: 99,
@@ -91,7 +91,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
         if (data && data.websiteName) {
           setSettings({
             websiteName: data.websiteName,
-            favicon: data.favicon || "",
+            favicon: data.favicon || "/favicon.png",
             location: typeof data.location === "string" ? data.location : defaultSettings.location,
             whatsappNumber: data.whatsappNumber || defaultSettings.whatsappNumber,
             freeDeliveryMinPrice: typeof data.freeDeliveryMinPrice === "number" ? data.freeDeliveryMinPrice : defaultSettings.freeDeliveryMinPrice,

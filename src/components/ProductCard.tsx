@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Plus, AlertCircle } from "lucide-react";
+import { ShoppingBag, Plus, AlertCircle, Package } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useState } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -121,14 +121,20 @@ export default function ProductCard({
             isList ? "w-full sm:w-48" : "w-full"
           }`}
         >
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            unoptimized
-          />
+          {image && image.trim() !== "" ? (
+            <Image
+              src={image}
+              alt={name || "Product"}
+              fill
+              className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-muted/30">
+              <Package className="h-12 w-12" />
+            </div>
+          )}
 
           {/* Savings Badge */}
           {activeOffer && savingsAmount > 0 && (

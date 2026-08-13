@@ -16,6 +16,7 @@ import {
   Copy,
   Check,
   Loader2,
+  ShoppingBag,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
@@ -340,14 +341,19 @@ Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
                 <div className="space-y-3 mb-5">
                   {items.map((item) => (
                     <div key={item.productId} className="flex gap-3">
-                      <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-surface">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                          sizes="48px"
-                        />
+                      <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-surface flex items-center justify-center">
+                        {item.image && item.image.trim() !== "" ? (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                            unoptimized
+                          />
+                        ) : (
+                          <ShoppingBag className="h-5 w-5 text-muted/40" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate text-foreground">

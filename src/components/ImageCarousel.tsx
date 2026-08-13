@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, Package } from "lucide-react";
 
 interface ImageCarouselProps {
   images: string[];
@@ -12,7 +12,11 @@ interface ImageCarouselProps {
   children?: React.ReactNode;
 }
 
-export default function ImageCarousel({ images, alt, children }: ImageCarouselProps) {
+export default function ImageCarousel({ images: rawImages, alt, children }: ImageCarouselProps) {
+  const images = Array.isArray(rawImages)
+    ? rawImages.filter((img) => typeof img === "string" && img.trim() !== "")
+    : [];
+
   const [current, setCurrent] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -182,7 +186,14 @@ export default function ImageCarousel({ images, alt, children }: ImageCarouselPr
     return () => { document.body.style.overflow = ""; };
   }, [lightboxOpen]);
 
-  if (images.length === 0) return null;
+  if (images.length === 0) {
+    return (
+      <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-border flex items-center justify-center text-muted/30">
+        <Package className="h-16 w-16" />
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3">

@@ -114,14 +114,19 @@ export default function CartPage() {
                 key={item.productId}
                 className="flex gap-4 sm:gap-6 rounded-2xl border border-border bg-card p-4 sm:p-5 transition-all hover:border-primary/20"
               >
-                <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-xl overflow-hidden bg-surface">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                    sizes="112px"
-                  />
+                <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-xl overflow-hidden bg-surface flex items-center justify-center">
+                  {item.image && item.image.trim() !== "" ? (
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                      sizes="112px"
+                      unoptimized
+                    />
+                  ) : (
+                    <ShoppingBag className="h-8 w-8 text-muted/40" />
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col justify-between min-w-0">
                   <div>

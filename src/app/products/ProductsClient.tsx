@@ -381,65 +381,65 @@ export default function ProductsClient() {
           <p className="text-xs sm:text-base text-muted max-w-2xl leading-relaxed">
             {activeCompanyObj?.description || t("products.subtitle")}
           </p>
-
-          {/* Categories Pill Bar */}
-          {categories.length > 0 && (
-            <div className="mt-4 sm:mt-5 overflow-x-auto pb-1.5 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
-              <div className="flex items-center gap-2 sm:flex-wrap">
-                <button
-                  onClick={() => handleCategoryChange("All")}
-                  className={`inline-flex items-center gap-1.5 shrink-0 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                    activeCategory === "All"
-                      ? "bg-primary text-white shadow-sm border border-primary"
-                      : "bg-surface border border-border text-muted hover:text-foreground hover:border-primary/40 hover:bg-card"
-                  }`}
-                >
-                  <Tag className="h-3.5 w-3.5 shrink-0" />
-                  <span>{t("products.allCategories")}</span>
-                </button>
-
-                {categories.map((cat) => {
-                  const isActive = activeCategory === cat.name;
-                  return (
-                    <button
-                      key={cat._id}
-                      onClick={() => handleCategoryChange(cat.name)}
-                      className={`inline-flex items-center gap-2 shrink-0 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                        isActive
-                          ? "bg-primary text-white shadow-sm border border-primary"
-                          : "bg-surface border border-border text-muted hover:text-foreground hover:border-primary/40 hover:bg-card"
-                      }`}
-                    >
-                      {cat.icon && (
-                        <Image
-                          src={cat.icon}
-                          alt={cat.name}
-                          width={18}
-                          height={18}
-                          className={`h-4 w-4 object-contain rounded-full ${
-                            isActive ? "brightness-0 invert" : ""
-                          }`}
-                          unoptimized
-                        />
-                      )}
-                      <span>{cat.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* ───────────── STICKY SEARCH, SORT & FILTERS TOOLBAR ───────────── */}
+        {/* ───────────── STICKY CATEGORIES, SEARCH, SORT & FILTERS TOOLBAR ───────────── */}
         <div
           className={`sticky top-[64px] sm:top-[70px] z-30 transition-all duration-300 mb-6 ${
             isScrolled
-              ? "bg-background/95 backdrop-blur-xl border-b border-border py-3 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+              ? "bg-background/95 backdrop-blur-xl border-b border-border py-3 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 shadow-xs"
               : "py-2"
           }`}
         >
           <div className="flex flex-col gap-2.5 max-w-7xl mx-auto">
+            {/* Category Pills Bar (Sticky with scroll) */}
+            {categories.length > 0 && (
+              <div className="overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleCategoryChange("All")}
+                    className={`inline-flex items-center gap-1.5 shrink-0 rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                      activeCategory === "All"
+                        ? "bg-primary text-white shadow-2xs border border-primary"
+                        : "bg-surface border border-border text-muted hover:text-foreground hover:border-primary/40 hover:bg-card"
+                    }`}
+                  >
+                    <Tag className="h-3.5 w-3.5 shrink-0" />
+                    <span>{t("products.allCategories")}</span>
+                  </button>
+
+                  {categories.map((cat) => {
+                    const isActive = activeCategory === cat.name;
+                    return (
+                      <button
+                        key={cat._id}
+                        onClick={() => handleCategoryChange(cat.name)}
+                        className={`inline-flex items-center gap-2 shrink-0 rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                          isActive
+                            ? "bg-primary text-white shadow-2xs border border-primary"
+                            : "bg-surface border border-border text-muted hover:text-foreground hover:border-primary/40 hover:bg-card"
+                        }`}
+                      >
+                        {cat.icon && (
+                          <Image
+                            src={cat.icon}
+                            alt={cat.name}
+                            width={16}
+                            height={16}
+                            className={`h-3.5 w-3.5 object-contain rounded-full ${
+                              isActive ? "brightness-0 invert" : ""
+                            }`}
+                            unoptimized
+                          />
+                        )}
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Row 1: Full-width Search Bar */}
             <div className="relative w-full">
               <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />

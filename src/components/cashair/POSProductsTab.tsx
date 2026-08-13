@@ -69,17 +69,23 @@ export default function POSProductsTab() {
       if (data.success) {
         setProducts(data.products || []);
         setTotalCount(data.total || 0);
-
-        // Extract unique categories
-        const cats = Array.from(
-          new Set((data.products || []).map((p: any) => p.category).filter(Boolean))
-        ) as string[];
-        setCategoriesList(cats);
       }
     } catch {
       // Ignore error
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categories");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCategoriesList(data.map((c: any) => c.name || c).filter(Boolean));
+      }
+    } catch {
+      // Ignore error
     }
   };
 
@@ -96,8 +102,12 @@ export default function POSProductsTab() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchCategories();
     fetchCompanies();
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
   }, [categoryFilter, companyFilter]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {

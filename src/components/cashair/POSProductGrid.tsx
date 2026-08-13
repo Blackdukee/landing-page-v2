@@ -47,6 +47,22 @@ export default function POSProductGrid({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedCompany, setSelectedCompany] = useState<string>("all");
 
+  const [dbCategories, setDbCategories] = useState<{ _id: string; name: string }[]>([]);
+  const [dbCompanies, setDbCompanies] = useState<{ _id: string; name: string }[]>([]);
+
+  const fetchCategoriesAndCompanies = async () => {
+    try {
+      const [catRes, compRes] = await Promise.all([
+        fetch("/api/categories").then((r) => r.json()),
+        fetch("/api/companies").then((r) => r.json()),
+      ]);
+      if (Array.isArray(catRes)) setDbCategories(catRes);
+      if (Array.isArray(compRes)) setDbCompanies(compRes);
+    } catch {
+      // Ignore
+    }
+  };
+
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
@@ -67,6 +83,7 @@ export default function POSProductGrid({
 
   useEffect(() => {
     fetchProducts();
+    fetchCategoriesAndCompanies();
   }, []);
 
   // Handle hardware Barcode Scan submission
@@ -96,27 +113,33 @@ export default function POSProductGrid({
     setBarcodeInput("");
   };
 
-  // Unique categories
+  // Unique categories (from DB categories + loaded products)
   const categories = useMemo(() => {
     const set = new Set<string>();
+    dbCategories.forEach((c) => {
+      if (c && c.name) set.add(c.name.trim());
+    });
     products.forEach((p) => {
-      if (p.category) set.add(p.category);
+      if (p.category) set.add(p.category.trim());
     });
     return Array.from(set).sort();
-  }, [products]);
+  }, [dbCategories, products]);
 
-  // Unique companies / brands
+  // Unique companies / brands (from DB companies + loaded products)
   const companies = useMemo(() => {
     const map = new Map<string, string>();
+    dbCompanies.forEach((c) => {
+      if (c && c._id && c.name) map.set(c._id, c.name.trim());
+    });
     products.forEach((p) => {
       if (p.company && typeof p.company === "object" && p.company._id && p.company.name) {
-        map.set(p.company._id, p.company.name);
-      } else if (typeof p.company === "string") {
-        map.set(p.company, p.company);
+        map.set(p.company._id, p.company.name.trim());
+      } else if (typeof p.company === "string" && p.company) {
+        map.set(p.company, p.company.trim());
       }
     });
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  }, [products]);
+  }, [dbCompanies, products]);
 
   // Filtered products
   const filteredProducts = useMemo(() => {

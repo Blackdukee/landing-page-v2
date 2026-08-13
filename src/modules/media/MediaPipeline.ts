@@ -163,6 +163,67 @@ export const MediaPipeline = {
   },
 
   /**
+   * Process and save website favicon/icon directly to the public directory.
+   */
+  savePublicFavicon: async (file: File): Promise<MediaUploadResult> => {
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error("File too large. Maximum size is 5MB");
+    }
+
+    const bytes = await file.arrayBuffer();
+    const rawBuffer = Buffer.from(bytes);
+    const fs = await import("fs/promises");
+    const path = await import("path");
+
+    const isSvg = file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg");
+    const isIco =
+      file.type === "image/x-icon" ||
+      file.type === "image/vnd.microsoft.icon" ||
+      file.name.toLowerCase().endsWith(".ico");
+
+    const publicDir = path.join(process.cwd(), "public");
+
+    let finalBuffer: Buffer = rawBuffer;
+    const sharp = await getSharp();
+
+    if (!isSvg && !isIco && sharp) {
+      try {
+        finalBuffer = await sharp(rawBuffer, { failOn: "none" })
+          .rotate()
+          .toColorspace("srgb")
+          .resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .png({ compressionLevel: 9 })
+          .toBuffer();
+      } catch (err) {
+        console.warn("[MediaPipeline] Favicon sharp processing fallback:", err);
+      }
+    }
+
+    const fileName = isSvg ? "favicon.svg" : isIco ? "favicon.ico" : "favicon.png";
+    const filePath = path.join(publicDir, fileName);
+
+    await fs.writeFile(filePath, finalBuffer);
+
+    // Also update icon.png & apple-touch-icon.png if PNG for complete device coverage
+    if (!isSvg && !isIco) {
+      try {
+        await fs.writeFile(path.join(publicDir, "icon.png"), finalBuffer);
+        await fs.writeFile(path.join(publicDir, "apple-touch-icon.png"), finalBuffer);
+      } catch {
+        // Ignore secondary file write errors
+      }
+    }
+
+    const timestamp = Date.now();
+    const publicUrl = `/${fileName}?v=${timestamp}`;
+
+    return {
+      url: publicUrl,
+      fileId: "public_favicon",
+    };
+  },
+
+  /**
    * Delete files from ImageKit storage by IDs.
    */
   deleteFiles: async (fileIds: string[]): Promise<MediaDeleteResult> => {

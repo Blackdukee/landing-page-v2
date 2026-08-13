@@ -49,7 +49,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-400 text-white transition-all group-hover:shadow-lg group-hover:shadow-primary/30 group-hover:scale-105 overflow-hidden">
             {favicon ? (
-              <Image src={favicon} alt={websiteName} width={36} height={36} className="h-full w-full object-cover" />
+              <Image src={favicon} alt={websiteName} width={36} height={36} className="h-full w-full object-cover" unoptimized />
             ) : (
               <Sparkles className="h-4.5 w-4.5" />
             )}

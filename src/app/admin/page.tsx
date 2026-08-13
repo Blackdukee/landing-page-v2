@@ -1408,7 +1408,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-4">
               {faviconUrl && (
                 <div className="shrink-0 h-10 w-10 rounded-lg border border-border bg-surface flex items-center justify-center overflow-hidden">
-                  <Image src={faviconUrl} alt="Favicon" width={32} height={32} className="object-contain" />
+                  <Image src={faviconUrl} alt="Favicon" width={32} height={32} className="object-contain" unoptimized />
                 </div>
               )}
               <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-dashed border-border hover:border-primary/40 bg-surface px-4 py-2.5 text-sm text-muted hover:text-foreground transition-all">
@@ -1432,6 +1432,7 @@ export default function AdminDashboard() {
                     try {
                       const formData = new FormData();
                       formData.append("file", file);
+                      formData.append("type", "favicon");
                       const res = await fetch("/api/upload", { method: "POST", body: formData });
                       const data = await res.json();
                       if (data.url) setFaviconUrl(data.url);

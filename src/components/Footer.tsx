@@ -22,7 +22,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-2.5 mb-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-400 text-white overflow-hidden">
                 {favicon ? (
-                  <Image src={favicon} alt={websiteName} width={32} height={32} className="h-full w-full object-cover" />
+                  <Image src={favicon} alt={websiteName} width={32} height={32} className="h-full w-full object-cover" unoptimized />
                 ) : (
                   <Sparkles className="h-4 w-4" />
                 )}

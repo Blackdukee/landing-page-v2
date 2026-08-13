@@ -13,9 +13,15 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const type = formData.get("type") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    if (type === "favicon" || type === "icon") {
+      const result = await MediaPipeline.savePublicFavicon(file);
+      return NextResponse.json(result);
     }
 
     const result = await MediaPipeline.processAndUpload(file);

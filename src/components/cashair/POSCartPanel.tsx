@@ -20,6 +20,7 @@ import {
   Edit3,
 } from "lucide-react";
 import { calculatePOSDiscounts, OrderDiscountInput } from "@/modules/cashair/DiscountEngine";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export interface CartItemWithOverride {
   productId: string;
@@ -63,6 +64,8 @@ export default function POSCartPanel({
   cashierName = "الكاشير",
   onSaleCompleted,
 }: POSCartPanelProps) {
+  const { websiteName, favicon } = useSiteSettings();
+
   // Payment method selection
   const [paymentMethod, setPaymentMethod] = useState<
     "cash" | "instapay" | "vodafone_cash" | "card"
@@ -731,8 +734,18 @@ export default function POSCartPanel({
               className="bg-white text-slate-950 p-4 rounded-xl text-xs font-mono space-y-3 shadow-inner border border-slate-200"
             >
               <div className="text-center border-b border-dashed border-slate-400 pb-2">
-                <h2 className="text-base font-black text-slate-900">كاش إير POS - M L N TOOLS</h2>
-                <p className="text-[11px] text-slate-600">فاتورة بيع مباشرة</p>
+                {favicon ? (
+                  <div className="flex justify-center mb-1.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={favicon}
+                      alt={websiteName || "Store Icon"}
+                      className="h-10 w-10 object-contain mx-auto"
+                    />
+                  </div>
+                ) : null}
+                <h2 className="text-base font-black text-slate-900">{websiteName || "M L N TOOLS"}</h2>
+                <p className="text-[11px] text-slate-600">فاتورة بيع مباشرة - POS</p>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة: #{receiptData.orderId}</p>
                 <p className="text-[10px] text-slate-500">التاريخ: {receiptData.date}</p>
                 <p className="text-[10px] text-slate-500">الكاشير: {receiptData.cashierName}</p>

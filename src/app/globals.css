@@ -224,6 +224,17 @@ body {
     box-shadow: none !important;
   }
 
+  #printable-pos-receipt img,
+  #printable-return-voucher img {
+    display: block !important;
+    margin: 0 auto 6px auto !important;
+    max-height: 44px !important;
+    max-width: 44px !important;
+    object-fit: contain !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   #printable-pos-receipt table,
   #printable-return-voucher table {
     width: 100% !important;

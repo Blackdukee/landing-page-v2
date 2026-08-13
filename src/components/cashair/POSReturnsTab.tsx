@@ -16,8 +16,10 @@ import {
   Smartphone,
   Trash2,
 } from "lucide-react";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function POSReturnsTab() {
+  const { websiteName, favicon } = useSiteSettings();
   const [search, setSearch] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [restockFilter, setRestockFilter] = useState("all");
@@ -303,7 +305,17 @@ export default function POSReturnsTab() {
               className="bg-white text-slate-950 p-4 rounded-xl text-xs font-mono space-y-3 border border-slate-200 shadow-inner"
             >
               <div className="text-center border-b border-dashed border-slate-400 pb-2">
-                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - M L N TOOLS POS</h3>
+                {favicon ? (
+                  <div className="flex justify-center mb-1.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={favicon}
+                      alt={websiteName || "Store Icon"}
+                      className="h-10 w-10 object-contain mx-auto"
+                    />
+                  </div>
+                ) : null}
+                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - {websiteName || "M L N TOOLS"}</h3>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة الأصلية: #{selectedReturn.orderId.slice(-6).toUpperCase()}</p>
                 <p className="text-[10px] text-slate-500">
                   التاريخ: {new Date(selectedReturn.createdAt).toLocaleString("ar-EG")}

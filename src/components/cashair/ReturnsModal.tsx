@@ -13,6 +13,7 @@ import {
   Minus,
   RefreshCw,
 } from "lucide-react";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 interface ReturnsModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export default function ReturnsModal({
   cashierName = "Cashier",
   onReturnCompleted,
 }: ReturnsModalProps) {
+  const { websiteName, favicon } = useSiteSettings();
   // Search query
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -213,7 +215,17 @@ export default function ReturnsModal({
               className="bg-white text-slate-950 p-4 rounded-xl text-xs font-mono space-y-2 border border-slate-200"
             >
               <div className="text-center border-b border-dashed border-slate-400 pb-2">
-                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - M L N TOOLS POS</h3>
+                {favicon ? (
+                  <div className="flex justify-center mb-1.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={favicon}
+                      alt={websiteName || "Store Icon"}
+                      className="h-10 w-10 object-contain mx-auto"
+                    />
+                  </div>
+                ) : null}
+                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - {websiteName || "M L N TOOLS"}</h3>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة الأصلية: #{returnVoucher.orderId}</p>
                 <p className="text-[10px] text-slate-500">التاريخ: {returnVoucher.date}</p>
               </div>

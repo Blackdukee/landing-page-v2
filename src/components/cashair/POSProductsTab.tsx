@@ -14,8 +14,10 @@ import {
   Sparkles,
   Pencil,
   Trash2,
+  Printer,
 } from "lucide-react";
 import AddProductModal from "./AddProductModal";
+import { BarcodeLabelModal } from "./BarcodeLabelModal";
 
 // FontAwesome Barcode Icon SVG
 function FontAwesomeBarcodeIcon({ className = "w-3 h-3" }: { className?: string }) {
@@ -43,6 +45,10 @@ export default function POSProductsTab() {
 
   // Add/Edit Product Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Barcode Label Print Modal State
+  const [productToPrintBarcode, setProductToPrintBarcode] = useState<any | null>(null);
+  const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
 
   const handleDeleteProduct = async (id: string, name: string) => {
     if (!confirm(`هل أنت متأكد من رغبتك في حذف المنتج "${name}" نهائياً من الكتالوج وقاعدة البيانات؟`)) return;
@@ -325,6 +331,16 @@ export default function POSProductsTab() {
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => {
+                            setProductToPrintBarcode(prod);
+                            setIsBarcodeModalOpen(true);
+                          }}
+                          className="p-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg border border-slate-700 transition-colors"
+                          title="طباعة ملصق الباركود (Price Tag)"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
                             setProductToEdit(prod);
                             setIsAddModalOpen(true);
                           }}
@@ -360,6 +376,16 @@ export default function POSProductsTab() {
         }}
         onProductAdded={() => {
           fetchProducts();
+        }}
+      />
+
+      {/* Barcode Label Print Modal */}
+      <BarcodeLabelModal
+        isOpen={isBarcodeModalOpen}
+        product={productToPrintBarcode}
+        onClose={() => {
+          setIsBarcodeModalOpen(false);
+          setProductToPrintBarcode(null);
         }}
       />
     </div>

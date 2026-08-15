@@ -17,6 +17,9 @@ import {
   QrCode,
   Smartphone,
   Layers,
+  Building2,
+  Filter,
+  X,
 } from "lucide-react";
 
 export default function FinancialReportsTab() {
@@ -26,9 +29,38 @@ export default function FinancialReportsTab() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
+  // Brand / Category filter state
+  const [companies, setCompanies] = useState<Array<{ _id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<Array<{ _id: string; name: string; slug?: string }>>([]);
+  const [selectedCompany, setSelectedCompany] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<any | null>(null);
+
+  // Fetch available brands and categories on mount
+  useEffect(() => {
+    async function loadFilterOptions() {
+      try {
+        const [compRes, catRes] = await Promise.all([
+          fetch("/api/companies"),
+          fetch("/api/categories"),
+        ]);
+        if (compRes.ok) {
+          const compData = await compRes.json();
+          if (Array.isArray(compData)) setCompanies(compData);
+        }
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (Array.isArray(catData)) setCategories(catData);
+        }
+      } catch (err) {
+        console.error("Failed to load filter options:", err);
+      }
+    }
+    loadFilterOptions();
+  }, []);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
@@ -38,6 +70,12 @@ export default function FinancialReportsTab() {
       if (period === "custom" && startDate && endDate) {
         url += `&startDate=${startDate}&endDate=${endDate}`;
       }
+      if (selectedCompany) {
+        url += `&companyId=${encodeURIComponent(selectedCompany)}`;
+      }
+      if (selectedCategory) {
+        url += `&category=${encodeURIComponent(selectedCategory)}`;
+      }
 
       const res = await fetch(url);
       const data = await res.json();
@@ -45,14 +83,14 @@ export default function FinancialReportsTab() {
       if (data.success && data.report) {
         setReport(data.report);
       } else {
-        setError(data.error || "فشل تحميل التقارير المالية.");
+        setError(data.error || "تعذر تحميل التقارير المالية.");
       }
     } catch {
-      setError("خطأ في الاتصال بالخادم عند جلب التقرير المالي.");
+      setError("حدث خطأ في الاتصال بالخادم أثناء جلب التقارير المالية.");
     } finally {
       setLoading(false);
     }
-  }, [period, startDate, endDate]);
+  }, [period, startDate, endDate, selectedCompany, selectedCategory]);
 
   useEffect(() => {
     fetchReport();
@@ -63,6 +101,11 @@ export default function FinancialReportsTab() {
     if (startDate && endDate) {
       fetchReport();
     }
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCompany("");
+    setSelectedCategory("");
   };
 
   const periodOptions = [
@@ -78,9 +121,13 @@ export default function FinancialReportsTab() {
     if (period === "yesterday") return "أمس (Yesterday)";
     if (period === "this_week") return "هذا الأسبوع (This Week)";
     if (period === "this_month") return "هذا الشهر (This Month)";
-    if (period === "custom") return `تاريخ مخصص: من ${startDate || "---"} إلى ${endDate || "---"}`;
+    if (period === "custom") return `فترة مخصصة: من ${startDate || "---"} إلى ${endDate || "---"}`;
     return "";
   };
+
+  const selectedCompanyName =
+    companies.find((c) => c._id === selectedCompany)?.name || selectedCompany;
+  const isAnyFilterActive = Boolean(selectedCompany || selectedCategory);
 
   return (
     <div className="flex flex-col h-full bg-slate-900/90 text-slate-100 rounded-2xl border border-slate-800 p-5 shadow-xl backdrop-blur-md overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700">
@@ -89,10 +136,10 @@ export default function FinancialReportsTab() {
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-amber-500" />
-            التقارير والإحصائيات المالية (Financial Reports)
+            التقارير الإحصائية والمالية (Financial Reports)
           </h2>
           <p className="text-xs text-slate-400">
-            تحليل المبيعات، الأرباح، المرتجعات، وتوزيع القنوات والدفع
+            تحليل الإيرادات والأرباح والمبيعات ومقارنة القنوات وطرق الدفع
           </p>
         </div>
 
@@ -118,16 +165,90 @@ export default function FinancialReportsTab() {
             onClick={() => window.print()}
             className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all"
           >
-            <Printer className="w-4 h-4 text-amber-400" /> طباعة البيان المالي
+            <Printer className="w-4 h-4 text-amber-400" /> طباعة التقرير المالي
           </button>
         </div>
+      </div>
+
+      {/* Secondary Toolbar: Brand and Category Filters */}
+      <div className="my-3 p-3 bg-slate-800/50 border border-slate-700/60 rounded-xl flex flex-wrap items-center justify-between gap-3 no-print">
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5 text-slate-400 font-semibold">
+            <Filter className="w-3.5 h-3.5 text-amber-500" />
+            <span>فلترة التقرير حسب:</span>
+          </div>
+
+          {/* Brand / Company Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1">
+            <Building2 className="w-3.5 h-3.5 text-amber-400" />
+            <select
+              value={selectedCompany}
+              onChange={(e) => setSelectedCompany(e.target.value)}
+              className="bg-transparent text-slate-100 text-xs focus:outline-none cursor-pointer pr-1"
+            >
+              <option value="" className="bg-slate-800 text-slate-300">
+                كل الماركات (All Brands)
+              </option>
+              {companies.map((comp) => (
+                <option key={comp._id} value={comp._id} className="bg-slate-800 text-slate-100">
+                  {comp.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Category Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1">
+            <Tag className="w-3.5 h-3.5 text-cyan-400" />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-transparent text-slate-100 text-xs focus:outline-none cursor-pointer pr-1"
+            >
+              <option value="" className="bg-slate-800 text-slate-300">
+                كل الأقسام (All Categories)
+              </option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat.name} className="bg-slate-800 text-slate-100">
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reset Filters button */}
+          {isAnyFilterActive && (
+            <button
+              onClick={handleResetFilters}
+              className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+            >
+              <X className="w-3.5 h-3.5" /> مسح الفلاتر
+            </button>
+          )}
+        </div>
+
+        {/* Active Filter Badges */}
+        {isAnyFilterActive && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {selectedCompany && (
+              <span className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-md text-[11px] font-medium flex items-center gap-1">
+                <Building2 className="w-3 h-3" /> الماركة: {selectedCompanyName}
+              </span>
+            )}
+            {selectedCategory && (
+              <span className="px-2 py-0.5 bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 rounded-md text-[11px] font-medium flex items-center gap-1">
+                <Tag className="w-3 h-3" /> القسم: {selectedCategory}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Custom Date Range Picker form if custom selected */}
       {period === "custom" && (
         <form
           onSubmit={handleCustomDateSubmit}
-          className="my-3 p-3 bg-slate-800/60 border border-slate-700/80 rounded-xl flex flex-wrap items-center gap-3 text-xs no-print"
+          className="mb-3 p-3 bg-slate-800/60 border border-slate-700/80 rounded-xl flex flex-wrap items-center gap-3 text-xs no-print"
         >
           <div className="flex items-center gap-2">
             <span className="text-slate-400">من:</span>
@@ -162,7 +283,7 @@ export default function FinancialReportsTab() {
       {loading ? (
         <div className="flex flex-col items-center justify-center h-80 text-slate-400 gap-3">
           <RefreshCw className="w-8 h-8 text-amber-500 animate-spin" />
-          <p className="text-sm font-medium">جاري استخراج البيان والتقارير المالية...</p>
+          <p className="text-sm font-medium">جاري تحضير وجمع التقارير المالية...</p>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center h-80 text-rose-400 gap-3">
@@ -171,7 +292,7 @@ export default function FinancialReportsTab() {
             onClick={fetchReport}
             className="px-4 py-2 bg-slate-800 text-slate-200 text-xs rounded-xl border border-slate-700"
           >
-            إعادة التحديث
+            إعادة المحاولة
           </button>
         </div>
       ) : report ? (
@@ -181,19 +302,25 @@ export default function FinancialReportsTab() {
             <div className="flex justify-between items-start gap-6 dir-rtl">
               <div>
                 <h1 className="text-xl font-black text-slate-900">
-                  كاش إير POS - M L N TOOLS | متجر M L N TOOLS
+                  نظام كاشير POS - M L N TOOLS | منصة M L N TOOLS
                 </h1>
                 <h2 className="text-base font-bold text-slate-700 mt-1">
-                  بيان التقارير والإحصائيات المالية التفصيلية (Financial Report Statement)
+                  كشف الحسابات والتقارير المالية المجمعة (Financial Report Statement)
                 </h2>
                 <p className="text-xs text-slate-600 mt-1">
-                  نظام إدارة المبيعات وتتبع الإيرادات وحركات الخزانة
+                  بيان تدقيق الأرباح والمبيعات وتكاليف المنتجات وطرق الدفع
                 </p>
               </div>
               <div className="text-right text-xs text-slate-700 space-y-1.5 shrink-0 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                 <p className="font-bold text-slate-900">فترة التقرير: <span className="font-normal">{getPeriodLabel()}</span></p>
-                <p className="text-slate-600">تاريخ الإصدار: <span className="font-semibold text-slate-900">{new Date().toLocaleString("ar-EG")}</span></p>
-                <p className="text-slate-600">حالة البيانات: <span className="font-bold text-emerald-700">محدثة ومحققة من النظام</span></p>
+                {selectedCompany && (
+                  <p className="text-slate-700 font-semibold">الماركة: <span className="font-bold text-amber-700">{selectedCompanyName}</span></p>
+                )}
+                {selectedCategory && (
+                  <p className="text-slate-700 font-semibold">القسم: <span className="font-bold text-cyan-700">{selectedCategory}</span></p>
+                )}
+                <p className="text-slate-600">تاريخ الطباعة: <span className="font-semibold text-slate-900">{new Date().toLocaleString("ar-EG")}</span></p>
+                <p className="text-slate-600">حالة المطابقة: <span className="font-bold text-emerald-700">مطابق للقيود في القاعدة</span></p>
               </div>
             </div>
           </div>

@@ -6,6 +6,9 @@ export interface FinancialReportFilter {
   startDate?: Date | string;
   endDate?: Date | string;
   source?: string;
+  category?: string;
+  companyId?: string;
+  brandId?: string;
 }
 
 export interface ChannelBreakdown {
@@ -24,6 +27,7 @@ export interface PaymentMethodBreakdown {
 
 export interface CategorySale {
   category: string;
+  categoryName?: string;
   revenue: number;
   quantity: number;
 }
@@ -74,48 +78,62 @@ export interface FinancialReportSummary {
   };
   paymentMethodBreakdown: PaymentMethodBreakdown;
   paymentMethods: PaymentMethodBreakdown;
-  categorySales: Array<CategorySale & { categoryName?: string }>;
+  categorySales: CategorySale[];
   companySales: CompanySale[];
   topProducts: TopProductSale[];
   shiftMetrics?: ShiftFinancialSummary;
+  filterMeta?: {
+    category?: string;
+    companyId?: string;
+    brandId?: string;
+  };
 }
 
 /**
- * Calculates start and end dates based on the filter's period or custom date parameters.
+ * Calculates start and end Date objects based on report filter period.
  */
-export function getReportDateRange(filter: FinancialReportFilter): { startDate: Date; endDate: Date } {
-  const period = filter.period || "today";
-  const now = new Date();
-  let startDate: Date;
-  let endDate: Date;
+export function getReportDateRange(filter: FinancialReportFilter): {
+  startDate: Date;
+  endDate: Date;
+} {
+  if (filter.period === "custom" && filter.startDate && filter.endDate) {
+    return {
+      startDate: new Date(filter.startDate),
+      endDate: new Date(filter.endDate),
+    };
+  }
 
-  if (period === "today") {
-    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  } else if (period === "yesterday") {
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    startDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0, 0);
-    endDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59, 999);
-  } else if (period === "this_week") {
-    const dayOfWeek = now.getDay();
-    const firstDayOfWeek = new Date(now);
-    firstDayOfWeek.setDate(now.getDate() - dayOfWeek);
-    startDate = new Date(firstDayOfWeek.getFullYear(), firstDayOfWeek.getMonth(), firstDayOfWeek.getDate(), 0, 0, 0, 0);
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  } else if (period === "this_month") {
-    startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  } else if (period === "custom") {
-    startDate = filter.startDate ? new Date(filter.startDate) : new Date(0);
-    endDate = filter.endDate ? new Date(filter.endDate) : new Date();
-  } else {
-    startDate = filter.startDate
-      ? new Date(filter.startDate)
-      : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    endDate = filter.endDate
-      ? new Date(filter.endDate)
-      : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  const now = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
+
+  switch (filter.period) {
+    case "yesterday": {
+      startDate.setDate(now.getDate() - 1);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setDate(now.getDate() - 1);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+    case "this_week": {
+      const day = now.getDay();
+      const diff = now.getDate() - day;
+      startDate.setDate(diff);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      break;
+    }
+    case "this_month": {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      endDate = new Date(now);
+      break;
+    }
+    case "today":
+    default: {
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
   }
 
   return { startDate, endDate };
@@ -127,12 +145,16 @@ function round2(val: number): number {
 
 /**
  * Generates a comprehensive financial report aggregating Order and Shift data via Mongoose aggregation pipelines.
+ * Supports filtering by date range, channel source, brand/company, and category.
  */
 export async function generateFinancialReport(
   filter: FinancialReportFilter
 ): Promise<FinancialReportSummary> {
   const { startDate, endDate } = getReportDateRange(filter);
   const periodStr = filter.period || "custom";
+  const targetCompanyId = filter.companyId || filter.brandId;
+  const targetCategory = filter.category;
+  const isItemFiltered = Boolean(targetCompanyId || targetCategory);
 
   const orderMatchFilter: any = {
     createdAt: { $gte: startDate, $lte: endDate },
@@ -143,114 +165,249 @@ export async function generateFinancialReport(
     orderMatchFilter.source = filter.source;
   }
 
-  // 1. Order Summary Pipeline (Gross, Discounts, Refunds, Net, Cost, Channels, Payment Methods)
-  const summaryPipeline: any[] = [
-    { $match: orderMatchFilter },
+  const productLookupStages: any[] = [
     {
-      $project: {
-        source: { $ifNull: ["$source", "online"] },
-        paymentMethod: { $ifNull: ["$paymentMethod", "cash"] },
-        totalPrice: 1,
-        totalRefunded: { $ifNull: ["$totalRefunded", 0] },
-        originalTotal: { $ifNull: ["$discountDetails.originalTotal", "$totalPrice"] },
-        finalTotal: { $ifNull: ["$discountDetails.finalTotal", "$totalPrice"] },
-        items: 1,
+      $lookup: {
+        from: "products",
+        let: { pId: "$items.productId" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $or: [
+                  { $eq: ["$_id", "$$pId"] },
+                  { $eq: [{ $toString: "$_id" }, "$$pId"] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "productDoc",
       },
     },
     {
-      $addFields: {
-        orderCost: {
-          $sum: {
-            $map: {
-              input: "$items",
-              as: "it",
-              in: {
-                $multiply: [
-                  { $ifNull: ["$$it.costPrice", 0] },
-                  { $ifNull: ["$$it.quantity", 1] },
-                ],
+      $unwind: {
+        path: "$productDoc",
+        preserveNullAndEmptyArrays: !isItemFiltered,
+      },
+    },
+  ];
+
+  const itemFilterMatch: any = {};
+  if (targetCategory) {
+    itemFilterMatch["productDoc.category"] = targetCategory;
+  }
+  if (targetCompanyId) {
+    itemFilterMatch.$expr = {
+      $or: [
+        { $eq: ["$productDoc.company", targetCompanyId] },
+        { $eq: [{ $toString: "$productDoc.company" }, targetCompanyId] },
+      ],
+    };
+  }
+
+  let summaryPipeline: any[];
+
+  if (isItemFiltered) {
+    summaryPipeline = [
+      { $match: orderMatchFilter },
+      { $unwind: "$items" },
+      ...productLookupStages,
+      ...(Object.keys(itemFilterMatch).length > 0 ? [{ $match: itemFilterMatch }] : []),
+      {
+        $project: {
+          orderId: "$_id",
+          source: { $ifNull: ["$source", "online"] },
+          paymentMethod: { $ifNull: ["$paymentMethod", "cash"] },
+          itemRevenue: { $multiply: ["$items.price", "$items.quantity"] },
+          itemCost: {
+            $multiply: [
+              { $ifNull: ["$items.costPrice", 0] },
+              { $ifNull: ["$items.quantity", 1] },
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          grossSales: { $sum: "$itemRevenue" },
+          totalDiscounts: { $sum: 0 },
+          totalRefunds: { $sum: 0 },
+          netRevenue: { $sum: "$itemRevenue" },
+          totalCost: { $sum: "$itemCost" },
+          ordersSet: { $addToSet: "$orderId" },
+          posRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$source", "pos"] }, "$itemRevenue", 0],
+            },
+          },
+          posOrdersSet: {
+            $addToSet: {
+              $cond: [{ $eq: ["$source", "pos"] }, "$orderId", "$$REMOVE"],
+            },
+          },
+          webRevenue: {
+            $sum: {
+              $cond: [{ $ne: ["$source", "pos"] }, "$itemRevenue", 0],
+            },
+          },
+          webOrdersSet: {
+            $addToSet: {
+              $cond: [{ $ne: ["$source", "pos"] }, "$orderId", "$$REMOVE"],
+            },
+          },
+          cash: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "cash"] }, "$itemRevenue", 0],
+            },
+          },
+          instapay: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "instapay"] }, "$itemRevenue", 0],
+            },
+          },
+          vodafone_cash: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "vodafone_cash"] }, "$itemRevenue", 0],
+            },
+          },
+          card: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "card"] }, "$itemRevenue", 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          grossSales: 1,
+          totalDiscounts: 1,
+          totalRefunds: 1,
+          netRevenue: 1,
+          totalCost: 1,
+          totalOrdersCount: { $size: { $ifNull: ["$ordersSet", []] } },
+          posRevenue: 1,
+          posOrdersCount: { $size: { $ifNull: ["$posOrdersSet", []] } },
+          webRevenue: 1,
+          webOrdersCount: { $size: { $ifNull: ["$webOrdersSet", []] } },
+          cash: 1,
+          instapay: 1,
+          vodafone_cash: 1,
+          card: 1,
+        },
+      },
+    ];
+  } else {
+    summaryPipeline = [
+      { $match: orderMatchFilter },
+      {
+        $project: {
+          source: { $ifNull: ["$source", "online"] },
+          paymentMethod: { $ifNull: ["$paymentMethod", "cash"] },
+          totalPrice: 1,
+          totalRefunded: { $ifNull: ["$totalRefunded", 0] },
+          originalTotal: { $ifNull: ["$discountDetails.originalTotal", "$totalPrice"] },
+          finalTotal: { $ifNull: ["$discountDetails.finalTotal", "$totalPrice"] },
+          items: 1,
+        },
+      },
+      {
+        $addFields: {
+          orderCost: {
+            $sum: {
+              $map: {
+                input: "$items",
+                as: "it",
+                in: {
+                  $multiply: [
+                    { $ifNull: ["$$it.costPrice", 0] },
+                    { $ifNull: ["$$it.quantity", 1] },
+                  ],
+                },
               },
             },
           },
         },
       },
-    },
-    {
-      $project: {
-        source: 1,
-        paymentMethod: 1,
-        totalPrice: 1,
-        totalRefunded: 1,
-        originalTotal: 1,
-        finalTotal: 1,
-        orderCost: 1,
-        discountAmount: {
-          $cond: [
-            { $gt: ["$originalTotal", "$finalTotal"] },
-            { $subtract: ["$originalTotal", "$finalTotal"] },
-            0,
-          ],
-        },
-        netAmount: { $subtract: ["$finalTotal", "$totalRefunded"] },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        grossSales: { $sum: "$originalTotal" },
-        totalDiscounts: { $sum: "$discountAmount" },
-        totalRefunds: { $sum: "$totalRefunded" },
-        netRevenue: { $sum: "$netAmount" },
-        totalCost: { $sum: "$orderCost" },
-        totalOrdersCount: { $sum: 1 },
-        posRevenue: {
-          $sum: {
-            $cond: [{ $eq: ["$source", "pos"] }, "$netAmount", 0],
+      {
+        $project: {
+          source: 1,
+          paymentMethod: 1,
+          totalPrice: 1,
+          totalRefunded: 1,
+          originalTotal: 1,
+          finalTotal: 1,
+          orderCost: 1,
+          discountAmount: {
+            $cond: [
+              { $gt: ["$originalTotal", "$finalTotal"] },
+              { $subtract: ["$originalTotal", "$finalTotal"] },
+              0,
+            ],
           },
-        },
-        posOrdersCount: {
-          $sum: {
-            $cond: [{ $eq: ["$source", "pos"] }, 1, 0],
-          },
-        },
-        webRevenue: {
-          $sum: {
-            $cond: [{ $ne: ["$source", "pos"] }, "$netAmount", 0],
-          },
-        },
-        webOrdersCount: {
-          $sum: {
-            $cond: [{ $ne: ["$source", "pos"] }, 1, 0],
-          },
-        },
-        cash: {
-          $sum: {
-            $cond: [{ $eq: ["$paymentMethod", "cash"] }, "$netAmount", 0],
-          },
-        },
-        instapay: {
-          $sum: {
-            $cond: [{ $eq: ["$paymentMethod", "instapay"] }, "$netAmount", 0],
-          },
-        },
-        vodafone_cash: {
-          $sum: {
-            $cond: [{ $eq: ["$paymentMethod", "vodafone_cash"] }, "$netAmount", 0],
-          },
-        },
-        card: {
-          $sum: {
-            $cond: [{ $eq: ["$paymentMethod", "card"] }, "$netAmount", 0],
-          },
+          netAmount: { $subtract: ["$finalTotal", "$totalRefunded"] },
         },
       },
-    },
-  ];
+      {
+        $group: {
+          _id: null,
+          grossSales: { $sum: "$originalTotal" },
+          totalDiscounts: { $sum: "$discountAmount" },
+          totalRefunds: { $sum: "$totalRefunded" },
+          netRevenue: { $sum: "$netAmount" },
+          totalCost: { $sum: "$orderCost" },
+          totalOrdersCount: { $sum: 1 },
+          posRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$source", "pos"] }, "$netAmount", 0],
+            },
+          },
+          posOrdersCount: {
+            $sum: {
+              $cond: [{ $eq: ["$source", "pos"] }, 1, 0],
+            },
+          },
+          webRevenue: {
+            $sum: {
+              $cond: [{ $ne: ["$source", "pos"] }, "$netAmount", 0],
+            },
+          },
+          webOrdersCount: {
+            $sum: {
+              $cond: [{ $ne: ["$source", "pos"] }, 1, 0],
+            },
+          },
+          cash: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "cash"] }, "$netAmount", 0],
+            },
+          },
+          instapay: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "instapay"] }, "$netAmount", 0],
+            },
+          },
+          vodafone_cash: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "vodafone_cash"] }, "$netAmount", 0],
+            },
+          },
+          card: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMethod", "card"] }, "$netAmount", 0],
+            },
+          },
+        },
+      },
+    ];
+  }
 
-  // 2. Top Products Pipeline
   const topProductsPipeline: any[] = [
     { $match: orderMatchFilter },
     { $unwind: "$items" },
+    ...productLookupStages,
+    ...(Object.keys(itemFilterMatch).length > 0 ? [{ $match: itemFilterMatch }] : []),
     {
       $group: {
         _id: "$items.productId",
@@ -270,33 +427,15 @@ export async function generateFinancialReport(
     { $sort: { revenue: -1, quantity: -1 } },
   ];
 
-  // 3. Category Sales Pipeline
   const categorySalesPipeline: any[] = [
     { $match: orderMatchFilter },
     { $unwind: "$items" },
-    {
-      $lookup: {
-        from: "products",
-        let: { pId: "$items.productId" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $or: [
-                  { $eq: ["$_id", "$$pId"] },
-                  { $eq: [{ $toString: "$_id" }, "$$pId"] },
-                ],
-              },
-            },
-          },
-        ],
-        as: "productDoc",
-      },
-    },
+    ...productLookupStages,
+    ...(Object.keys(itemFilterMatch).length > 0 ? [{ $match: itemFilterMatch }] : []),
     {
       $addFields: {
         categoryName: {
-          $ifNull: [{ $arrayElemAt: ["$productDoc.category", 0] }, "General"],
+          $ifNull: ["$productDoc.category", "General"],
         },
       },
     },
@@ -310,33 +449,15 @@ export async function generateFinancialReport(
     { $sort: { revenue: -1 } },
   ];
 
-  // 4. Company Sales Pipeline
   const companySalesPipeline: any[] = [
     { $match: orderMatchFilter },
     { $unwind: "$items" },
-    {
-      $lookup: {
-        from: "products",
-        let: { pId: "$items.productId" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $or: [
-                  { $eq: ["$_id", "$$pId"] },
-                  { $eq: [{ $toString: "$_id" }, "$$pId"] },
-                ],
-              },
-            },
-          },
-        ],
-        as: "productDoc",
-      },
-    },
+    ...productLookupStages,
+    ...(Object.keys(itemFilterMatch).length > 0 ? [{ $match: itemFilterMatch }] : []),
     {
       $addFields: {
         companyId: {
-          $ifNull: [{ $arrayElemAt: ["$productDoc.company", 0] }, null],
+          $ifNull: ["$productDoc.company", null],
         },
       },
     },
@@ -508,5 +629,10 @@ export async function generateFinancialReport(
     companySales,
     topProducts,
     shiftMetrics,
+    filterMeta: {
+      category: targetCategory,
+      companyId: targetCompanyId,
+      brandId: targetCompanyId,
+    },
   };
 }

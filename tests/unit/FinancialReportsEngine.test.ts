@@ -363,5 +363,65 @@ describe("FinancialReportsEngine", () => {
       const matchStage = firstCallArgs[0].$match;
       expect(matchStage.source).toBe("pos");
     });
+
+    it("should include category filter when category is specified", async () => {
+      const orderAggregateSpy = vi.spyOn(Order, "aggregate").mockResolvedValue([]);
+      vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+
+      const report = await generateFinancialReport({
+        period: "today",
+        category: "Clothing",
+      });
+
+      expect(orderAggregateSpy).toHaveBeenCalled();
+      // Inspect the summary pipeline
+      const summaryPipeline = orderAggregateSpy.mock.calls[0][0] as any[];
+      const categoryMatchStage = summaryPipeline.find(
+        (stage: any) => stage.$match && stage.$match["productDoc.category"] === "Clothing"
+      );
+      expect(categoryMatchStage).toBeDefined();
+      expect(report.filterMeta?.category).toBe("Clothing");
+    });
+
+    it("should include company/brand filter when companyId is specified", async () => {
+      const orderAggregateSpy = vi.spyOn(Order, "aggregate").mockResolvedValue([]);
+      vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+
+      const report = await generateFinancialReport({
+        period: "today",
+        companyId: "comp-nike-123",
+      });
+
+      expect(orderAggregateSpy).toHaveBeenCalled();
+      const summaryPipeline = orderAggregateSpy.mock.calls[0][0] as any[];
+      const companyMatchStage = summaryPipeline.find(
+        (stage: any) => stage.$match && stage.$match.$expr
+      );
+      expect(companyMatchStage).toBeDefined();
+      expect(report.filterMeta?.companyId).toBe("comp-nike-123");
+    });
+
+    it("should include both category and companyId when both are specified", async () => {
+      const orderAggregateSpy = vi.spyOn(Order, "aggregate").mockResolvedValue([]);
+      vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+
+      const report = await generateFinancialReport({
+        period: "this_week",
+        category: "Shoes",
+        companyId: "comp-adidas-456",
+      });
+
+      expect(orderAggregateSpy).toHaveBeenCalled();
+      const summaryPipeline = orderAggregateSpy.mock.calls[0][0] as any[];
+      const filterMatchStage = summaryPipeline.find(
+        (stage: any) =>
+          stage.$match &&
+          stage.$match["productDoc.category"] === "Shoes" &&
+          stage.$match.$expr
+      );
+      expect(filterMatchStage).toBeDefined();
+      expect(report.filterMeta?.category).toBe("Shoes");
+      expect(report.filterMeta?.companyId).toBe("comp-adidas-456");
+    });
   });
 });

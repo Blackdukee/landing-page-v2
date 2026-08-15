@@ -17,12 +17,17 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get("startDate") || undefined;
     const endDate = searchParams.get("endDate") || undefined;
     const source = searchParams.get("source") || undefined;
+    const category = searchParams.get("category") || undefined;
+    const companyId = searchParams.get("companyId") || searchParams.get("brandId") || undefined;
 
     const filter: FinancialReportFilter = {
       period,
       startDate,
       endDate,
       source,
+      category,
+      companyId,
+      brandId: companyId,
     };
 
     const report = await generateFinancialReport(filter);

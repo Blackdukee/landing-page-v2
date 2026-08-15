@@ -358,6 +358,27 @@ describe("CashAir API Routes Unit Tests", () => {
       expect(json.report.grossSales).toBe(1000);
       expect(json.report.netSales).toBe(900);
     });
+
+    it("should pass category and companyId filters to generateFinancialReport", async () => {
+      const generateSpy = vi.spyOn(FinancialReportsEngine, "generateFinancialReport").mockResolvedValueOnce({
+        period: "this_month",
+        grossSales: 500,
+      } as any);
+
+      const req = new NextRequest(
+        "http://localhost/api/cashair/reports?period=this_month&category=Electronics&companyId=comp-123"
+      );
+      const res = await GETReports(req);
+      expect(res.status).toBe(200);
+      expect(generateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          period: "this_month",
+          category: "Electronics",
+          companyId: "comp-123",
+          brandId: "comp-123",
+        })
+      );
+    });
   });
 
   // ---------------------------------------------------------------------------

@@ -23,6 +23,7 @@ import {
   Boxes,
   Coins,
 } from "lucide-react";
+import { printElement } from "@/lib/printer/printHelper";
 
 export default function FinancialReportsTab() {
   const [period, setPeriod] = useState<"today" | "yesterday" | "this_week" | "this_month" | "custom">(
@@ -164,7 +165,12 @@ export default function FinancialReportsTab() {
           </div>
 
           <button
-            onClick={() => window.print()}
+            onClick={() =>
+              printElement("printable-financial-report", {
+                type: "report",
+                title: `تقرير-مالي-${period}`,
+              })
+            }
             className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all"
           >
             <Printer className="w-4 h-4 text-amber-400" /> طباعة التقرير المالي

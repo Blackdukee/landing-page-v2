@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { calculatePOSDiscounts, OrderDiscountInput } from "@/modules/cashair/DiscountEngine";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
+import { printElement } from "@/lib/printer/printHelper";
 
 export interface CartItemWithOverride {
   productId: string;
@@ -843,7 +844,12 @@ export default function POSCartPanel({
             {/* Print & Share Actions */}
             <div className="flex items-center gap-2 pt-2 no-print">
               <button
-                onClick={() => window.print()}
+                onClick={() =>
+                  printElement("printable-pos-receipt", {
+                    type: "receipt",
+                    title: `فاتورة-${receiptData.orderId}`,
+                  })
+                }
                 className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md"
               >
                 <Printer className="w-4 h-4" /> طباعة الفاتورة

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Printer, Tag, Sparkles } from 'lucide-react';
 import { SvgBarcode } from '../printing/SvgBarcode';
+import { printElement } from '@/lib/printer/printHelper';
 
 export interface BarcodeLabelProduct {
   _id: string;
@@ -22,7 +23,7 @@ interface BarcodeLabelModalProps {
 export const BarcodeLabelModal: React.FC<BarcodeLabelModalProps> = ({
   isOpen,
   product,
-  storeName = 'متجر قويسنا',
+  storeName = 'متجر الأدوات',
   onClose,
 }) => {
   const [copies, setCopies] = useState<number>(1);
@@ -34,7 +35,10 @@ export const BarcodeLabelModal: React.FC<BarcodeLabelModalProps> = ({
   const barcodeValue = product.barcode?.trim() || product._id.slice(-8).toUpperCase();
 
   const handlePrint = () => {
-    window.print();
+    printElement("printable-barcode-label", {
+      type: "label",
+      title: `باركود-${product.name}`,
+    });
   };
 
   return (

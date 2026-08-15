@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
+import { printElement } from "@/lib/printer/printHelper";
 
 interface ReturnsModalProps {
   isOpen: boolean;
@@ -269,10 +270,15 @@ export default function ReturnsModal({
 
             <div className="flex items-center gap-2 pt-2 no-print">
               <button
-                onClick={() => window.print()}
+                onClick={() =>
+                  printElement("printable-return-voucher", {
+                    type: "receipt",
+                    title: `إشعار-مرتجع-${returnVoucher.orderId}`,
+                  })
+                }
                 className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md"
               >
-                <Printer className="w-4 h-4" /> طباعة إيصال المرتجع
+                <Printer className="w-4 h-4" /> طباعة إشعار المرتجع
               </button>
               <button
                 onClick={() => {

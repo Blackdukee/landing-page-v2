@@ -21,6 +21,7 @@ import {
   Pencil,
   AlertCircle,
 } from "lucide-react";
+import { printElement } from "@/lib/printer/printHelper";
 
 export default function POSOrdersTab() {
   const [search, setSearch] = useState("");
@@ -568,7 +569,12 @@ export default function POSOrdersTab() {
             {/* Modal Actions */}
             <div className="flex items-center gap-2 pt-2 border-t border-slate-800 no-print">
               <button
-                onClick={() => window.print()}
+                onClick={() =>
+                  printElement("printable-pos-receipt", {
+                    type: "receipt",
+                    title: `فاتورة-${selectedOrder._id}`,
+                  })
+                }
                 className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md"
               >
                 <Printer className="w-4 h-4" /> طباعة الفاتورة

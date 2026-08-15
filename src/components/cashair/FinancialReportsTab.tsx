@@ -20,6 +20,8 @@ import {
   Building2,
   Filter,
   X,
+  Boxes,
+  Coins,
 } from "lucide-react";
 
 export default function FinancialReportsTab() {
@@ -319,6 +321,13 @@ export default function FinancialReportsTab() {
                 {selectedCategory && (
                   <p className="text-slate-700 font-semibold">القسم: <span className="font-bold text-cyan-700">{selectedCategory}</span></p>
                 )}
+                <p className="text-slate-700 font-semibold">
+                  القيمة الشرائية للمخزون:{" "}
+                  <span className="font-bold text-slate-900">
+                    {(report.totalInventoryBuyingValue || report.inventoryValuation?.totalBuyingValue || 0).toLocaleString()} ج.م
+                  </span>{" "}
+                  ({(report.totalInventoryUnits || report.inventoryValuation?.totalUnits || 0).toLocaleString()} قطعة)
+                </p>
                 <p className="text-slate-600">تاريخ الطباعة: <span className="font-semibold text-slate-900">{new Date().toLocaleString("ar-EG")}</span></p>
                 <p className="text-slate-600">حالة المطابقة: <span className="font-bold text-emerald-700">مطابق للقيود في القاعدة</span></p>
               </div>
@@ -413,6 +422,63 @@ export default function FinancialReportsTab() {
                 {(report.totalOrdersCount || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">طلب</span>
                 <span className="text-xs text-indigo-300 font-normal mr-2">({(report.averageOrderValue || 0).toLocaleString()} ج.م/طلب)</span>
               </p>
+            </div>
+          </div>
+
+          {/* In-Stock Inventory Asset Valuation Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 no-print">
+            {/* In-Stock Buying / Cost Value Card */}
+            <div className="bg-gradient-to-r from-amber-950/30 to-slate-900 border border-amber-500/40 rounded-xl p-4 flex flex-col justify-between shadow-lg shadow-amber-950/20">
+              <div className="flex items-center justify-between text-amber-400 mb-2">
+                <span className="text-xs font-bold flex items-center gap-1.5">
+                  <Boxes className="w-4 h-4 text-amber-400" />
+                  القيمة الشرائية للمخزون الحالي (In-Stock Buying Value)
+                </span>
+                <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
+                  رأس مال البضاعة المتوفرة
+                </span>
+              </div>
+              <div>
+                <p className="text-xl font-black text-amber-300">
+                  {(report.totalInventoryBuyingValue || report.inventoryValuation?.totalBuyingValue || 0).toLocaleString()}{" "}
+                  <span className="text-xs font-normal text-slate-400">ج.م</span>
+                </p>
+                <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 pt-2 border-t border-slate-800 flex-wrap gap-2">
+                  <span>
+                    إجمالي القطع المتوفرة: <strong className="text-slate-200">{(report.totalInventoryUnits || report.inventoryValuation?.totalUnits || 0).toLocaleString()}</strong> قطعة
+                  </span>
+                  <span>
+                    عدد المنتجات بالمخزن: <strong className="text-amber-300">{(report.inventoryValuation?.totalProductsCount || 0).toLocaleString()}</strong> صنف
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* In-Stock Retail Value & Potential Margin Card */}
+            <div className="bg-gradient-to-r from-cyan-950/30 to-slate-900 border border-cyan-500/40 rounded-xl p-4 flex flex-col justify-between shadow-lg shadow-cyan-950/20">
+              <div className="flex items-center justify-between text-cyan-400 mb-2">
+                <span className="text-xs font-bold flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-cyan-400" />
+                  القيمة البيعية المتوقعة للمخزون (In-Stock Retail Value)
+                </span>
+                <span className="text-[10px] bg-cyan-500/20 text-cyan-300 font-bold px-2 py-0.5 rounded-full border border-cyan-500/30">
+                  العائد المتوقع عند البيع
+                </span>
+              </div>
+              <div>
+                <p className="text-xl font-black text-cyan-300">
+                  {(report.totalInventoryRetailValue || report.inventoryValuation?.totalRetailValue || 0).toLocaleString()}{" "}
+                  <span className="text-xs font-normal text-slate-400">ج.م</span>
+                </p>
+                <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 pt-2 border-t border-slate-800 flex-wrap gap-2">
+                  <span>
+                    الربح الإجمالي المتوقع: <strong className="text-emerald-400">{(report.inventoryValuation?.potentialProfit || 0).toLocaleString()} ج.م</strong>
+                  </span>
+                  <span>
+                    هامش الربح المتوقع: <strong className="text-purple-300">{(report.inventoryValuation?.potentialMargin || 0).toFixed(1)}%</strong>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 

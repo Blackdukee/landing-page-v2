@@ -491,15 +491,77 @@ export default function POSOrdersTab() {
 
                   <div className="border-t border-slate-800 pt-3 mt-3 space-y-1 text-left">
                     <div className="flex justify-between text-slate-400">
-                      <span>إجمالي الأصناف:</span>
+                      <span>إجمالي الفاتورة:</span>
                       <span>{(selectedOrder.totalPrice || 0).toLocaleString()} ج.م</span>
                     </div>
                     <div className="flex justify-between text-base font-black text-emerald-400 pt-1 border-t border-slate-800">
-                      <span>الصافي النهائي:</span>
+                      <span>الصافي المطلوب:</span>
                       <span>{(selectedOrder.totalPrice || 0).toLocaleString()} ج.م</span>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Dedicated Printable Thermal Receipt for Selected Order */}
+            <div
+              id="printable-pos-receipt"
+              className="hidden print:block bg-white text-slate-950 p-4 text-xs font-mono space-y-3"
+            >
+              <div className="text-center border-b border-dashed border-slate-400 pb-2">
+                <h2 className="text-base font-black text-slate-900">M L N TOOLS</h2>
+                <p className="text-[11px] text-slate-600">فاتورة بيع رسمية - POS</p>
+                <p className="text-[10px] text-slate-500">رقم الفاتورة: #{selectedOrder._id}</p>
+                <p className="text-[10px] text-slate-500">
+                  التاريخ: {new Date(selectedOrder.createdAt).toLocaleString("ar-EG")}
+                </p>
+                <p className="text-[10px] text-slate-500">
+                  الكاشير: {selectedOrder.cashierName || "كاشير المحل"}
+                </p>
+              </div>
+
+              {selectedOrder.customerInfo?.name && (
+                <div className="border-b border-dashed border-slate-400 pb-2 text-[11px]">
+                  <p>العميل: {selectedOrder.customerInfo.name}</p>
+                  {selectedOrder.customerInfo.phone && <p>الهاتف: {selectedOrder.customerInfo.phone}</p>}
+                </div>
+              )}
+
+              {/* Items Table */}
+              <table className="w-full text-right text-[11px]">
+                <thead>
+                  <tr className="border-b border-slate-300 text-slate-700">
+                    <th className="py-1">الصنف</th>
+                    <th className="py-1 text-center">الكمية</th>
+                    <th className="py-1 text-left">الإجمالي</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedOrder.items?.map((it: any, i: number) => (
+                    <tr key={i} className="border-b border-slate-100">
+                      <td className="py-1 font-sans">{it.name}</td>
+                      <td className="py-1 text-center font-bold">{it.quantity}</td>
+                      <td className="py-1 text-left font-bold">
+                        {(it.price * it.quantity).toLocaleString()} ج.م
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="border-t border-dashed border-slate-400 pt-2 space-y-1 text-left">
+                <div className="flex justify-between text-sm font-black pt-1 border-t border-slate-300">
+                  <span>الإجمالي النهائي:</span>
+                  <span>{(selectedOrder.totalPrice || 0).toLocaleString()} ج.م</span>
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-500">
+                  <span>طريقة الدفع:</span>
+                  <span className="font-bold uppercase">{selectedOrder.paymentMethod || "CASH"}</span>
+                </div>
+              </div>
+
+              <div className="text-center pt-2 border-t border-dashed border-slate-400 text-[10px] text-slate-500">
+                شكراً لزيارتكم ونتمنى خدمتكم دائماً
               </div>
             </div>
 

@@ -78,25 +78,33 @@ export const BarcodeLabelModal: React.FC<BarcodeLabelModalProps> = ({
           </div>
         </div>
 
-        {/* Hidden Printable Container Targeted by @media print */}
+        {/* Printable Container Targeted by @media print */}
         <div
           id="printable-barcode-label"
           className="hidden print:flex flex-col items-center justify-center text-center bg-white text-black font-sans leading-none"
         >
-          {showStoreName && (
-            <div style={{ fontSize: '8px', fontWeight: 'bold', marginBottom: '2px' }}>
-              {storeName}
+          {Array.from({ length: copies }).map((_, copyIdx) => (
+            <div
+              key={copyIdx}
+              className="flex flex-col items-center justify-center text-center bg-white text-black font-sans w-[48mm] p-1"
+              style={{ pageBreakAfter: copyIdx < copies - 1 ? "always" : "auto", breakAfter: copyIdx < copies - 1 ? "page" : "auto" }}
+            >
+              {showStoreName && (
+                <div style={{ fontSize: "8px", fontWeight: "bold", marginBottom: "2px" }}>
+                  {storeName}
+                </div>
+              )}
+              <div style={{ fontSize: "10px", fontWeight: "900", maxWidth: "46mm", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: "2px" }}>
+                {product.name}
+              </div>
+              <SvgBarcode value={barcodeValue} width={1.2} height={28} displayValue={true} />
+              {showPrice && (
+                <div style={{ fontSize: "10px", fontWeight: "900", marginTop: "2px" }}>
+                  {product.price.toLocaleString()} EGP
+                </div>
+              )}
             </div>
-          )}
-          <div style={{ fontSize: '10px', fontWeight: '900', maxWidth: '46mm', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '2px' }}>
-            {product.name}
-          </div>
-          <SvgBarcode value={barcodeValue} width={1.2} height={28} displayValue={true} />
-          {showPrice && (
-            <div style={{ fontSize: '10px', fontWeight: '900', marginTop: '2px' }}>
-              {product.price.toLocaleString()} EGP
-            </div>
-          )}
+          ))}
         </div>
 
         {/* Label Options */}

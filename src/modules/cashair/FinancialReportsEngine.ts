@@ -1,5 +1,6 @@
 import Order from "../../models/Order";
 import Shift from "../../models/Shift";
+import Product from "../../models/Product";
 
 export interface FinancialReportFilter {
   period?: "today" | "yesterday" | "this_week" | "this_month" | "custom";
@@ -57,6 +58,15 @@ export interface ShiftFinancialSummary {
   totalCashVariance: number;
 }
 
+export interface InventoryValuationSummary {
+  totalBuyingValue: number;
+  totalRetailValue: number;
+  totalUnits: number;
+  totalProductsCount: number;
+  potentialProfit: number;
+  potentialMargin: number;
+}
+
 export interface FinancialReportSummary {
   period: string;
   startDate: Date;
@@ -82,6 +92,10 @@ export interface FinancialReportSummary {
   companySales: CompanySale[];
   topProducts: TopProductSale[];
   shiftMetrics?: ShiftFinancialSummary;
+  totalInventoryBuyingValue: number;
+  totalInventoryRetailValue: number;
+  totalInventoryUnits: number;
+  inventoryValuation: InventoryValuationSummary;
   filterMeta?: {
     category?: string;
     companyId?: string;
@@ -519,14 +533,66 @@ export async function generateFinancialReport(
     },
   ];
 
-  const [summaryResults, topProductsResults, categorySalesResults, companySalesResults, shiftResults] =
-    await Promise.all([
-      Order.aggregate(summaryPipeline),
-      Order.aggregate(topProductsPipeline),
-      Order.aggregate(categorySalesPipeline),
-      Order.aggregate(companySalesPipeline),
-      Shift.aggregate(shiftPipeline),
-    ]);
+  // 6. Current In-Stock Inventory Valuation Pipeline
+  const inventoryMatchFilter: any = {
+    stock: { $gt: 0 },
+  };
+  if (targetCategory) {
+    inventoryMatchFilter.category = targetCategory;
+  }
+  if (targetCompanyId) {
+    inventoryMatchFilter.$expr = {
+      $or: [
+        { $eq: ["$company", targetCompanyId] },
+        { $eq: [{ $toString: "$company" }, targetCompanyId] },
+      ],
+    };
+  }
+
+  const inventoryValuationPipeline: any[] = [
+    { $match: inventoryMatchFilter },
+    {
+      $group: {
+        _id: null,
+        totalBuyingValue: {
+          $sum: {
+            $multiply: [
+              { $ifNull: ["$costPrice", 0] },
+              { $ifNull: ["$stock", 0] },
+            ],
+          },
+        },
+        totalRetailValue: {
+          $sum: {
+            $multiply: [
+              { $ifNull: ["$price", 0] },
+              { $ifNull: ["$stock", 0] },
+            ],
+          },
+        },
+        totalUnits: {
+          $sum: { $ifNull: ["$stock", 0] },
+        },
+        totalProductsCount: { $sum: 1 },
+      },
+    },
+  ];
+
+  const [
+    summaryResults,
+    topProductsResults,
+    categorySalesResults,
+    companySalesResults,
+    shiftResults,
+    inventoryResults,
+  ] = await Promise.all([
+    Order.aggregate(summaryPipeline),
+    Order.aggregate(topProductsPipeline),
+    Order.aggregate(categorySalesPipeline),
+    Order.aggregate(companySalesPipeline),
+    Shift.aggregate(shiftPipeline),
+    Product.aggregate(inventoryValuationPipeline),
+  ]);
 
   const summary = summaryResults && summaryResults[0] ? summaryResults[0] : {};
   const grossSales = round2(summary.grossSales || 0);
@@ -562,7 +628,7 @@ export async function generateFinancialReport(
 
   const companySales: CompanySale[] = (companySalesResults || []).map((row: any) => ({
     companyId: row._id?.companyId || "none",
-    companyName: row._id?.companyName || "بيع مباشر",
+    companyName: row._id?.companyName || "مباشر بدون ماركة",
     revenue: round2(row.revenue || 0),
     quantity: row.quantity || 0,
   }));
@@ -574,7 +640,7 @@ export async function generateFinancialReport(
     const margin = rev > 0 ? round2((profit / rev) * 100) : 0;
     return {
       productId: String(row._id),
-      name: row.name || "صنف غير معروف",
+      name: row.name || "منتج غير معروف",
       quantity: row.quantity || 0,
       revenue: rev,
       cost,
@@ -593,6 +659,26 @@ export async function generateFinancialReport(
           totalCashVariance: round2(shiftResults[0].totalCashVariance || 0),
         }
       : undefined;
+
+  const invRaw = inventoryResults && inventoryResults[0] ? inventoryResults[0] : {};
+  const totalInventoryBuyingValue = round2(invRaw.totalBuyingValue || 0);
+  const totalInventoryRetailValue = round2(invRaw.totalRetailValue || 0);
+  const totalInventoryUnits = invRaw.totalUnits || 0;
+  const totalInStockProductsCount = invRaw.totalProductsCount || 0;
+  const potentialProfit = round2(totalInventoryRetailValue - totalInventoryBuyingValue);
+  const potentialMargin =
+    totalInventoryRetailValue > 0
+      ? round2((potentialProfit / totalInventoryRetailValue) * 100)
+      : 0;
+
+  const inventoryValuation: InventoryValuationSummary = {
+    totalBuyingValue: totalInventoryBuyingValue,
+    totalRetailValue: totalInventoryRetailValue,
+    totalUnits: totalInventoryUnits,
+    totalProductsCount: totalInStockProductsCount,
+    potentialProfit,
+    potentialMargin,
+  };
 
   const averageOrderValue = totalOrdersCount > 0 ? round2(netSales / totalOrdersCount) : 0;
 
@@ -629,6 +715,10 @@ export async function generateFinancialReport(
     companySales,
     topProducts,
     shiftMetrics,
+    totalInventoryBuyingValue,
+    totalInventoryRetailValue,
+    totalInventoryUnits,
+    inventoryValuation,
     filterMeta: {
       category: targetCategory,
       companyId: targetCompanyId,

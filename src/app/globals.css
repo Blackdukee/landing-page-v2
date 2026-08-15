@@ -154,20 +154,28 @@ body {
    ========================================================================== */
 
 @media print {
-  /* 1. Page Margin & Paper Setup for Thermal 80mm / A4 */
+  /* 1. Page Margin & Paper Setup */
   @page {
     size: auto;
     margin: 0mm;
   }
 
   /* 2. Global Document Reset for Print */
+  *, *::before, *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
   html,
   body {
     background: #ffffff !important;
     color: #000000 !important;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
     height: auto !important;
-    min-height: 0 !important;
+    min-height: 100% !important;
     width: 100% !important;
     overflow: visible !important;
     margin: 0 !important;
@@ -176,9 +184,31 @@ body {
     print-color-adjust: exact !important;
   }
 
-  /* 3. HIDE ALL ELEMENTS ON THE PAGE BY DEFAULT */
+  /* Reset all modal containers & parent overlays during print */
+  div.fixed,
+  div[class*="fixed"],
+  div[class*="backdrop-blur"],
+  div[class*="overflow-hidden"],
+  main,
+  section,
+  article {
+    position: static !important;
+    overflow: visible !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    inset: auto !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  /* 3. Hide non-printable elements */
   body * {
-    visibility: hidden !important;
+    visibility: hidden;
   }
 
   .no-print,
@@ -199,30 +229,33 @@ body {
     visibility: visible !important;
   }
 
-  /* 5. Thermal Receipt & Voucher Positioning (80mm / 58mm Thermal Paper) */
+  /* 5. Thermal Receipt & Voucher (80mm / 58mm Thermal Paper) */
   #printable-pos-receipt,
   #printable-return-voucher {
-    position: absolute !important;
+    position: fixed !important;
     left: 0 !important;
     top: 0 !important;
-    width: 100% !important;
-    max-width: 76mm !important;
+    width: 76mm !important;
+    max-width: 80mm !important;
+    min-width: 68mm !important;
     margin: 0 auto !important;
-    padding: 6px !important;
+    padding: 3mm 2mm !important;
     background: #ffffff !important;
     color: #000000 !important;
     border: none !important;
     box-shadow: none !important;
-    font-family: monospace, Courier, monospace !important;
+    display: block !important;
+    z-index: 999999 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Courier New", monospace !important;
     font-size: 11px !important;
-    line-height: 1.3 !important;
+    line-height: 1.35 !important;
   }
 
   #printable-pos-receipt *,
   #printable-return-voucher * {
     color: #000000 !important;
     background: transparent !important;
-    border-color: #6b7280 !important;
+    border-color: #374151 !important;
     box-shadow: none !important;
   }
 
@@ -241,28 +274,52 @@ body {
   #printable-return-voucher table {
     width: 100% !important;
     border-collapse: collapse !important;
+    display: table !important;
+  }
+
+  #printable-pos-receipt thead,
+  #printable-return-voucher thead {
+    display: table-header-group !important;
+  }
+
+  #printable-pos-receipt tbody,
+  #printable-return-voucher tbody {
+    display: table-row-group !important;
+  }
+
+  #printable-pos-receipt tr,
+  #printable-return-voucher tr {
+    display: table-row !important;
   }
 
   #printable-pos-receipt th,
   #printable-return-voucher th,
   #printable-pos-receipt td,
   #printable-return-voucher td {
+    display: table-cell !important;
     padding: 3px 0 !important;
+    color: #000000 !important;
   }
 
   /* 5b. Thermal Sticky Barcode Label (50mm x 30mm or 52mm x 30mm) */
   #printable-barcode-label {
-    position: absolute !important;
+    position: fixed !important;
     left: 0 !important;
     top: 0 !important;
     width: 50mm !important;
     max-width: 50mm !important;
     margin: 0 !important;
-    padding: 2mm !important;
+    padding: 1.5mm !important;
     background: #ffffff !important;
     color: #000000 !important;
     border: none !important;
     box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    z-index: 999999 !important;
     page-break-inside: avoid !important;
   }
 
@@ -272,18 +329,24 @@ body {
     border-color: #000000 !important;
   }
 
+  #printable-barcode-label svg {
+    display: block !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+    visibility: visible !important;
+  }
+
   /* 6. Financial Reports Print Layout */
   #printable-financial-report {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    position: static !important;
     width: 100% !important;
     margin: 0 !important;
-    padding: 10mm !important;
+    padding: 8mm !important;
     background-color: #ffffff !important;
     color: #111827 !important;
     box-shadow: none !important;
     border: none !important;
+    display: block !important;
   }
 
   #printable-financial-report .bg-slate-800,

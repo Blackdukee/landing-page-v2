@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import Shift from "../../src/models/Shift";
 import Order from "../../src/models/Order";
+import Product from "../../src/models/Product";
 import {
   startShift,
   getActiveShift,
@@ -251,6 +252,16 @@ describe("FinancialReportsEngine", () => {
         },
       ]);
 
+      // 6. Inventory Valuation
+      const productAggregateSpy = vi.spyOn(Product, "aggregate").mockResolvedValueOnce([
+        {
+          totalBuyingValue: 12000,
+          totalRetailValue: 20000,
+          totalUnits: 120,
+          totalProductsCount: 15,
+        },
+      ]);
+
       const filter: FinancialReportFilter = { period: "this_month" };
       const report = await generateFinancialReport(filter);
 
@@ -321,11 +332,25 @@ describe("FinancialReportsEngine", () => {
         totalActualCash: 2280,
         totalCashVariance: -20,
       });
+
+      // In-Stock Inventory Valuation
+      expect(report.totalInventoryBuyingValue).toBe(12000);
+      expect(report.totalInventoryRetailValue).toBe(20000);
+      expect(report.totalInventoryUnits).toBe(120);
+      expect(report.inventoryValuation).toEqual({
+        totalBuyingValue: 12000,
+        totalRetailValue: 20000,
+        totalUnits: 120,
+        totalProductsCount: 15,
+        potentialProfit: 8000,
+        potentialMargin: 40,
+      });
     });
 
     it("should handle empty database results gracefully with zero values", async () => {
       vi.spyOn(Order, "aggregate").mockResolvedValue([]);
       vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+      vi.spyOn(Product, "aggregate").mockResolvedValue([]);
 
       const report = await generateFinancialReport({ period: "today" });
 
@@ -334,6 +359,17 @@ describe("FinancialReportsEngine", () => {
       expect(report.totalRefunds).toBe(0);
       expect(report.netSales).toBe(0);
       expect(report.totalOrdersCount).toBe(0);
+      expect(report.totalInventoryBuyingValue).toBe(0);
+      expect(report.totalInventoryRetailValue).toBe(0);
+      expect(report.totalInventoryUnits).toBe(0);
+      expect(report.inventoryValuation).toEqual({
+        totalBuyingValue: 0,
+        totalRetailValue: 0,
+        totalUnits: 0,
+        totalProductsCount: 0,
+        potentialProfit: 0,
+        potentialMargin: 0,
+      });
       expect(report.channelBreakdown).toEqual({
         posRevenue: 0,
         posOrdersCount: 0,
@@ -355,6 +391,7 @@ describe("FinancialReportsEngine", () => {
     it("should pass source filter to aggregation match stage when source is specified", async () => {
       const orderAggregateSpy = vi.spyOn(Order, "aggregate").mockResolvedValue([]);
       vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+      vi.spyOn(Product, "aggregate").mockResolvedValue([]);
 
       await generateFinancialReport({ period: "today", source: "pos" });
 
@@ -367,6 +404,7 @@ describe("FinancialReportsEngine", () => {
     it("should include category filter when category is specified", async () => {
       const orderAggregateSpy = vi.spyOn(Order, "aggregate").mockResolvedValue([]);
       vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+      const productAggregateSpy = vi.spyOn(Product, "aggregate").mockResolvedValue([]);
 
       const report = await generateFinancialReport({
         period: "today",
@@ -374,18 +412,22 @@ describe("FinancialReportsEngine", () => {
       });
 
       expect(orderAggregateSpy).toHaveBeenCalled();
-      // Inspect the summary pipeline
+      expect(productAggregateSpy).toHaveBeenCalled();
       const summaryPipeline = orderAggregateSpy.mock.calls[0][0] as any[];
       const categoryMatchStage = summaryPipeline.find(
         (stage: any) => stage.$match && stage.$match["productDoc.category"] === "Clothing"
       );
       expect(categoryMatchStage).toBeDefined();
       expect(report.filterMeta?.category).toBe("Clothing");
+
+      const invPipeline = productAggregateSpy.mock.calls[0][0] as any[];
+      expect(invPipeline[0].$match.category).toBe("Clothing");
     });
 
     it("should include company/brand filter when companyId is specified", async () => {
       const orderAggregateSpy = vi.spyOn(Order, "aggregate").mockResolvedValue([]);
       vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+      const productAggregateSpy = vi.spyOn(Product, "aggregate").mockResolvedValue([]);
 
       const report = await generateFinancialReport({
         period: "today",
@@ -393,17 +435,22 @@ describe("FinancialReportsEngine", () => {
       });
 
       expect(orderAggregateSpy).toHaveBeenCalled();
+      expect(productAggregateSpy).toHaveBeenCalled();
       const summaryPipeline = orderAggregateSpy.mock.calls[0][0] as any[];
       const companyMatchStage = summaryPipeline.find(
         (stage: any) => stage.$match && stage.$match.$expr
       );
       expect(companyMatchStage).toBeDefined();
       expect(report.filterMeta?.companyId).toBe("comp-nike-123");
+
+      const invPipeline = productAggregateSpy.mock.calls[0][0] as any[];
+      expect(invPipeline[0].$match.$expr).toBeDefined();
     });
 
     it("should include both category and companyId when both are specified", async () => {
       const orderAggregateSpy = vi.spyOn(Order, "aggregate").mockResolvedValue([]);
       vi.spyOn(Shift, "aggregate").mockResolvedValue([]);
+      const productAggregateSpy = vi.spyOn(Product, "aggregate").mockResolvedValue([]);
 
       const report = await generateFinancialReport({
         period: "this_week",
@@ -412,6 +459,7 @@ describe("FinancialReportsEngine", () => {
       });
 
       expect(orderAggregateSpy).toHaveBeenCalled();
+      expect(productAggregateSpy).toHaveBeenCalled();
       const summaryPipeline = orderAggregateSpy.mock.calls[0][0] as any[];
       const filterMatchStage = summaryPipeline.find(
         (stage: any) =>
@@ -422,6 +470,10 @@ describe("FinancialReportsEngine", () => {
       expect(filterMatchStage).toBeDefined();
       expect(report.filterMeta?.category).toBe("Shoes");
       expect(report.filterMeta?.companyId).toBe("comp-adidas-456");
+
+      const invPipeline = productAggregateSpy.mock.calls[0][0] as any[];
+      expect(invPipeline[0].$match.category).toBe("Shoes");
+      expect(invPipeline[0].$match.$expr).toBeDefined();
     });
   });
 });

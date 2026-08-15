@@ -121,10 +121,10 @@ export function printElement(elementId: string, options: PrintOptions = {}) {
         max-width: 78mm;
         min-width: 68mm;
         margin: 0 auto;
-        padding: 2mm 1mm;
+        padding: 4mm 5mm;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Courier New", Courier, monospace;
         font-size: 11px;
-        line-height: 1.35;
+        line-height: 1.4;
         background: #ffffff;
         color: #000000;
         -webkit-print-color-adjust: exact;
@@ -133,24 +133,24 @@ export function printElement(elementId: string, options: PrintOptions = {}) {
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 4px;
-        margin-bottom: 4px;
+        margin-top: 5px;
+        margin-bottom: 5px;
       }
       th, td {
-        padding: 2.5px 0;
+        padding: 3px 2px;
       }
       th {
         border-bottom: 1px solid #000;
         font-weight: bold;
       }
       td {
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px dashed #d1d5db;
       }
       img {
         display: block;
-        margin: 0 auto 4px auto;
-        max-height: 42px;
-        max-width: 42px;
+        margin: 0 auto 6px auto;
+        max-height: 48px;
+        max-width: 48px;
         object-fit: contain;
       }
     `;

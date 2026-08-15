@@ -17,6 +17,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
+import { printElement } from "@/lib/printer/printHelper";
 
 export default function POSReturnsTab() {
   const { websiteName, favicon } = useSiteSettings();
@@ -302,20 +303,18 @@ export default function POSReturnsTab() {
             {/* Printable Voucher Paper */}
             <div
               id="printable-return-voucher"
-              className="bg-white text-slate-950 p-4 rounded-xl text-xs font-mono space-y-3 border border-slate-200 shadow-inner"
+              className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-3 border border-slate-200 shadow-inner"
             >
-              <div className="text-center border-b border-dashed border-slate-400 pb-2">
-                {favicon ? (
-                  <div className="flex justify-center mb-1.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={favicon}
-                      alt={websiteName || "Store Icon"}
-                      className="h-10 w-10 object-contain mx-auto"
-                    />
-                  </div>
-                ) : null}
-                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - {websiteName || "M L N TOOLS"}</h3>
+              <div className="text-center border-b border-dashed border-slate-400 pb-2.5">
+                <div className="flex justify-center mb-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={favicon || "/favicon.png"}
+                    alt={websiteName || "Store Logo"}
+                    className="h-12 w-12 object-contain mx-auto"
+                  />
+                </div>
+                <h3 className="text-base font-black text-slate-900">إشعار مرتجع - {websiteName || "M L N TOOLS"}</h3>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة الأصلية: #{selectedReturn.orderId.slice(-6).toUpperCase()}</p>
                 <p className="text-[10px] text-slate-500">
                   التاريخ: {new Date(selectedReturn.createdAt).toLocaleString("ar-EG")}
@@ -345,7 +344,7 @@ export default function POSReturnsTab() {
 
               <div className="pt-2 border-t border-dashed border-slate-400 space-y-1">
                 <div className="flex justify-between font-black text-sm text-slate-900">
-                  <span>إجمالي المبلغ المسترد:</span>
+                  <span>المبلغ المعاد للعميل:</span>
                   <span>{(selectedReturn.totalRefunded || 0).toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-600">
@@ -353,7 +352,7 @@ export default function POSReturnsTab() {
                   <span className="font-bold uppercase">{selectedReturn.paymentMethod}</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-600">
-                  <span>إعادة للمخزن:</span>
+                  <span>إعادة للمخزون:</span>
                   <span>{selectedReturn.restockToInventory ? "نعم" : "لا"}</span>
                 </div>
               </div>
@@ -362,10 +361,15 @@ export default function POSReturnsTab() {
             {/* Actions */}
             <div className="flex items-center gap-2 pt-2 border-t border-slate-800 no-print">
               <button
-                onClick={() => window.print()}
+                onClick={() =>
+                  printElement("printable-return-voucher", {
+                    type: "receipt",
+                    title: `إشعار-مرتجع-${selectedReturn.orderId}`,
+                  })
+                }
                 className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md"
               >
-                <Printer className="w-4 h-4" /> طباعة إيصال المرتجع
+                <Printer className="w-4 h-4" /> طباعة إشعار المرتجع
               </button>
               <button
                 onClick={() => handleDeleteReturn(selectedReturn.returnId)}

@@ -22,8 +22,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { printElement } from "@/lib/printer/printHelper";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 export default function POSOrdersTab() {
+  const { websiteName, favicon } = useSiteSettings();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -507,10 +509,18 @@ export default function POSOrdersTab() {
             {/* Dedicated Printable Thermal Receipt for Selected Order */}
             <div
               id="printable-pos-receipt"
-              className="hidden print:block bg-white text-slate-950 p-4 text-xs font-mono space-y-3"
+              className="hidden print:block bg-white text-slate-950 px-5 py-4 text-xs font-mono space-y-3"
             >
-              <div className="text-center border-b border-dashed border-slate-400 pb-2">
-                <h2 className="text-base font-black text-slate-900">M L N TOOLS</h2>
+              <div className="text-center border-b border-dashed border-slate-400 pb-2.5">
+                <div className="flex justify-center mb-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={favicon || "/favicon.png"}
+                    alt={websiteName || "Store Logo"}
+                    className="h-12 w-12 object-contain mx-auto"
+                  />
+                </div>
+                <h2 className="text-base font-black text-slate-900">{websiteName || "M L N TOOLS"}</h2>
                 <p className="text-[11px] text-slate-600">فاتورة بيع رسمية - POS</p>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة: #{selectedOrder._id}</p>
                 <p className="text-[10px] text-slate-500">

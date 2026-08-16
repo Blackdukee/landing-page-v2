@@ -127,24 +127,38 @@ export function printElement(elementId: string, options: PrintOptions = {}) {
         line-height: 1.4;
         background: #ffffff;
         color: #000000;
+        border: none !important;
+        box-shadow: none !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+      }
+      #printable-pos-receipt,
+      #printable-pos-cart-preview,
+      #printable-return-voucher {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
       }
       table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 5px;
         margin-bottom: 5px;
+        border: none !important;
       }
       th, td {
         padding: 3px 2px;
+        border-left: none !important;
+        border-right: none !important;
       }
       th {
-        border-bottom: 1px solid #000;
+        border-top: none !important;
+        border-bottom: 1px solid #000 !important;
         font-weight: bold;
       }
       td {
-        border-bottom: 1px dashed #d1d5db;
+        border-top: none !important;
+        border-bottom: 1px solid #e5e7eb !important;
       }
       img {
         display: block;
@@ -167,19 +181,41 @@ export function printElement(elementId: string, options: PrintOptions = {}) {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            border-width: 0;
+            border-style: solid;
+            border-color: transparent;
           }
-          html {
+          html, body {
             height: auto;
             margin: 0;
             padding: 0;
             background: #fff;
+            border: none !important;
+          }
+          div, table, tr, td, th, section {
+            border-left: none !important;
+            border-right: none !important;
           }
           .text-center { text-align: center; }
           .text-right { text-align: right; }
           .text-left { text-align: left; }
-          .border-b { border-bottom: 1px solid #9ca3af; }
-          .border-t { border-top: 1px solid #9ca3af; }
-          .border-dashed { border-style: dashed; }
+          .border-b {
+            border-bottom: 1px solid #9ca3af !important;
+            border-top: none !important;
+            border-left: none !important;
+            border-right: none !important;
+          }
+          .border-t {
+            border-top: 1px solid #9ca3af !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-right: none !important;
+          }
+          .border-dashed {
+            border-style: dashed !important;
+            border-left: none !important;
+            border-right: none !important;
+          }
           .font-bold { font-weight: bold; }
           .font-black { font-weight: 900; }
           .font-medium { font-weight: 500; }

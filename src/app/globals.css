@@ -220,6 +220,8 @@ body {
   /* 4. SHOW ONLY THE PRINTABLE RECEIPT / VOUCHER / REPORT / BARCODE LABEL */
   #printable-pos-receipt,
   #printable-pos-receipt *,
+  #printable-pos-cart-preview,
+  #printable-pos-cart-preview *,
   #printable-return-voucher,
   #printable-return-voucher *,
   #printable-barcode-label,
@@ -231,6 +233,7 @@ body {
 
   /* 5. Thermal Receipt & Voucher (80mm / 58mm Thermal Paper) */
   #printable-pos-receipt,
+  #printable-pos-cart-preview,
   #printable-return-voucher {
     position: fixed !important;
     left: 0 !important;

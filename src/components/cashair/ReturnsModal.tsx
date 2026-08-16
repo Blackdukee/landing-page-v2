@@ -213,9 +213,9 @@ export default function ReturnsModal({
             {/* Printable Voucher */}
             <div
               id="printable-return-voucher"
-              className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-2 border border-slate-200"
+              className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-2 border-0 shadow-none"
             >
-              <div className="text-center border-b border-dashed border-slate-400 pb-2.5">
+              <div className="text-center border-b border-slate-300 pb-2.5">
                 <div className="flex justify-center mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -224,7 +224,7 @@ export default function ReturnsModal({
                     className="h-12 w-12 object-contain mx-auto"
                   />
                 </div>
-                <h3 className="text-base font-black text-slate-900">إيصال مرتجع - {websiteName || "M L N TOOLS"}</h3>
+                <h3 className="text-base font-black text-slate-900">إشعار مرتجع - {websiteName || "M L N TOOLS"}</h3>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة الأصلية: #{returnVoucher.orderId}</p>
                 <p className="text-[10px] text-slate-500">التاريخ: {returnVoucher.date}</p>
               </div>
@@ -250,7 +250,7 @@ export default function ReturnsModal({
                 </tbody>
               </table>
 
-              <div className="pt-2 border-t border-dashed border-slate-400 space-y-1">
+              <div className="pt-2 border-t border-slate-300 space-y-1">
                 <div className="flex justify-between font-black text-sm">
                   <span>إجمالي المبلغ المسترد:</span>
                   <span>{returnVoucher.totalRefunded.toLocaleString()} ج.م</span>

@@ -18,6 +18,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Edit3,
+  Eye,
 } from "lucide-react";
 import { calculatePOSDiscounts, OrderDiscountInput } from "@/modules/cashair/DiscountEngine";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
@@ -99,6 +100,7 @@ export default function POSCartPanel({
 
   // Completed sale receipt modal state
   const [receiptData, setReceiptData] = useState<any | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [persistentLowStockAlerts, setPersistentLowStockAlerts] = useState<
     Array<{ productId: string; name: string; remainingStock: number; isOutOfStock: boolean }>
   >([]);
@@ -610,25 +612,38 @@ export default function POSCartPanel({
           </div>
         )}
 
-        {/* Complete Sale Action Button */}
-        <button
-          onClick={handleCheckout}
-          disabled={isSubmitting || items.length === 0}
-          className={`w-full py-3.5 rounded-xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg ${
-            isSubmitting || items.length === 0
-              ? "bg-slate-800/60 text-slate-500 cursor-not-allowed border border-slate-800"
-              : "bg-amber-500 hover:bg-amber-400 text-slate-950 active:scale-[0.99] shadow-amber-500/20"
-          }`}
-        >
-          {isSubmitting ? (
-            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <>
-              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-              <span>إتمام العملية وطباعة الفاتورة</span>
-            </>
-          )}
-        </button>
+        {/* Actions Grid: Receipt Preview + Complete Sale */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => setIsPreviewModalOpen(true)}
+            disabled={items.length === 0}
+            className="py-3 px-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 border border-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-[0.98]"
+            title="معاينة شكل الفاتورة الحرارية قبل الحفظ"
+          >
+            <Eye className="w-4 h-4 text-amber-400" />
+            <span>معاينة الفاتورة</span>
+          </button>
+
+          <button
+            onClick={handleCheckout}
+            disabled={isSubmitting || items.length === 0}
+            className={`sm:col-span-2 py-3 px-4 rounded-xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg ${
+              isSubmitting || items.length === 0
+                ? "bg-slate-800/60 text-slate-500 cursor-not-allowed border border-slate-800"
+                : "bg-amber-500 hover:bg-amber-400 text-slate-950 active:scale-[0.99] shadow-amber-500/20"
+            }`}
+          >
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <>
+                <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                <span>إتمام الطلب وحفظ الفاتورة</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Order Discount Modal */}
@@ -712,6 +727,156 @@ export default function POSCartPanel({
         </div>
       )}
 
+      {/* Live Pre-Checkout Receipt Preview Modal */}
+      {isPreviewModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl overflow-hidden text-slate-100 flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 no-print">
+              <div className="flex items-center gap-2">
+                <Eye className="w-5 h-5 text-amber-400" />
+                <h3 className="text-base font-extrabold text-slate-100">معاينة الفاتورة قبل الحفظ</h3>
+              </div>
+              <button
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="text-slate-400 hover:text-slate-200 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Receipt Container */}
+            <div className="overflow-y-auto pr-1 flex-1 scrollbar-thin scrollbar-thumb-slate-700">
+              <div
+                id="printable-pos-cart-preview"
+                className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-3 shadow-none border-0"
+              >
+                <div className="text-center border-b border-slate-300 pb-2.5">
+                  <div className="flex justify-center mb-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={favicon || "/favicon.png"}
+                      alt={websiteName || "Store Logo"}
+                      className="h-12 w-12 object-contain mx-auto"
+                    />
+                  </div>
+                  <h2 className="text-base font-black text-slate-900">{websiteName || "M L N TOOLS"}</h2>
+                  <p className="text-[11px] text-slate-600">معاينة فاتورة بيع مباشرة - POS</p>
+                  <p className="text-[10px] text-slate-500">التاريخ: {new Date().toLocaleString("ar-EG")}</p>
+                  <p className="text-[10px] text-slate-500">الكاشير: {cashierName}</p>
+                </div>
+
+                {(customerName || customerPhone) && (
+                  <div className="border-b border-slate-300 pb-2 text-[11px]">
+                    {customerName && <p>العميل: {customerName}</p>}
+                    {customerPhone && <p>الهاتف: {customerPhone}</p>}
+                  </div>
+                )}
+
+                {/* Items Table */}
+                <table className="w-full text-right text-[11px]">
+                  <thead>
+                    <tr className="border-b border-slate-300 text-slate-700">
+                      <th className="py-1">الصنف</th>
+                      <th className="py-1 text-center">الكمية</th>
+                      <th className="py-1 text-left">الإجمالي</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((it, idx) => {
+                      const itemTotal = (it.overridePrice ?? it.price) * it.quantity;
+                      return (
+                        <tr key={idx} className="border-b border-slate-100">
+                          <td className="py-1 font-sans">
+                            {it.name}
+                            {it.overridePrice !== undefined && it.overridePrice !== it.price && (
+                              <span className="text-[9px] text-amber-600 block">
+                                (سعر مخصص: {it.overridePrice} ج.م)
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-1 text-center font-bold">{it.quantity}</td>
+                          <td className="py-1 text-left font-bold">
+                            {itemTotal.toLocaleString()} ج.م
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                {/* Totals Breakdown */}
+                <div className="border-t border-slate-300 pt-2 space-y-1 text-left">
+                  <div className="flex justify-between">
+                    <span>الإجمالي:</span>
+                    <span>{totals.originalTotal.toLocaleString()} ج.م</span>
+                  </div>
+
+                  {totals.totalDiscount > 0 && (
+                    <div className="flex justify-between text-rose-600">
+                      <span>الخصم:</span>
+                      <span>-{totals.totalDiscount.toLocaleString()} ج.م</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-sm font-black pt-1 border-t border-slate-300">
+                    <span>الصافي النهائي:</span>
+                    <span>{totals.finalTotal.toLocaleString()} ج.م</span>
+                  </div>
+
+                  <div className="flex justify-between text-[10px] text-slate-500">
+                    <span>طريقة الدفع:</span>
+                    <span className="font-bold uppercase">
+                      {paymentMethodsList.find((p) => p.id === paymentMethod)?.label || paymentMethod}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-center pt-2 border-t border-slate-300 text-[10px] text-slate-500">
+                  شكراً لزيارتكم ونتمنى خدمتكم دائماً
+                </div>
+              </div>
+            </div>
+
+            {/* Actions Bar */}
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-800 no-print">
+              <button
+                type="button"
+                onClick={() =>
+                  printElement("printable-pos-cart-preview", {
+                    type: "receipt",
+                    title: "معاينة-فاتورة",
+                  })
+                }
+                className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md transition-all"
+              >
+                <Printer className="w-4 h-4" /> طباعة الفاتورة
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPreviewModalOpen(false);
+                  handleCheckout();
+                }}
+                disabled={isSubmitting || items.length === 0}
+                className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md transition-all"
+              >
+                <CheckCircle2 className="w-4 h-4" /> حفظ وإتمام
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="py-2.5 px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Digital Receipt & Print Modal */}
       {receiptData && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
@@ -732,9 +897,9 @@ export default function POSCartPanel({
             {/* Receipt Preview Paper */}
             <div
               id="printable-pos-receipt"
-              className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-3 shadow-inner border border-slate-200"
+              className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-3 shadow-none border-0"
             >
-              <div className="text-center border-b border-dashed border-slate-400 pb-2.5">
+              <div className="text-center border-b border-slate-300 pb-2.5">
                 <div className="flex justify-center mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -744,14 +909,14 @@ export default function POSCartPanel({
                   />
                 </div>
                 <h2 className="text-base font-black text-slate-900">{websiteName || "M L N TOOLS"}</h2>
-                <p className="text-[11px] text-slate-600">فاتورة بيع مباشرة - POS</p>
+                <p className="text-[11px] text-slate-600">فاتورة بيع رسمية - POS</p>
                 <p className="text-[10px] text-slate-500">رقم الفاتورة: #{receiptData.orderId}</p>
                 <p className="text-[10px] text-slate-500">التاريخ: {receiptData.date}</p>
                 <p className="text-[10px] text-slate-500">الكاشير: {receiptData.cashierName}</p>
               </div>
 
               {receiptData.customerPhone && (
-                <div className="border-b border-dashed border-slate-400 pb-2 text-[11px]">
+                <div className="border-b border-slate-300 pb-2 text-[11px]">
                   <p>العميل: {receiptData.customerName || "عميل مباشر"}</p>
                   <p>الهاتف: {receiptData.customerPhone}</p>
                 </div>
@@ -782,7 +947,7 @@ export default function POSCartPanel({
                 </tbody>
               </table>
 
-              <div className="border-t border-dashed border-slate-400 pt-2 space-y-1 text-left">
+              <div className="border-t border-slate-300 pt-2 space-y-1 text-left">
                 <div className="flex justify-between">
                   <span>المجموع:</span>
                   <span>{receiptData.totals.originalTotal.toLocaleString()} ج.م</span>
@@ -803,8 +968,8 @@ export default function POSCartPanel({
                 </div>
               </div>
 
-              <div className="text-center pt-2 border-t border-dashed border-slate-400 text-[10px] text-slate-500">
-                شكراً لزيارتكم متجر قويسنا - نتمنى لكم يوماً سعيداً
+              <div className="text-center pt-2 border-t border-slate-300 text-[10px] text-slate-500">
+                شكراً لزيارتكم ونتمنى خدمتكم دائماً
               </div>
             </div>
 

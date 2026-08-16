@@ -511,7 +511,7 @@ export default function POSOrdersTab() {
               id="printable-pos-receipt"
               className="hidden print:block bg-white text-slate-950 px-5 py-4 text-xs font-mono space-y-3"
             >
-              <div className="text-center border-b border-dashed border-slate-400 pb-2.5">
+              <div className="text-center border-b border-slate-300 pb-2.5">
                 <div className="flex justify-center mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -532,7 +532,7 @@ export default function POSOrdersTab() {
               </div>
 
               {selectedOrder.customerInfo?.name && (
-                <div className="border-b border-dashed border-slate-400 pb-2 text-[11px]">
+                <div className="border-b border-slate-300 pb-2 text-[11px]">
                   <p>العميل: {selectedOrder.customerInfo.name}</p>
                   {selectedOrder.customerInfo.phone && <p>الهاتف: {selectedOrder.customerInfo.phone}</p>}
                 </div>
@@ -560,7 +560,7 @@ export default function POSOrdersTab() {
                 </tbody>
               </table>
 
-              <div className="border-t border-dashed border-slate-400 pt-2 space-y-1 text-left">
+              <div className="border-t border-slate-300 pt-2 space-y-1 text-left">
                 <div className="flex justify-between text-sm font-black pt-1 border-t border-slate-300">
                   <span>الإجمالي النهائي:</span>
                   <span>{(selectedOrder.totalPrice || 0).toLocaleString()} ج.م</span>

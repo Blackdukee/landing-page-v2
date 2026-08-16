@@ -303,9 +303,9 @@ export default function POSReturnsTab() {
             {/* Printable Voucher Paper */}
             <div
               id="printable-return-voucher"
-              className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-3 border border-slate-200 shadow-inner"
+              className="bg-white text-slate-950 px-5 py-4 rounded-xl text-xs font-mono space-y-3 border-0 shadow-none"
             >
-              <div className="text-center border-b border-dashed border-slate-400 pb-2.5">
+              <div className="text-center border-b border-slate-300 pb-2.5">
                 <div className="flex justify-center mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -342,7 +342,7 @@ export default function POSReturnsTab() {
                 </tbody>
               </table>
 
-              <div className="pt-2 border-t border-dashed border-slate-400 space-y-1">
+              <div className="pt-2 border-t border-slate-300 space-y-1">
                 <div className="flex justify-between font-black text-sm text-slate-900">
                   <span>المبلغ المعاد للعميل:</span>
                   <span>{(selectedReturn.totalRefunded || 0).toLocaleString()} ج.م</span>

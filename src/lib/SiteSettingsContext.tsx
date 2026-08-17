@@ -17,7 +17,8 @@ export interface PriceRangeFilter {
 }
 
 export interface SocialLinks {
-  instagram: string;
+  instagram?: string;
+  facebook?: string;
   twitter: string;
   email: string;
 }
@@ -58,7 +59,7 @@ interface SiteSettingsContextValue extends SiteSettings {
   refresh: () => void;
 }
 
-const defaultSocialLinks: SocialLinks = { instagram: "", twitter: "", email: "" };
+const defaultSocialLinks: SocialLinks = { facebook: "", twitter: "", email: "" };
 
 const defaultSettings: SiteSettings = {
   websiteName: "M L N TOOLS",
@@ -103,7 +104,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
             heroProduct: data.heroProduct || null,
             socialLinks: data.socialLinks
               ? {
-                  instagram: data.socialLinks.instagram || "",
+                  facebook: data.socialLinks.facebook || data.socialLinks.instagram || "",
                   twitter: data.socialLinks.twitter || "",
                   email: data.socialLinks.email || "",
                 }

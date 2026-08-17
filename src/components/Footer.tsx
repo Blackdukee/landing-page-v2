@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Sparkles, Instagram, Twitter, Mail, MapPin } from "lucide-react";
+import { Sparkles, Facebook, Twitter, Mail, MapPin } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
@@ -10,7 +10,7 @@ export default function Footer() {
   const { t } = useTranslation();
   const { websiteName, favicon, socialLinks, location } = useSiteSettings();
 
-  const hasAnySocial = socialLinks.instagram || socialLinks.twitter || socialLinks.email;
+  const hasAnySocial = socialLinks.facebook || socialLinks.twitter || socialLinks.email;
   const storeLocation = location?.trim();
 
   return (
@@ -44,9 +44,9 @@ export default function Footer() {
 
             {hasAnySocial && (
               <div className="flex gap-4 mt-6">
-                {socialLinks.instagram && (
-                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted hover:text-primary transition-colors duration-200">
-                    <Instagram className="h-5 w-5" />
+                {socialLinks.facebook && (
+                  <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-muted hover:text-primary transition-colors duration-200">
+                    <Facebook className="h-5 w-5" />
                   </a>
                 )}
                 {socialLinks.twitter && (

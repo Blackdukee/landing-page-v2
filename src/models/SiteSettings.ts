@@ -9,7 +9,8 @@ export interface IPriceRange {
 }
 
 export interface ISocialLinks {
-  instagram: string;
+  instagram?: string;
+  facebook?: string;
   twitter: string;
   email: string;
 }
@@ -51,6 +52,7 @@ const PriceRangeSchema = new Schema<IPriceRange>(
 const SocialLinksSchema = new Schema(
   {
     instagram: { type: String, default: "" },
+    facebook: { type: String, default: "" },
     twitter: { type: String, default: "" },
     email: { type: String, default: "" },
   },

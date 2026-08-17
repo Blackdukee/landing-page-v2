@@ -106,6 +106,7 @@ export async function PUT(req: NextRequest) {
       const sl = body.socialLinks as Record<string, unknown>;
       const socialLinks: Record<string, string> = {};
       if (typeof sl.instagram === "string") socialLinks.instagram = sl.instagram.trim();
+      if (typeof sl.facebook === "string") socialLinks.facebook = sl.facebook.trim();
       if (typeof sl.twitter === "string") socialLinks.twitter = sl.twitter.trim();
       if (typeof sl.email === "string") socialLinks.email = sl.email.trim();
       update.socialLinks = socialLinks;

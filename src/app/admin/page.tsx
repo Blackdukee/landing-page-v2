@@ -22,7 +22,7 @@ import {
   AlertTriangle,
   Star,
   Search,
-  Instagram,
+  Facebook,
   Twitter,
   Flame,
   Clock,
@@ -199,7 +199,7 @@ export default function AdminDashboard() {
   const [freeDeliveryMinPrice, setFreeDeliveryMinPrice] = useState(99);
   const [shippingCost, setShippingCost] = useState(9.99);
   const [returnDays, setReturnDays] = useState(30);
-  const [socialInstagram, setSocialInstagram] = useState("");
+  const [socialFacebook, setSocialFacebook] = useState("");
   const [socialTwitter, setSocialTwitter] = useState("");
   const [socialEmail, setSocialEmail] = useState("");
   const [savingSiteSettings, setSavingSiteSettings] = useState(false);
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
       setFreeDeliveryMinPrice(siteSettings.freeDeliveryMinPrice ?? 99);
       setShippingCost(siteSettings.shippingCost ?? 9.99);
       setReturnDays(siteSettings.returnDays ?? 30);
-      setSocialInstagram(siteSettings.socialLinks?.instagram || "");
+      setSocialFacebook(siteSettings.socialLinks?.facebook || siteSettings.socialLinks?.instagram || "");
       setSocialTwitter(siteSettings.socialLinks?.twitter || "");
       setSocialEmail(siteSettings.socialLinks?.email || "");
       setPriceRanges(siteSettings.priceRangeFilters.map((f) => ({ ...f })));
@@ -497,7 +497,8 @@ export default function AdminDashboard() {
           shippingCost,
           returnDays,
           socialLinks: {
-            instagram: socialInstagram,
+            facebook: socialFacebook,
+            instagram: socialFacebook,
             twitter: socialTwitter,
             email: socialEmail,
           },
@@ -1516,16 +1517,16 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="text-xs font-medium text-muted mb-1.5 block">
-                  Instagram
+                  Facebook
                 </label>
                 <div className="relative">
-                  <Instagram className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                  <Facebook className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                   <input
                     type="text"
-                    value={socialInstagram}
-                    onChange={(e) => setSocialInstagram(e.target.value)}
+                    value={socialFacebook}
+                    onChange={(e) => setSocialFacebook(e.target.value)}
                     className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-                    placeholder="https://instagram.com/..."
+                    placeholder="https://facebook.com/..."
                   />
                 </div>
               </div>

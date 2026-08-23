@@ -21,6 +21,7 @@ export interface POSProduct {
 interface POSProductGridProps {
   onAddToCart: (product: POSProduct) => boolean;
   getItemQuantityInCart: (productId: string) => number;
+  refreshTrigger?: number;
 }
 
 // FontAwesome Barcode Icon SVG
@@ -35,6 +36,7 @@ function FontAwesomeBarcodeIcon({ className = "w-4 h-4" }: { className?: string 
 export default function POSProductGrid({
   onAddToCart,
   getItemQuantityInCart,
+  refreshTrigger,
 }: POSProductGridProps) {
   const [products, setProducts] = useState<POSProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -63,8 +65,8 @@ export default function POSProductGrid({
     }
   };
 
-  const fetchProducts = async () => {
-    setLoading(true);
+  const fetchProducts = async (silent: boolean = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/cashair/products?limit=200");
@@ -72,12 +74,12 @@ export default function POSProductGrid({
       if (data.success && Array.isArray(data.products)) {
         setProducts(data.products);
       } else {
-        setError(data.error || "فشل تحميل المنتجات");
+        if (!silent) setError(data.error || "فشل تحميل المنتجات");
       }
     } catch {
-      setError("خطأ في شبكة الاتصال أثناء تحميل الكتالوج");
+      if (!silent) setError("خطأ في شبكة الاتصال أثناء تحميل الكتالوج");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -85,6 +87,12 @@ export default function POSProductGrid({
     fetchProducts();
     fetchCategoriesAndCompanies();
   }, []);
+
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger > 0) {
+      fetchProducts(true);
+    }
+  }, [refreshTrigger]);
 
   // Handle hardware Barcode Scan submission
   const handleBarcodeScanSubmit = (e: React.FormEvent) => {
@@ -222,7 +230,7 @@ export default function POSProductGrid({
 
           <button
             type="button"
-            onClick={fetchProducts}
+            onClick={() => fetchProducts(false)}
             disabled={loading}
             className="px-3.5 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-amber-400 font-bold text-xs rounded-xl border border-slate-700/80 hover:border-amber-500/40 transition-all shrink-0 flex items-center gap-1.5 shadow-sm disabled:opacity-50 active:scale-95"
             title="تحديث قائمة المنتجات والأسعار والمخزون"
@@ -304,7 +312,7 @@ export default function POSProductGrid({
           <div className="flex flex-col items-center justify-center h-64 text-rose-400 gap-3">
             <p className="text-xs font-medium">{error}</p>
             <button
-              onClick={fetchProducts}
+              onClick={() => fetchProducts(false)}
               className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl border border-slate-700 transition-all"
             >
               إعادة المحاولة

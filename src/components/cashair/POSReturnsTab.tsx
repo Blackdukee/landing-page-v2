@@ -19,7 +19,11 @@ import {
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 import { printElement } from "@/lib/printer/printHelper";
 
-export default function POSReturnsTab() {
+interface POSReturnsTabProps {
+  onReturnChanged?: () => void;
+}
+
+export default function POSReturnsTab({ onReturnChanged }: POSReturnsTabProps = {}) {
   const { websiteName, favicon } = useSiteSettings();
   const [search, setSearch] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
@@ -57,6 +61,7 @@ export default function POSReturnsTab() {
       if (res.ok) {
         setSelectedReturn(null);
         fetchReturns();
+        onReturnChanged?.();
       }
     } catch {
       // Ignore error

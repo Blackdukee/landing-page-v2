@@ -28,7 +28,11 @@ function FontAwesomeBarcodeIcon({ className = "w-3 h-3" }: { className?: string 
   );
 }
 
-export default function POSProductsTab() {
+interface POSProductsTabProps {
+  onProductsModified?: () => void;
+}
+
+export default function POSProductsTab({ onProductsModified }: POSProductsTabProps = {}) {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [companyFilter, setCompanyFilter] = useState("all");
@@ -56,6 +60,7 @@ export default function POSProductsTab() {
       const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
       if (res.ok) {
         fetchProducts();
+        onProductsModified?.();
       }
     } catch {
       // Ignore error
@@ -376,6 +381,7 @@ export default function POSProductsTab() {
         }}
         onProductAdded={() => {
           fetchProducts();
+          onProductsModified?.();
         }}
       />
 

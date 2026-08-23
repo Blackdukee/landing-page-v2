@@ -56,6 +56,10 @@ export default function CashierPOSPage() {
   const totalCartItemsCount = storeItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalCartPrice = storeItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  // Catalog real-time stock refresh trigger
+  const [catalogRefreshTrigger, setCatalogRefreshTrigger] = useState<number>(0);
+  const triggerCatalogRefresh = () => setCatalogRefreshTrigger((prev) => prev + 1);
+
   // Web Orders pending count state
   const [webOrdersCount, setWebOrdersCount] = useState<number>(0);
 
@@ -401,6 +405,7 @@ export default function CashierPOSPage() {
                 <POSProductGrid
                   onAddToCart={handleAddToCart}
                   getItemQuantityInCart={getItemQuantityInCart}
+                  refreshTrigger={catalogRefreshTrigger}
                 />
               </div>
 
@@ -432,6 +437,7 @@ export default function CashierPOSPage() {
                   cashierName={activeShift?.cashierName || "كاشير"}
                   onSaleCompleted={() => {
                     fetchActiveShift();
+                    triggerCatalogRefresh();
                     setMobilePosView("catalog");
                   }}
                 />
@@ -466,11 +472,11 @@ export default function CashierPOSPage() {
           </div>
         ) : activeTab === "returns" ? (
           <div className="h-full min-h-0 overflow-y-auto">
-            <POSReturnsTab />
+            <POSReturnsTab onReturnChanged={triggerCatalogRefresh} />
           </div>
         ) : activeTab === "products" ? (
           <div className="h-full min-h-0 overflow-y-auto">
-            <POSProductsTab />
+            <POSProductsTab onProductsModified={triggerCatalogRefresh} />
           </div>
         ) : (
           <div className="h-full min-h-0 overflow-y-auto">
@@ -487,6 +493,7 @@ export default function CashierPOSPage() {
         cashierName={activeShift?.cashierName || "كاشير"}
         onReturnCompleted={() => {
           fetchActiveShift();
+          triggerCatalogRefresh();
         }}
       />
 

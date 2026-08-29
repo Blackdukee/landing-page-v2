@@ -289,6 +289,7 @@ const ar: Record<string, string> = {
   "admin.login.passwordPlaceholder": "كلمة المرور",
   "admin.login.signingIn": "جاري تسجيل الدخول...",
   "admin.login.signIn": "تسجيل الدخول",
+  "admin.login.rememberMe": "تذكرني / البقاء قيد تسجيل الدخول دائماً",
   "admin.login.defaultHint": "الافتراضي: ",
 
   // ── الإدارة – لوحة التحكم ──

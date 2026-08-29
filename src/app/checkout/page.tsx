@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
+import { getWhatsAppUrlDigits } from "@/lib/phoneUtils";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
@@ -145,7 +146,8 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
 
-    const whatsappNumber = settingsWhatsapp || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+201025571092";
+    const rawWhatsapp = settingsWhatsapp || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+201025571092";
+    const waDigits = getWhatsAppUrlDigits(rawWhatsapp);
     const itemLines = items
       .map(
         (item) =>
@@ -168,7 +170,7 @@ Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
 *Total: EGP ${total.toFixed(2)}*`;
 
     const encoded = encodeURIComponent(message);
-    const url = `https://wa.me/${whatsappNumber}?text=${encoded}`;
+    const url = `https://wa.me/${waDigits}?text=${encoded}`;
 
     try {
       await fetch("/api/orders", {

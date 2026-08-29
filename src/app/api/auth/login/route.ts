@@ -8,7 +8,7 @@ import { createSignedToken, setAdminCookie } from "@/lib/auth";
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
-    const { email, password } = await req.json();
+    const { email, password, rememberMe = true } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       user: { email: userEmail, role: userRole },
     });
 
-    setAdminCookie(response, token);
+    setAdminCookie(response, token, rememberMe !== false);
 
     return response;
   } catch (error) {

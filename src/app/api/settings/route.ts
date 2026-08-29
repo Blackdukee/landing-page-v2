@@ -4,34 +4,10 @@ import dbConnect from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
 import { logError } from "@/lib/apiError";
 import { checkAdminAuthResponse } from "@/lib/auth";
+import { normalizeWhatsAppNumber } from "@/lib/phoneUtils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-// Helper function to normalize WhatsApp number to +201234567890 format
-const normalizeWhatsAppNumber = (input: string): string => {
-  let number = input.trim().replace(/\s/g, "");
-  
-  // Remove + if present
-  if (number.startsWith("+")) {
-    number = number.substring(1);
-  }
-  
-  // Convert 01234567890 to 201234567890
-  if (number.startsWith("0")) {
-    number = "2" + number.substring(1);
-  }
-  
-  // Ensure it starts with 20 (Egypt country code)
-  if (!number.startsWith("20")) {
-    if (number.startsWith("1")) {
-      number = "2" + number;
-    }
-  }
-  
-  // Add + prefix
-  return "+" + number;
-};
 
 // Helper to get or create the singleton settings document (returns plain object)
 async function getSettings() {

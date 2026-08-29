@@ -36,6 +36,7 @@ export default function CashierPOSPage() {
 
   // Modals state
   const [isReturnsModalOpen, setIsReturnsModalOpen] = useState(false);
+  const [selectedReturnOrder, setSelectedReturnOrder] = useState<any | null>(null);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [shiftModalMode, setShiftModalMode] = useState<"start" | "end">("start");
 
@@ -468,7 +469,12 @@ export default function CashierPOSPage() {
           </div>
         ) : activeTab === "orders" ? (
           <div className="h-full min-h-0 overflow-y-auto">
-            <POSOrdersTab />
+            <POSOrdersTab
+              onInitiateReturn={(order) => {
+                setSelectedReturnOrder(order);
+                setIsReturnsModalOpen(true);
+              }}
+            />
           </div>
         ) : activeTab === "returns" ? (
           <div className="h-full min-h-0 overflow-y-auto">
@@ -488,12 +494,17 @@ export default function CashierPOSPage() {
       {/* Modals Container */}
       <ReturnsModal
         isOpen={isReturnsModalOpen}
-        onClose={() => setIsReturnsModalOpen(false)}
+        onClose={() => {
+          setIsReturnsModalOpen(false);
+          setSelectedReturnOrder(null);
+        }}
         activeShiftId={activeShift?._id || null}
         cashierName={activeShift?.cashierName || "كاشير"}
+        initialOrder={selectedReturnOrder}
         onReturnCompleted={() => {
           fetchActiveShift();
           triggerCatalogRefresh();
+          setSelectedReturnOrder(null);
         }}
       />
 

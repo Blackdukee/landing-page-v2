@@ -33,6 +33,7 @@ import {
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useSiteSettings, type IDailyOfferItem } from "@/lib/SiteSettingsContext";
 import type { TranslationKey } from "@/i18n/en";
+import { normalizeWhatsAppNumber, displayWhatsAppNumber } from "@/lib/phoneUtils";
 
 interface Stats {
   totalProducts: number;
@@ -78,44 +79,6 @@ interface ProductOption {
   price: number;
   category: string;
 }
-
-// Helper function to normalize WhatsApp number to +201234567890 format
-const normalizeWhatsAppNumber = (input: string): string => {
-  let number = input.trim().replace(/\s/g, "");
-  
-  // Remove + if present
-  if (number.startsWith("+")) {
-    number = number.substring(1);
-  }
-  
-  // Convert 01234567890 to 201234567890
-  if (number.startsWith("0")) {
-    number = "2" + number.substring(1);
-  }
-  
-  // Ensure it starts with 20 (Egypt country code)
-  if (!number.startsWith("20")) {
-    // If it starts with digits but not 20, assume it's from 01X format
-    if (number.startsWith("1")) {
-      number = "2" + number;
-    }
-  }
-  
-  // Add + prefix
-  return "+" + number;
-};
-
-// Helper function to display WhatsApp number in local format (01234567890)
-const displayWhatsAppNumber = (input: string): string => {
-  let number = input.trim().replace(/\s/g, "").replace(/\+/g, "");
-  
-  // Convert 201234567890 to 01234567890
-  if (number.startsWith("20")) {
-    number = "0" + number.substring(2);
-  }
-  
-  return number;
-};
 
 export default function AdminDashboard() {
   const { t } = useTranslation();

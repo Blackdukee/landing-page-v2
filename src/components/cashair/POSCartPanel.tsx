@@ -23,6 +23,7 @@ import {
 import { calculatePOSDiscounts, OrderDiscountInput } from "@/modules/cashair/DiscountEngine";
 import { useSiteSettings } from "@/lib/SiteSettingsContext";
 import { printElement } from "@/lib/printer/printHelper";
+import { getWhatsAppUrlDigits } from "@/lib/phoneUtils";
 
 export interface CartItemWithOverride {
   productId: string;
@@ -1020,7 +1021,7 @@ export default function POSCartPanel({
 
               {receiptData.customerPhone && (
                 <a
-                  href={`https://wa.me/2${receiptData.customerPhone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                  href={`https://wa.me/${getWhatsAppUrlDigits(receiptData.customerPhone)}?text=${encodeURIComponent(
                     `شكراً لتسوقكم من كاش إير!\nرقم الفاتورة: #${receiptData.orderId}\nالإجمالي المدفوع: ${receiptData.totals.finalTotal} ج.م`
                   )}`}
                   target="_blank"

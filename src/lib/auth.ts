@@ -105,9 +105,13 @@ export function checkAdminAuthResponse(req: NextRequest): NextResponse | null {
 }
 
 /**
- * Sets the admin session cookie on a NextResponse object.
+ * Sets the persistent admin session cookie on a NextResponse object.
+ * Keeps the admin logged in for 1 full year (365 days) with sliding renewal.
  */
-export function setAdminCookie(res: NextResponse, token: string): void {
+export function setAdminCookie(res: NextResponse, token: string, rememberMe: boolean = true): void {
+  const maxAge = rememberMe ? 60 * 60 * 24 * 365 : 60 * 60 * 24 * 30; // 1 year (or 30 days)
+  const expires = new Date(Date.now() + maxAge * 1000);
+
   res.cookies.set({
     name: COOKIE_NAME,
     value: token,
@@ -115,7 +119,8 @@ export function setAdminCookie(res: NextResponse, token: string): void {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge,
+    expires,
   });
 }
 

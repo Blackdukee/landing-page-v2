@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   RotateCcw,
   Search,
@@ -22,6 +22,7 @@ interface ReturnsModalProps {
   activeShiftId: string | null;
   cashierName?: string;
   onReturnCompleted?: () => void;
+  initialOrder?: any;
 }
 
 export default function ReturnsModal({
@@ -30,6 +31,7 @@ export default function ReturnsModal({
   activeShiftId,
   cashierName = "Cashier",
   onReturnCompleted,
+  initialOrder,
 }: ReturnsModalProps) {
   const { websiteName, favicon } = useSiteSettings();
   // Search query
@@ -53,6 +55,30 @@ export default function ReturnsModal({
 
   // Return Receipt Modal state
   const [returnVoucher, setReturnVoucher] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (isOpen && initialOrder) {
+      setSearchQuery(initialOrder._id?.toString().slice(-6).toUpperCase() || "");
+      setFoundOrders([initialOrder]);
+      setSelectedOrder(initialOrder);
+      const initialQtys: Record<string, number> = {};
+      if (Array.isArray(initialOrder.items)) {
+        initialOrder.items.forEach((item: any) => {
+          initialQtys[item.productId || item._id] = 0;
+        });
+      }
+      setReturnQuantities(initialQtys);
+      setSearchError(null);
+      setSubmitError(null);
+    } else if (!isOpen) {
+      setFoundOrders([]);
+      setSelectedOrder(null);
+      setSearchQuery("");
+      setSearchError(null);
+      setSubmitError(null);
+      setReturnVoucher(null);
+    }
+  }, [isOpen, initialOrder]);
 
   if (!isOpen) return null;
 

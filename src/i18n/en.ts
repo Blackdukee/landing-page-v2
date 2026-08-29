@@ -289,6 +289,7 @@ const en = {
   "admin.login.passwordPlaceholder": "Password",
   "admin.login.signingIn": "Signing in...",
   "admin.login.signIn": "Sign In",
+  "admin.login.rememberMe": "Keep me signed in / Remember me",
   "admin.login.defaultHint": "Default: ",
 
   // ── Admin – Dashboard ──

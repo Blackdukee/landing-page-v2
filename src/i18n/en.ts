@@ -230,6 +230,10 @@ const en = {
   "checkout.shipping": "Shipping",
   "checkout.free": "Free",
   "checkout.total": "Total",
+  "checkout.areaLabel": "Delivery Area / Governorate",
+  "checkout.selectArea": "Select your delivery area...",
+  "checkout.deliveryEstimate": "Estimated delivery: {time}",
+  "checkout.area": "Delivery Area",
   "checkout.completeOrder": "Complete Order via WhatsApp",
   "checkout.submitting": "Submitting Order...",
   "checkout.whatsappRedirect":
@@ -238,6 +242,33 @@ const en = {
   "checkout.openWhatsapp": "Open WhatsApp to Confirm Order",
   "checkout.copyDetails": "Copy Order Details to Clipboard",
   "checkout.copied": "Copied to Clipboard!",
+
+  // ── Cart ──
+  "cart.shippingCalculated": "Calculated at checkout",
+  "cart.shippingFrom": "From EGP {amount}",
+
+  // ── Admin Shipping Areas ──
+  "admin.shipping.title": "Shipping Rates & Delivery Areas",
+  "admin.shipping.desc": "Configure shipping costs and delivery times per governorate or custom area",
+  "admin.shipping.addArea": "Add Shipping Area",
+  "admin.shipping.newArea": "New Delivery Area",
+  "admin.shipping.resetDefaults": "Reset to Egypt Defaults",
+  "admin.shipping.resetConfirm": "Are you sure you want to reset all shipping areas to the default Egyptian governorate presets? Any custom changes will be overwritten.",
+  "admin.shipping.nameEn": "Name (English)",
+  "admin.shipping.nameAr": "Name (Arabic)",
+  "admin.shipping.cost": "Shipping Cost (EGP)",
+  "admin.shipping.deliveryTime": "Delivery Estimate",
+  "admin.shipping.deliveryTimeHint": "e.g. 1-2 Days, Same Day",
+  "admin.shipping.status": "Status",
+  "admin.shipping.active": "Active",
+  "admin.shipping.inactive": "Inactive",
+  "admin.shipping.editArea": "Edit Area",
+  "admin.shipping.deleteArea": "Delete Area",
+  "admin.shipping.deleteConfirm": "Are you sure you want to delete this shipping area?",
+  "admin.shipping.noAreas": "No shipping areas configured. Click 'Reset to Egypt Defaults' to restore default governorates.",
+  "admin.shipping.saveChanges": "Save Shipping Rates",
+  "admin.shipping.cancel": "Cancel",
+  "admin.shipping.save": "Save Area",
 
   // ── Language switcher ──
   "lang.en": "EN",

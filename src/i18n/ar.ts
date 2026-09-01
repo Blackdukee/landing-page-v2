@@ -230,6 +230,10 @@ const ar: Record<string, string> = {
   "checkout.shipping": "الشحن",
   "checkout.free": "مجاني",
   "checkout.total": "الإجمالي",
+  "checkout.areaLabel": "المنطقة / المحافظة",
+  "checkout.selectArea": "اختر منطقة أو محافظة التوصيل...",
+  "checkout.deliveryEstimate": "التوصيل المتوقع: {time}",
+  "checkout.area": "منطقة التوصيل",
   "checkout.completeOrder": "إتمام الطلب عبر واتساب",
   "checkout.submitting": "جاري إرسال الطلب...",
   "checkout.whatsappRedirect":
@@ -238,6 +242,33 @@ const ar: Record<string, string> = {
   "checkout.openWhatsapp": "فتح واتساب لتأكيد الطلب",
   "checkout.copyDetails": "نسخ تفاصيل الطلب للحافظة",
   "checkout.copied": "تم النسخ للحافظة!",
+
+  // ── Cart ──
+  "cart.shippingCalculated": "يُحسب عند الدفع",
+  "cart.shippingFrom": "تبدأ من {amount} ج.م",
+
+  // ── Admin Shipping Areas ──
+  "admin.shipping.title": "أسعار ومناطق الشحن والتوصيل",
+  "admin.shipping.desc": "تحديد تكاليف وأوقات الشحن حسب المحافظة أو المناطق المخصصة",
+  "admin.shipping.addArea": "إضافة منطقة شحن",
+  "admin.shipping.newArea": "منطقة شحن وتوصيل جديدة",
+  "admin.shipping.resetDefaults": "استعادة محافظات مصر الافتراضية",
+  "admin.shipping.resetConfirm": "هل أنت متأكد من رغبتك في استعادة محافظات مصر الافتراضية؟ سيتم استبدال أي مناطق مخصصة.",
+  "admin.shipping.nameEn": "الاسم (بالإنجليزية)",
+  "admin.shipping.nameAr": "الاسم (بالعربية)",
+  "admin.shipping.cost": "تكلفة الشحن (ج.م)",
+  "admin.shipping.deliveryTime": "مدة التوصيل المتوقعة",
+  "admin.shipping.deliveryTimeHint": "مثال: 1-2 يوم، نفس اليوم",
+  "admin.shipping.status": "الحالة",
+  "admin.shipping.active": "مفعل",
+  "admin.shipping.inactive": "معطل",
+  "admin.shipping.editArea": "تعديل المنطقة",
+  "admin.shipping.deleteArea": "حذف المنطقة",
+  "admin.shipping.deleteConfirm": "هل أنت متأكد من رغبتك في حذف منطقة الشحن هذه؟",
+  "admin.shipping.noAreas": "لم يتم ضبط أي مناطق شحن. اضغط 'استعادة محافظات مصر الافتراضية' لإضافة المحافظات.",
+  "admin.shipping.saveChanges": "حفظ أسعار الشحن",
+  "admin.shipping.cancel": "إلغاء",
+  "admin.shipping.save": "حفظ المنطقة",
 
   // ── مفتاح اللغة ──
   "lang.en": "EN",

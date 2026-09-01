@@ -17,9 +17,11 @@ import {
   Check,
   Loader2,
   ShoppingBag,
+  Truck,
+  Clock,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
-import { useSiteSettings } from "@/lib/SiteSettingsContext";
+import { useSiteSettings, DEFAULT_SHIPPING_AREAS } from "@/lib/SiteSettingsContext";
 import { getWhatsAppUrlDigits } from "@/lib/phoneUtils";
 
 export default function CheckoutPage() {
@@ -27,7 +29,20 @@ export default function CheckoutPage() {
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
   const { t, dir } = useTranslation();
-  const { whatsappNumber: settingsWhatsapp, websiteName, freeDeliveryMinPrice, shippingCost } = useSiteSettings();
+  const {
+    whatsappNumber: settingsWhatsapp,
+    websiteName,
+    freeDeliveryMinPrice,
+    shippingCost: fallbackShipping,
+    shippingAreas,
+  } = useSiteSettings();
+
+  const activeAreas =
+    Array.isArray(shippingAreas) && shippingAreas.length > 0
+      ? shippingAreas.filter((a) => a.active)
+      : DEFAULT_SHIPPING_AREAS;
+
+  const [selectedAreaId, setSelectedAreaId] = useState<string>("");
 
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [submitted, setSubmitted] = useState(false);
@@ -45,6 +60,12 @@ export default function CheckoutPage() {
     email: "",
     notes: "",
   });
+
+  const selectedArea =
+    activeAreas.find((a) => a.id === selectedAreaId) || activeAreas[0];
+  const baseShipping = selectedArea ? selectedArea.cost : fallbackShipping;
+  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : baseShipping;
+  const total = totalPrice() + shipping;
 
   if (!mounted) {
     return (
@@ -137,9 +158,6 @@ export default function CheckoutPage() {
     );
   }
 
-  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : shippingCost;
-  const total = totalPrice() + shipping;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting || !form.name || !form.address || !form.phone) return;
@@ -155,18 +173,22 @@ export default function CheckoutPage() {
       )
       .join("\n");
 
+    const selectedAreaName = selectedArea
+      ? (dir === "rtl" ? selectedArea.nameAr : selectedArea.name)
+      : "";
+
     const message = `${t("checkout.whatsappMessage", { shopName: websiteName })}
 
 *Customer Info:*
 Name: ${form.name}
 Phone: ${form.phone}
-${form.email ? `Email: ${form.email}\n` : ""}Address: ${form.address}
+${form.email ? `Email: ${form.email}\n` : ""}${selectedAreaName ? `Area: ${selectedAreaName}\n` : ""}Address: ${form.address}
 ${form.notes ? `Notes: ${form.notes}\n` : ""}
 *Order Items:*
 ${itemLines}
 
 Subtotal: EGP ${totalPrice().toFixed(2)}
-Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
+Shipping (${selectedAreaName || "Standard"}): ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
 *Total: EGP ${total.toFixed(2)}*`;
 
     const encoded = encodeURIComponent(message);
@@ -177,7 +199,11 @@ Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerInfo: form,
+          customerInfo: {
+            ...form,
+            area: selectedAreaName,
+            areaId: selectedArea?.id,
+          },
           items: items.map((i) => ({
             productId: i.productId,
             name: i.name,
@@ -186,6 +212,7 @@ Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
             image: i.image,
           })),
           totalPrice: total,
+          shippingCost: shipping,
         }),
       });
     } catch (error) {
@@ -292,6 +319,40 @@ Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
                     </div>
                   </div>
 
+                  {/* Delivery Area / Governorate */}
+                  <div>
+                    <label htmlFor="checkout-area" className="block text-xs font-semibold text-foreground mb-1.5">
+                      {t("checkout.areaLabel")} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Truck className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+                      <select
+                        id="checkout-area"
+                        required
+                        value={selectedAreaId}
+                        onChange={(e) => setSelectedAreaId(e.target.value)}
+                        className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
+                      >
+                        {activeAreas.map((area) => {
+                          const areaName = dir === "rtl" ? area.nameAr : area.name;
+                          const costText = area.cost === 0 ? t("checkout.free") : `EGP ${area.cost}`;
+                          const estimateText = area.deliveryTime ? ` (${area.deliveryTime})` : "";
+                          return (
+                            <option key={area.id} value={area.id}>
+                              {areaName} — {costText}{estimateText}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                    {selectedArea?.deliveryTime && (
+                      <p className="text-[11px] text-muted mt-1.5 flex items-center gap-1">
+                        <Clock className="h-3 w-3 text-primary inline shrink-0" />
+                        {t("checkout.deliveryEstimate", { time: selectedArea.deliveryTime })}
+                      </p>
+                    )}
+                  </div>
+
                   {/* Address */}
                   <div>
                     <label htmlFor="checkout-address" className="block text-xs font-semibold text-foreground mb-1.5">
@@ -378,7 +439,14 @@ Shipping: ${shipping === 0 ? "Free" : `EGP ${shipping.toFixed(2)}`}
                     <span className="text-foreground">EGP {totalPrice().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted">{t("checkout.shipping")}</span>
+                    <span className="text-muted">
+                      {t("checkout.shipping")}
+                      {selectedArea && (
+                        <span className="text-[11px] text-muted/70 ms-1 font-normal">
+                          ({dir === "rtl" ? selectedArea.nameAr : selectedArea.name})
+                        </span>
+                      )}
+                    </span>
                     <span>
                       {shipping === 0 ? (
                         <span className="text-success">{t("checkout.free")}</span>

@@ -9,6 +9,25 @@ import {
   type ReactNode,
 } from "react";
 
+export interface IShippingArea {
+  id: string;
+  name: string;
+  nameAr: string;
+  cost: number;
+  deliveryTime?: string;
+  active: boolean;
+}
+
+export const DEFAULT_SHIPPING_AREAS: IShippingArea[] = [
+  { id: "quesna_menoufia", name: "Quesna & Menoufia", nameAr: "قويسنا والمنوفية", cost: 20, deliveryTime: "1 Day", active: true },
+  { id: "cairo_giza", name: "Cairo & Giza", nameAr: "القاهرة والجيزة", cost: 45, deliveryTime: "1-2 Days", active: true },
+  { id: "alex_beheira", name: "Alexandria & Beheira", nameAr: "الإسكندرية والبحيرة", cost: 50, deliveryTime: "2-3 Days", active: true },
+  { id: "delta", name: "Delta Governorates", nameAr: "محافظات الدلتا", cost: 45, deliveryTime: "2-3 Days", active: true },
+  { id: "canal", name: "Canal Cities", nameAr: "مدن القناة", cost: 55, deliveryTime: "2-3 Days", active: true },
+  { id: "upper_egypt", name: "Upper Egypt", nameAr: "محافظات الصعيد", cost: 70, deliveryTime: "3-4 Days", active: true },
+  { id: "red_sea_remote", name: "Red Sea & Remote Governorates", nameAr: "المحافظات الحدودية والبحر الأحمر", cost: 90, deliveryTime: "3-5 Days", active: true },
+];
+
 export interface PriceRangeFilter {
   label: string;
   labelAr: string;
@@ -47,6 +66,7 @@ interface SiteSettings {
   whatsappNumber: string;
   freeDeliveryMinPrice: number;
   shippingCost: number;
+  shippingAreas: IShippingArea[];
   returnDays: number;
   priceRangeFilters: PriceRangeFilter[];
   heroProduct: string | null;
@@ -68,6 +88,7 @@ const defaultSettings: SiteSettings = {
   whatsappNumber: "+201203441866",
   freeDeliveryMinPrice: 99,
   shippingCost: 9.99,
+  shippingAreas: DEFAULT_SHIPPING_AREAS,
   returnDays: 30,
   priceRangeFilters: [],
   heroProduct: null,
@@ -97,6 +118,9 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
             whatsappNumber: data.whatsappNumber || defaultSettings.whatsappNumber,
             freeDeliveryMinPrice: typeof data.freeDeliveryMinPrice === "number" ? data.freeDeliveryMinPrice : defaultSettings.freeDeliveryMinPrice,
             shippingCost: typeof data.shippingCost === "number" ? data.shippingCost : defaultSettings.shippingCost,
+            shippingAreas: Array.isArray(data.shippingAreas) && data.shippingAreas.length > 0
+              ? data.shippingAreas
+              : defaultSettings.shippingAreas,
             returnDays: typeof data.returnDays === "number" ? data.returnDays : defaultSettings.returnDays,
             priceRangeFilters: Array.isArray(data.priceRangeFilters)
               ? data.priceRangeFilters

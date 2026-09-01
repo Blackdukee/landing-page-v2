@@ -68,6 +68,31 @@ export async function PUT(req: NextRequest) {
       update.shippingCost = body.shippingCost;
     }
 
+    if (Array.isArray(body.shippingAreas)) {
+      const areas = body.shippingAreas
+        .filter(
+          (a: any) =>
+            a &&
+            typeof a.id === "string" &&
+            a.id.trim() &&
+            typeof a.name === "string" &&
+            a.name.trim() &&
+            typeof a.nameAr === "string" &&
+            a.nameAr.trim() &&
+            typeof a.cost === "number" &&
+            a.cost >= 0
+        )
+        .map((a: any) => ({
+          id: a.id.trim(),
+          name: a.name.trim(),
+          nameAr: a.nameAr.trim(),
+          cost: a.cost,
+          deliveryTime: typeof a.deliveryTime === "string" ? a.deliveryTime.trim() : "",
+          active: typeof a.active === "boolean" ? a.active : true,
+        }));
+      update.shippingAreas = areas;
+    }
+
     if (typeof body.returnDays === "number" && body.returnDays >= 0) {
       update.returnDays = Math.round(body.returnDays);
     }

@@ -36,6 +36,8 @@ export interface ICustomerInfo {
   phone: string;
   email?: string;
   notes?: string;
+  area?: string;
+  areaId?: string;
 }
 
 export interface IOrderReturnItem {
@@ -59,6 +61,7 @@ export interface IOrder extends Document {
   customerInfo: ICustomerInfo;
   items: IOrderItem[];
   totalPrice: number;
+  shippingCost?: number;
   discountDetails?: IOrderDiscountDetails;
   status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled" | "returned" | "partially_returned";
   source?: string;
@@ -78,6 +81,8 @@ const OrderSchema = new Schema<IOrder>(
       phone: { type: String, required: true },
       email: { type: String },
       notes: { type: String },
+      area: { type: String },
+      areaId: { type: String },
     },
     items: [
       {
@@ -90,6 +95,7 @@ const OrderSchema = new Schema<IOrder>(
       },
     ],
     totalPrice: { type: Number, required: true },
+    shippingCost: { type: Number, default: 0 },
     discountDetails: {
       itemAdjustments: [
         {

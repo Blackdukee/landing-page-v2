@@ -23,6 +23,25 @@ export interface IDailyOffer {
   active: boolean;
 }
 
+export interface IShippingArea {
+  id: string;
+  name: string;
+  nameAr: string;
+  cost: number;
+  deliveryTime?: string;
+  active: boolean;
+}
+
+export const DEFAULT_SHIPPING_AREAS: IShippingArea[] = [
+  { id: "quesna_menoufia", name: "Quesna & Menoufia", nameAr: "قويسنا والمنوفية", cost: 20, deliveryTime: "1 Day", active: true },
+  { id: "cairo_giza", name: "Cairo & Giza", nameAr: "القاهرة والجيزة", cost: 45, deliveryTime: "1-2 Days", active: true },
+  { id: "alex_beheira", name: "Alexandria & Beheira", nameAr: "الإسكندرية والبحيرة", cost: 50, deliveryTime: "2-3 Days", active: true },
+  { id: "delta", name: "Delta Governorates", nameAr: "محافظات الدلتا", cost: 45, deliveryTime: "2-3 Days", active: true },
+  { id: "canal", name: "Canal Cities", nameAr: "مدن القناة", cost: 55, deliveryTime: "2-3 Days", active: true },
+  { id: "upper_egypt", name: "Upper Egypt", nameAr: "محافظات الصعيد", cost: 70, deliveryTime: "3-4 Days", active: true },
+  { id: "red_sea_remote", name: "Red Sea & Remote Governorates", nameAr: "المحافظات الحدودية والبحر الأحمر", cost: 90, deliveryTime: "3-5 Days", active: true },
+];
+
 export interface ISiteSettings extends Document {
   websiteName: string;
   favicon: string;
@@ -30,6 +49,7 @@ export interface ISiteSettings extends Document {
   whatsappNumber: string;
   freeDeliveryMinPrice: number;
   shippingCost: number;
+  shippingAreas: IShippingArea[];
   returnDays: number;
   priceRangeFilters: IPriceRange[];
   heroProduct: string | null; // Product _id to feature in hero section
@@ -38,6 +58,18 @@ export interface ISiteSettings extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+const ShippingAreaSchema = new Schema<IShippingArea>(
+  {
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    nameAr: { type: String, required: true },
+    cost: { type: Number, required: true, min: 0 },
+    deliveryTime: { type: String, default: "" },
+    active: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
 
 const PriceRangeSchema = new Schema<IPriceRange>(
   {
@@ -76,6 +108,10 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     whatsappNumber: { type: String, default: "+201203441866" },
     freeDeliveryMinPrice: { type: Number, default: 99 },
     shippingCost: { type: Number, default: 9.99 },
+    shippingAreas: {
+      type: [ShippingAreaSchema],
+      default: () => DEFAULT_SHIPPING_AREAS,
+    },
     returnDays: { type: Number, default: 30 },
     heroProduct: { type: String, default: null },
     socialLinks: { type: SocialLinksSchema, default: () => ({}) },

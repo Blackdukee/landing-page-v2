@@ -10,6 +10,7 @@ import POSOrdersTab from "@/components/cashair/POSOrdersTab";
 import POSReturnsTab from "@/components/cashair/POSReturnsTab";
 import POSProductsTab from "@/components/cashair/POSProductsTab";
 import POSInstaPayTab from "@/components/cashair/POSInstaPayTab";
+import POSExpensesTab from "@/components/cashair/POSExpensesTab";
 import { useCartStore } from "@/store/cart";
 import {
   Monitor,
@@ -27,11 +28,12 @@ import {
   Layers,
   ArrowRight,
   QrCode,
+  Receipt,
 } from "lucide-react";
 
 export default function CashierPOSPage() {
-  // Navigation Tabs: "pos" | "orders" | "returns" | "instapay" | "products" | "reports"
-  const [activeTab, setActiveTab] = useState<"pos" | "orders" | "returns" | "instapay" | "products" | "reports">("pos");
+  // Navigation Tabs: "pos" | "orders" | "returns" | "instapay" | "expenses" | "products" | "reports"
+  const [activeTab, setActiveTab] = useState<"pos" | "orders" | "returns" | "instapay" | "expenses" | "products" | "reports">("pos");
 
   // Mobile POS view toggle: "catalog" | "cart"
   const [mobilePosView, setMobilePosView] = useState<"catalog" | "cart">("catalog");
@@ -287,6 +289,18 @@ export default function CashierPOSPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab("expenses")}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+              activeTab === "expenses"
+                ? "bg-rose-600 text-white shadow-md shadow-rose-950"
+                : "text-rose-400 hover:text-rose-300 hover:bg-rose-950/40"
+            }`}
+          >
+            <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>المصروفات</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("products")}
             className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
               activeTab === "products"
@@ -497,6 +511,10 @@ export default function CashierPOSPage() {
         ) : activeTab === "instapay" ? (
           <div className="h-full min-h-0 overflow-y-auto p-3 sm:p-6">
             <POSInstaPayTab activeShift={activeShift} />
+          </div>
+        ) : activeTab === "expenses" ? (
+          <div className="h-full min-h-0 overflow-y-auto p-3 sm:p-6">
+            <POSExpensesTab activeShift={activeShift} onShiftUpdated={fetchActiveShift} />
           </div>
         ) : activeTab === "products" ? (
           <div className="h-full min-h-0 overflow-y-auto">

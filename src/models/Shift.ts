@@ -15,6 +15,7 @@ export interface IShift extends Document {
   totalCashRefunds: number;
   totalDigitalRefunds: number;
   totalDiscountsGiven: number;
+  totalExpenses: number;
   notes?: string;
   status: "open" | "closed";
 }
@@ -35,6 +36,7 @@ const ShiftSchema = new Schema<IShift>(
     totalCashRefunds: { type: Number, default: 0 },
     totalDigitalRefunds: { type: Number, default: 0 },
     totalDiscountsGiven: { type: Number, default: 0 },
+    totalExpenses: { type: Number, default: 0 },
     notes: { type: String, default: "" },
     status: { type: String, enum: ["open", "closed"], default: "open" },
   },

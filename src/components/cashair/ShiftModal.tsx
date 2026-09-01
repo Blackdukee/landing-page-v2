@@ -240,6 +240,14 @@ export default function ShiftModal({
                   -{(activeShift?.totalCashRefunds || 0).toLocaleString()} ج.م
                 </span>
               </div>
+              {(activeShift?.totalExpenses || 0) > 0 && (
+                <div className="flex justify-between text-slate-400">
+                  <span>مصروفات نقدية من الدرج:</span>
+                  <span className="text-rose-400 font-bold">
+                    -{(activeShift?.totalExpenses || 0).toLocaleString()} ج.م
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-200 pt-2 border-t border-slate-700 font-bold">
                 <span>النقدية المتوقعة بالدرج (Expected):</span>
                 <span className="text-amber-400 text-sm">

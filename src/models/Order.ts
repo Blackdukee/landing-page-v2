@@ -120,7 +120,7 @@ const OrderSchema = new Schema<IOrder>(
       default: "pending",
     },
     source: { type: String, default: "online" },
-    paymentMethod: { type: String, default: "cash" },
+    paymentMethod: { type: String, default: "card" },
     shiftId: { type: String },
     totalRefunded: { type: Number, default: 0 },
     returns: [

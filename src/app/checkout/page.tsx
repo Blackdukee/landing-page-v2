@@ -213,6 +213,8 @@ Shipping (${selectedAreaName || "Standard"}): ${shipping === 0 ? "Free" : `EGP $
           })),
           totalPrice: total,
           shippingCost: shipping,
+          paymentMethod: "card",
+          source: "online",
         }),
       });
     } catch (error) {

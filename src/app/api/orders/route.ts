@@ -51,6 +51,9 @@ export async function POST(req: NextRequest) {
       costPrice: item.costPrice !== undefined ? item.costPrice : (costMap.get(String(item.productId)) || 0),
     }));
 
+    body.paymentMethod = body.paymentMethod || "card";
+    body.source = body.source || "online";
+
     // Create the order record
     const order = await Order.create(body);
 

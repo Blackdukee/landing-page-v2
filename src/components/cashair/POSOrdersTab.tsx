@@ -818,7 +818,15 @@ export default function POSOrdersTab({ onInitiateReturn }: POSOrdersTabProps = {
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-500">
                   <span>طريقة الدفع:</span>
-                  <span className="font-bold uppercase">{selectedOrder.paymentMethod || "CASH"}</span>
+                  <span className="font-bold uppercase">
+                    {selectedOrder.paymentMethod === "card" || selectedOrder.paymentMethod === "visa"
+                      ? "VISA / CARD (فيزا)"
+                      : selectedOrder.paymentMethod === "instapay"
+                      ? "INSTAPAY (إنستا باي)"
+                      : selectedOrder.paymentMethod === "vodafone_cash"
+                      ? "VODAFONE CASH"
+                      : selectedOrder.paymentMethod || "CASH"}
+                  </span>
                 </div>
               </div>
 

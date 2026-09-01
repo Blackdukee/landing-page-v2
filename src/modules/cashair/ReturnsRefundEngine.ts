@@ -1,6 +1,7 @@
 import Shift from "../../models/Shift";
 import Order from "../../models/Order";
 import { restockStockAtomic, StockItem } from "./InventorySyncEngine";
+import { InstaPayLedgerEngine } from "./InstaPayLedgerEngine";
 
 export interface ReturnItemInput {
   productId: string;
@@ -11,7 +12,7 @@ export interface ReturnSaleRequest {
   orderId: string;
   shiftId: string;
   items: ReturnItemInput[];
-  paymentMethod: "cash" | "digital";
+  paymentMethod: "cash" | "digital" | "instapay" | "vodafone_cash" | "card" | string;
   restockToInventory: boolean;
   reason?: string;
 }
@@ -171,6 +172,24 @@ export async function processReturn(request: ReturnSaleRequest): Promise<ReturnS
   } else {
     shift.totalDigitalRefunds += totalRefunded;
   }
+
+  if (request.paymentMethod === "instapay") {
+    try {
+      await InstaPayLedgerEngine.recordTransaction({
+        type: "refund",
+        amount: totalRefunded,
+        description: `مرتجع كاشير - إيصال #${returnId.slice(-7).toUpperCase()}`,
+        category: "refund",
+        referenceNumber: returnId,
+        performedBy: shift.cashierName || "الكاشير",
+        shiftId: String(shift._id),
+        orderId: String(order._id),
+      });
+    } catch (e) {
+      console.error("Failed to record InstaPay ledger refund:", e);
+    }
+  }
+
   await shift.save();
 
   // 6. Generate formatted text receipt

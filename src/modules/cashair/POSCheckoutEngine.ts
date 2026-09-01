@@ -2,6 +2,7 @@ import Shift from "../../models/Shift";
 import Order from "../../models/Order";
 import { InventoryEngine, StockItem, LowStockAlert } from "../inventory/InventoryEngine";
 import { calculatePOSDiscounts, DiscountItemInput, OrderDiscountInput } from "./DiscountEngine";
+import { InstaPayLedgerEngine } from "./InstaPayLedgerEngine";
 
 export interface POSCheckoutItem {
   productId: string;
@@ -151,6 +152,20 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
       break;
     case "instapay":
       shift.totalInstaPaySales += finalTotal;
+      try {
+        await InstaPayLedgerEngine.recordTransaction({
+          type: "sale",
+          amount: finalTotal,
+          description: `مبيعات كاشير - فاتورة #${order._id.toString().slice(-6).toUpperCase()}`,
+          category: "sales",
+          referenceNumber: `#${order._id.toString().slice(-6).toUpperCase()}`,
+          performedBy: shift.cashierName || "الكاشير",
+          shiftId: String(shift._id),
+          orderId: String(order._id),
+        });
+      } catch (e) {
+        console.error("Failed to record InstaPay ledger transaction:", e);
+      }
       break;
     case "vodafone_cash":
       shift.totalVodafoneSales += finalTotal;

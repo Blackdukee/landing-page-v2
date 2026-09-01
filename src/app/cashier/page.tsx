@@ -9,6 +9,7 @@ import FinancialReportsTab from "@/components/cashair/FinancialReportsTab";
 import POSOrdersTab from "@/components/cashair/POSOrdersTab";
 import POSReturnsTab from "@/components/cashair/POSReturnsTab";
 import POSProductsTab from "@/components/cashair/POSProductsTab";
+import POSInstaPayTab from "@/components/cashair/POSInstaPayTab";
 import { useCartStore } from "@/store/cart";
 import {
   Monitor,
@@ -25,11 +26,12 @@ import {
   ShoppingCart,
   Layers,
   ArrowRight,
+  QrCode,
 } from "lucide-react";
 
 export default function CashierPOSPage() {
-  // Navigation Tabs: "pos" | "orders" | "returns" | "products" | "reports"
-  const [activeTab, setActiveTab] = useState<"pos" | "orders" | "returns" | "products" | "reports">("pos");
+  // Navigation Tabs: "pos" | "orders" | "returns" | "instapay" | "products" | "reports"
+  const [activeTab, setActiveTab] = useState<"pos" | "orders" | "returns" | "instapay" | "products" | "reports">("pos");
 
   // Mobile POS view toggle: "catalog" | "cart"
   const [mobilePosView, setMobilePosView] = useState<"catalog" | "cart">("catalog");
@@ -273,6 +275,18 @@ export default function CashierPOSPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab("instapay")}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+              activeTab === "instapay"
+                ? "bg-purple-600 text-white shadow-md shadow-purple-950"
+                : "text-purple-400 hover:text-purple-300 hover:bg-purple-950/40"
+            }`}
+          >
+            <QrCode className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>إنستا باي</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("products")}
             className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
               activeTab === "products"
@@ -479,6 +493,10 @@ export default function CashierPOSPage() {
         ) : activeTab === "returns" ? (
           <div className="h-full min-h-0 overflow-y-auto">
             <POSReturnsTab onReturnChanged={triggerCatalogRefresh} />
+          </div>
+        ) : activeTab === "instapay" ? (
+          <div className="h-full min-h-0 overflow-y-auto p-3 sm:p-6">
+            <POSInstaPayTab activeShift={activeShift} />
           </div>
         ) : activeTab === "products" ? (
           <div className="h-full min-h-0 overflow-y-auto">

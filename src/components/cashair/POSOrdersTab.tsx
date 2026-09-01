@@ -400,6 +400,11 @@ export default function POSOrdersTab({ onInitiateReturn }: POSOrdersTabProps = {
                       <p className="text-[11px] text-slate-400 dir-ltr text-right">
                         {ord.customerInfo?.phone || "---"}
                       </p>
+                      {ord.customerInfo?.area && (
+                        <span className="inline-block text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded mt-0.5">
+                          {ord.customerInfo.area}
+                        </span>
+                      )}
                       <p className="text-[10px] text-slate-500 mt-0.5">
                         {new Date(ord.createdAt).toLocaleString("ar-EG", {
                           month: "short",
@@ -637,6 +642,12 @@ export default function POSOrdersTab({ onInitiateReturn }: POSOrdersTabProps = {
                       <Phone className="w-4 h-4 text-cyan-400" />
                       <span>رقم الهاتف: {selectedOrder.customerInfo?.phone || "---"}</span>
                     </div>
+                    {selectedOrder.customerInfo?.area && (
+                      <div className="flex items-center gap-2 text-slate-300">
+                        <Truck className="w-4 h-4 text-emerald-400" />
+                        <span>منطقة التوصيل: {selectedOrder.customerInfo?.area}</span>
+                      </div>
+                    )}
                     {selectedOrder.customerInfo?.address && (
                       <div className="flex items-center gap-2 text-slate-400">
                         <MapPin className="w-4 h-4 text-rose-400" />

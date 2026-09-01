@@ -20,7 +20,7 @@ export default function CartPage() {
   const totalPrice = useCartStore((s) => s.totalPrice);
   const totalItems = useCartStore((s) => s.totalItems);
   const { t, dir } = useTranslation();
-  const { freeDeliveryMinPrice, shippingCost } = useSiteSettings();
+  const { freeDeliveryMinPrice, shippingCost, shippingAreas } = useSiteSettings();
   const [productStock, setProductStock] = useState<ProductStock>({});
   const [stockError, setStockError] = useState("");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -44,25 +44,38 @@ export default function CartPage() {
 
   if (!mounted) {
     return (
-      <div className="pt-28 pb-20 mx-auto max-w-4xl px-6">
+      <div className="pt-28 pb-20 mx-auto max-w-6xl px-6 lg:px-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-surface rounded w-32" />
-          <div className="h-32 bg-surface rounded-2xl" />
-          <div className="h-32 bg-surface rounded-2xl" />
+          <div className="h-8 bg-surface rounded w-48" />
+          <div className="h-64 bg-surface rounded-2xl" />
         </div>
       </div>
     );
   }
 
+  const activeAreas =
+    Array.isArray(shippingAreas) && shippingAreas.length > 0
+      ? shippingAreas.filter((a) => a.active)
+      : [];
+
+  const minShippingCost =
+    activeAreas.length > 0
+      ? Math.min(...activeAreas.map((a) => a.cost))
+      : shippingCost;
+
+  const isFreeShipping = totalPrice() >= freeDeliveryMinPrice;
+  const shipping = isFreeShipping ? 0 : minShippingCost;
+  const total = totalPrice() + shipping;
+
   if (items.length === 0) {
     return (
-      <div className="pt-28 pb-20 mx-auto max-w-4xl px-6 text-center">
+      <div className="pt-28 pb-20 mx-auto max-w-6xl px-6 lg:px-8 text-center">
         <div className="py-24">
           <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-surface mb-6">
-            <ShoppingBag className="h-8 w-8 text-muted" />
+            <ShoppingBag className="h-10 w-10 text-muted" />
           </div>
           <h1 className="text-2xl font-bold mb-3">{t("cart.emptyTitle")}</h1>
-          <p className="text-sm text-muted mb-8 max-w-sm mx-auto">
+          <p className="text-sm text-muted mb-8 max-w-md mx-auto">
             {t("cart.emptyDesc")}
           </p>
           <Link
@@ -76,9 +89,6 @@ export default function CartPage() {
       </div>
     );
   }
-
-  const shipping = totalPrice() >= freeDeliveryMinPrice ? 0 : shippingCost;
-  const total = totalPrice() + shipping;
 
   return (
     <div className="pt-28 pb-20">
@@ -196,17 +206,19 @@ export default function CartPage() {
                   <span className="text-muted">{t("cart.subtotal")}</span>
                   <span className="font-medium text-foreground">EGP {totalPrice().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-muted">{t("cart.shipping")}</span>
                   <span className="font-medium">
-                    {shipping === 0 ? (
+                    {isFreeShipping ? (
                       <span className="text-success">{t("cart.free")}</span>
                     ) : (
-                      `EGP ${shipping.toFixed(2)}`
+                      <span className="text-xs text-muted">
+                        {t("cart.shippingFrom", { amount: minShippingCost.toFixed(2) })}
+                      </span>
                     )}
                   </span>
                 </div>
-                {shipping > 0 && (
+                {!isFreeShipping && freeDeliveryMinPrice > 0 && (
                   <p className="text-xs text-primary font-medium mt-1">
                     {t("cart.freeShippingHint", { amount: (freeDeliveryMinPrice - totalPrice()).toFixed(2) })}
                   </p>

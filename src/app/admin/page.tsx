@@ -29,9 +29,11 @@ import {
   Building2,
   Upload,
   MapPin,
+  Truck,
+  RotateCcw,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
-import { useSiteSettings, type IDailyOfferItem } from "@/lib/SiteSettingsContext";
+import { useSiteSettings, type IDailyOfferItem, type IShippingArea, DEFAULT_SHIPPING_AREAS } from "@/lib/SiteSettingsContext";
 import type { TranslationKey } from "@/i18n/en";
 import { normalizeWhatsAppNumber, displayWhatsAppNumber } from "@/lib/phoneUtils";
 
@@ -201,6 +203,28 @@ export default function AdminDashboard() {
   const [offerError, setOfferError] = useState<string>("");
   const [deleteOfferIndex, setDeleteOfferIndex] = useState<number | null>(null);
 
+  // Shipping areas state
+  const [shippingAreas, setShippingAreas] = useState<IShippingArea[]>([]);
+  const [editingArea, setEditingArea] = useState<IShippingArea | null>(null);
+  const [showAreaModal, setShowAreaModal] = useState(false);
+  const [areaForm, setAreaForm] = useState<{
+    id: string;
+    name: string;
+    nameAr: string;
+    cost: number;
+    deliveryTime: string;
+    active: boolean;
+  }>({
+    id: "",
+    name: "",
+    nameAr: "",
+    cost: 45,
+    deliveryTime: "1-2 Days",
+    active: true,
+  });
+  const [deleteAreaId, setDeleteAreaId] = useState<string | null>(null);
+  const [resetAreaConfirm, setResetAreaConfirm] = useState(false);
+
   // Load site settings into local state
   useEffect(() => {
     if (!siteSettings.loading) {
@@ -210,6 +234,11 @@ export default function AdminDashboard() {
       setFaviconUrl(siteSettings.favicon || "");
       setFreeDeliveryMinPrice(siteSettings.freeDeliveryMinPrice ?? 99);
       setShippingCost(siteSettings.shippingCost ?? 9.99);
+      setShippingAreas(
+        Array.isArray(siteSettings.shippingAreas) && siteSettings.shippingAreas.length > 0
+          ? siteSettings.shippingAreas.map((a) => ({ ...a }))
+          : DEFAULT_SHIPPING_AREAS.map((a) => ({ ...a }))
+      );
       setReturnDays(siteSettings.returnDays ?? 30);
       setSocialFacebook(siteSettings.socialLinks?.facebook || siteSettings.socialLinks?.instagram || "");
       setSocialTwitter(siteSettings.socialLinks?.twitter || "");
@@ -221,7 +250,7 @@ export default function AdminDashboard() {
         setHeroInitialized(true);
       }
     }
-  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.location, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.shippingCost, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, siteSettings.dailyOffers, heroInitialized]);
+  }, [siteSettings.loading, siteSettings.websiteName, siteSettings.location, siteSettings.whatsappNumber, siteSettings.favicon, siteSettings.freeDeliveryMinPrice, siteSettings.shippingCost, siteSettings.shippingAreas, siteSettings.returnDays, siteSettings.priceRangeFilters, siteSettings.heroProduct, siteSettings.dailyOffers, heroInitialized]);
 
   useEffect(() => {
     Promise.all([
@@ -458,6 +487,7 @@ export default function AdminDashboard() {
           favicon: faviconUrl,
           freeDeliveryMinPrice,
           shippingCost,
+          shippingAreas,
           returnDays,
           socialLinks: {
             facebook: socialFacebook,
@@ -479,6 +509,66 @@ export default function AdminDashboard() {
     } finally {
       setSavingSiteSettings(false);
     }
+  };
+
+  // Shipping area helper handlers
+  const handleOpenAddArea = () => {
+    setEditingArea(null);
+    setAreaForm({
+      id: "area_" + Date.now(),
+      name: "",
+      nameAr: "",
+      cost: 45,
+      deliveryTime: "1-2 Days",
+      active: true,
+    });
+    setShowAreaModal(true);
+  };
+
+  const handleOpenEditArea = (area: IShippingArea) => {
+    setEditingArea(area);
+    setAreaForm({
+      id: area.id,
+      name: area.name,
+      nameAr: area.nameAr,
+      cost: area.cost,
+      deliveryTime: area.deliveryTime || "",
+      active: area.active,
+    });
+    setShowAreaModal(true);
+  };
+
+  const handleSaveAreaForm = () => {
+    if (!areaForm.name.trim() || !areaForm.nameAr.trim()) return;
+    const sanitizedCost = Math.max(0, Number(areaForm.cost) || 0);
+    const updatedArea: IShippingArea = {
+      ...areaForm,
+      cost: sanitizedCost,
+    };
+    if (editingArea) {
+      setShippingAreas((prev) =>
+        prev.map((a) => (a.id === editingArea.id ? updatedArea : a))
+      );
+    } else {
+      setShippingAreas((prev) => [...prev, updatedArea]);
+    }
+    setShowAreaModal(false);
+  };
+
+  const handleToggleAreaActive = (id: string) => {
+    setShippingAreas((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, active: !a.active } : a))
+    );
+  };
+
+  const handleDeleteArea = (id: string) => {
+    setShippingAreas((prev) => prev.filter((a) => a.id !== id));
+    setDeleteAreaId(null);
+  };
+
+  const handleResetAreas = () => {
+    setShippingAreas(DEFAULT_SHIPPING_AREAS.map((a) => ({ ...a })));
+    setResetAreaConfirm(false);
   };
 
   // Price range handlers
@@ -1532,13 +1622,324 @@ export default function AdminDashboard() {
           <button
             onClick={handleSaveSiteSettings}
             disabled={savingSiteSettings}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2.5 text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-primary/20 cursor-pointer"
           >
             <Save className="h-4 w-4" />
             {savingSiteSettings ? t("admin.dashboard.saving" as TranslationKey) : t("admin.dashboard.saveSiteSettings" as TranslationKey)}
           </button>
         </div>
       </div>
+
+      {/* Shipping Rates & Delivery Areas Card */}
+      <div className="rounded-2xl bg-card border border-border mb-8">
+        <div className="px-6 py-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Truck className="h-3.5 w-3.5" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-sm text-foreground">
+                {t("admin.shipping.title" as TranslationKey)}
+              </h2>
+              <p className="text-xs text-muted">
+                {t("admin.shipping.desc" as TranslationKey)}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setResetAreaConfirm(true)}
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:bg-card transition-all cursor-pointer"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              {t("admin.shipping.resetDefaults" as TranslationKey)}
+            </button>
+            <button
+              onClick={handleOpenAddArea}
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-white px-3.5 py-1.5 text-xs font-semibold hover:bg-primary/90 transition-all cursor-pointer shadow-sm"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {t("admin.shipping.addArea" as TranslationKey)}
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {shippingAreas.length === 0 ? (
+            <div className="text-center py-8 border border-dashed border-border rounded-xl">
+              <p className="text-sm text-muted mb-3">
+                {t("admin.shipping.noAreas" as TranslationKey)}
+              </p>
+              <button
+                onClick={handleResetAreas}
+                type="button"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                {t("admin.shipping.resetDefaults" as TranslationKey)}
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border text-muted">
+                    <th className="text-start pb-3 font-semibold">{t("admin.shipping.nameAr" as TranslationKey)}</th>
+                    <th className="text-start pb-3 font-semibold">{t("admin.shipping.nameEn" as TranslationKey)}</th>
+                    <th className="text-start pb-3 font-semibold">{t("admin.shipping.cost" as TranslationKey)}</th>
+                    <th className="text-start pb-3 font-semibold">{t("admin.shipping.deliveryTime" as TranslationKey)}</th>
+                    <th className="text-center pb-3 font-semibold">{t("admin.shipping.status" as TranslationKey)}</th>
+                    <th className="text-end pb-3 font-semibold"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {shippingAreas.map((area) => (
+                    <tr key={area.id} className="hover:bg-surface/50 transition-colors">
+                      <td className="py-3 font-medium text-foreground">{area.nameAr}</td>
+                      <td className="py-3 text-muted">{area.name}</td>
+                      <td className="py-3 font-bold text-foreground">
+                        EGP {area.cost.toFixed(2)}
+                      </td>
+                      <td className="py-3 text-muted">
+                        {area.deliveryTime || "—"}
+                      </td>
+                      <td className="py-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAreaActive(area.id)}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold cursor-pointer transition-all ${
+                            area.active
+                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                              : "bg-muted/15 text-muted border border-border"
+                          }`}
+                        >
+                          {area.active
+                            ? t("admin.shipping.active" as TranslationKey)
+                            : t("admin.shipping.inactive" as TranslationKey)}
+                        </button>
+                      </td>
+                      <td className="py-3 text-end">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditArea(area)}
+                            className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
+                            title={t("admin.shipping.editArea" as TranslationKey)}
+                          >
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteAreaId(area.id)}
+                            className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            title={t("admin.shipping.deleteArea" as TranslationKey)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+            <p className="text-[11px] text-muted">
+              {shippingAreas.length} {t("admin.shipping.title" as TranslationKey)}
+            </p>
+            <button
+              onClick={handleSaveSiteSettings}
+              disabled={savingSiteSettings}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 text-white px-4 py-2 text-xs font-semibold transition-all hover:opacity-90 disabled:opacity-50 shadow-md shadow-primary/20 cursor-pointer"
+            >
+              <Save className="h-3.5 w-3.5" />
+              {savingSiteSettings ? t("admin.dashboard.saving" as TranslationKey) : t("admin.shipping.saveChanges" as TranslationKey)}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Add / Edit Shipping Area Modal */}
+      {showAreaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="text-base font-bold text-foreground">
+                {editingArea
+                  ? t("admin.shipping.editArea" as TranslationKey)
+                  : t("admin.shipping.newArea" as TranslationKey)}
+              </h3>
+              <button
+                onClick={() => setShowAreaModal(false)}
+                className="text-muted hover:text-foreground cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  {t("admin.shipping.nameAr" as TranslationKey)} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={areaForm.nameAr}
+                  onChange={(e) => setAreaForm((p) => ({ ...p, nameAr: e.target.value }))}
+                  placeholder="مثال: القاهرة والجيزة"
+                  className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  {t("admin.shipping.nameEn" as TranslationKey)} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={areaForm.name}
+                  onChange={(e) => setAreaForm((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="e.g. Cairo & Giza"
+                  className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    {t("admin.shipping.cost" as TranslationKey)} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    required
+                    value={areaForm.cost}
+                    onChange={(e) => setAreaForm((p) => ({ ...p, cost: Number(e.target.value) }))}
+                    className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    {t("admin.shipping.deliveryTime" as TranslationKey)}
+                  </label>
+                  <input
+                    type="text"
+                    value={areaForm.deliveryTime}
+                    onChange={(e) => setAreaForm((p) => ({ ...p, deliveryTime: e.target.value }))}
+                    placeholder="1-2 Days / 1-2 يوم"
+                    className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  id="area-active-toggle"
+                  type="checkbox"
+                  checked={areaForm.active}
+                  onChange={(e) => setAreaForm((p) => ({ ...p, active: e.target.checked }))}
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer"
+                />
+                <label htmlFor="area-active-toggle" className="text-xs font-medium text-foreground cursor-pointer select-none">
+                  {t("admin.shipping.active" as TranslationKey)} ({t("admin.shipping.desc" as TranslationKey)})
+                </label>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setShowAreaModal(false)}
+                className="px-4 py-2 text-xs font-medium text-muted hover:text-foreground rounded-lg border border-border hover:bg-surface transition-colors cursor-pointer"
+              >
+                {t("admin.shipping.cancel" as TranslationKey)}
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveAreaForm}
+                disabled={!areaForm.name.trim() || !areaForm.nameAr.trim()}
+                className="px-4 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {t("admin.shipping.save" as TranslationKey)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Area Confirmation Dialog */}
+      {deleteAreaId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-red-500">
+              <AlertTriangle className="h-6 w-6 shrink-0" />
+              <h3 className="text-base font-bold text-foreground">
+                {t("admin.shipping.deleteArea" as TranslationKey)}
+              </h3>
+            </div>
+            <p className="text-xs text-muted">
+              {t("admin.shipping.deleteConfirm" as TranslationKey)}
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteAreaId(null)}
+                className="px-3.5 py-1.5 text-xs font-medium text-muted hover:text-foreground rounded-lg border border-border hover:bg-surface transition-colors cursor-pointer"
+              >
+                {t("admin.shipping.cancel" as TranslationKey)}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteArea(deleteAreaId)}
+                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer"
+              >
+                {t("admin.shipping.deleteArea" as TranslationKey)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Defaults Confirmation Dialog */}
+      {resetAreaConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-amber-500">
+              <RotateCcw className="h-6 w-6 shrink-0" />
+              <h3 className="text-base font-bold text-foreground">
+                {t("admin.shipping.resetDefaults" as TranslationKey)}
+              </h3>
+            </div>
+            <p className="text-xs text-muted leading-relaxed">
+              {t("admin.shipping.resetConfirm" as TranslationKey)}
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setResetAreaConfirm(false)}
+                className="px-3.5 py-1.5 text-xs font-medium text-muted hover:text-foreground rounded-lg border border-border hover:bg-surface transition-colors cursor-pointer"
+              >
+                {t("admin.shipping.cancel" as TranslationKey)}
+              </button>
+              <button
+                type="button"
+                onClick={handleResetAreas}
+                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors cursor-pointer"
+              >
+                {t("admin.shipping.resetDefaults" as TranslationKey)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Product Picker */}
       <div className="rounded-2xl bg-card border border-border mb-8">

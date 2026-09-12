@@ -202,25 +202,61 @@ export const MediaPipeline = {
     const fileName = isSvg ? "favicon.svg" : isIco ? "favicon.ico" : "favicon.png";
     const filePath = path.join(publicDir, fileName);
 
-    await fs.writeFile(filePath, finalBuffer);
+    // 1. Attempt local file system write (supported in local development, but read-only EROFS in serverless)
+    let localWriteSucceeded = false;
+    try {
+      await fs.writeFile(filePath, finalBuffer);
+      if (!isSvg && !isIco) {
+        await fs.writeFile(path.join(publicDir, "icon.png"), finalBuffer).catch(() => {});
+        await fs.writeFile(path.join(publicDir, "apple-touch-icon.png"), finalBuffer).catch(() => {});
+      }
+      localWriteSucceeded = true;
+    } catch (fsErr) {
+      console.warn("[MediaPipeline] Local public filesystem is read-only (EROFS) or unwritable, uploading to cloud storage:", fsErr);
+    }
 
-    // Also update icon.png & apple-touch-icon.png if PNG for complete device coverage
-    if (!isSvg && !isIco) {
+    // 2. Upload to ImageKit CDN for permanent serverless persistence across deployments
+    const hasImageKit =
+      Boolean(process.env.IMAGEKIT_PRIVATE_KEY) &&
+      process.env.IMAGEKIT_PRIVATE_KEY !== "dummy_private_key_for_build";
+
+    if (hasImageKit) {
       try {
-        await fs.writeFile(path.join(publicDir, "icon.png"), finalBuffer);
-        await fs.writeFile(path.join(publicDir, "apple-touch-icon.png"), finalBuffer);
-      } catch {
-        // Ignore secondary file write errors
+        const contentHash = createHash("md5").update(finalBuffer).digest("hex").slice(0, 12);
+        const urlEndpoint = (process.env.IMAGEKIT_URL_ENDPOINT || "").replace(/\/$/, "");
+        const ext = isSvg ? ".svg" : isIco ? ".ico" : ".png";
+        const safeName = `favicon-${contentHash}${ext}`;
+
+        const base64 = finalBuffer.toString("base64");
+        const uploadRes = await imagekit.files.upload({
+          file: base64,
+          fileName: safeName,
+          folder: "/novashop/branding",
+          tags: [contentHash, "favicon"],
+        });
+
+        const directUrl = `${urlEndpoint}${uploadRes.filePath}`;
+        return {
+          url: directUrl,
+          fileId: uploadRes.fileId || "favicon_cloud",
+        };
+      } catch (uploadErr) {
+        console.error("[MediaPipeline] ImageKit favicon upload failed:", uploadErr);
+        if (!localWriteSucceeded) {
+          throw new Error("Failed to save favicon: Cloud storage upload failed and filesystem is read-only.");
+        }
       }
     }
 
-    const timestamp = Date.now();
-    const publicUrl = `/${fileName}?v=${timestamp}`;
+    if (localWriteSucceeded) {
+      const timestamp = Date.now();
+      return {
+        url: `/${fileName}?v=${timestamp}`,
+        fileId: "public_favicon",
+      };
+    }
 
-    return {
-      url: publicUrl,
-      fileId: "public_favicon",
-    };
+    throw new Error("Unable to save favicon: filesystem is read-only and ImageKit is unconfigured.");
   },
 
   /**

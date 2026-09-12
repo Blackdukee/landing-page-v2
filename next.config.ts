@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@imagekit/nodejs"],
+  serverExternalPackages: ["@imagekit/nodejs", "sharp"],
   images: {
     unoptimized: true,
     remotePatterns: [

@@ -82,6 +82,16 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
   }
 
   // 3. Calculate discounts
+  const effectiveOrderDiscount: OrderDiscountInput | undefined =
+    request.orderDiscount ||
+    ((request as any).discountDetails?.orderDiscountType &&
+    Number((request as any).discountDetails?.orderDiscountValue) > 0
+      ? {
+          type: (request as any).discountDetails.orderDiscountType,
+          value: Number((request as any).discountDetails.orderDiscountValue),
+        }
+      : undefined);
+
   const discountInputs: DiscountItemInput[] = request.items.map((item) => ({
     basePrice: item.basePrice ?? item.price,
     priorPrice: item.price,
@@ -91,7 +101,7 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
     stacked: item.stacked ?? true,
   }));
 
-  const discountResult = calculatePOSDiscounts(discountInputs, request.orderDiscount);
+  const discountResult = calculatePOSDiscounts(discountInputs, effectiveOrderDiscount);
 
   // 4. Create Order Document
   const orderItems = request.items.map((item, idx) => ({
@@ -130,8 +140,8 @@ export async function processPOSSale(request: POSSaleRequest): Promise<POSSaleRe
         priorPrice: item.price,
         finalPrice: discountResult.itemAdjustments[idx].finalUnitPrice,
       })),
-      orderDiscountType: request.orderDiscount?.type || null,
-      orderDiscountValue: request.orderDiscount?.value || 0,
+      orderDiscountType: effectiveOrderDiscount?.type || null,
+      orderDiscountValue: effectiveOrderDiscount?.value || 0,
       originalTotal: discountResult.originalTotal,
       finalTotal: discountResult.finalTotal,
     },

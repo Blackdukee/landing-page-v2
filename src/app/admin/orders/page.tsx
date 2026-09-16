@@ -37,7 +37,15 @@ interface Order {
   };
   items: OrderItem[];
   totalPrice: number;
-  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+  shippingCost?: number;
+  discountDetails?: {
+    itemAdjustments?: Array<any>;
+    orderDiscountType?: "percentage" | "fixed" | null;
+    orderDiscountValue?: number;
+    originalTotal?: number;
+    finalTotal?: number;
+  };
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled" | "returned" | "partially_returned";
   createdAt: string;
 }
 
@@ -47,7 +55,7 @@ interface ItemAdj {
   stacked: boolean;
 }
 
-const statusOptions = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+const statusOptions = ["pending", "confirmed", "shipped", "delivered", "cancelled", "returned", "partially_returned"];
 
 const statusColor: Record<string, string> = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -55,6 +63,8 @@ const statusColor: Record<string, string> = {
   shipped: "bg-purple-500/10 text-purple-400 border-purple-500/20",
   delivered: "bg-green-500/10 text-green-400 border-green-500/20",
   cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
+  returned: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  partially_returned: "bg-amber-500/10 text-amber-400 border-amber-500/20",
 };
 
 function calcItemFinal(item: OrderItem, adj: ItemAdj | undefined): number {
@@ -208,13 +218,22 @@ export default function AdminOrdersPage() {
       finalTotal,
     };
 
+    const orderShipping = discountOrder.shippingCost || 0;
+    const newTotalPrice = finalTotal + orderShipping;
+
+    const updatedItems = discountOrder.items.map((item) => ({
+      ...item,
+      price: calcItemFinal(item, itemAdjs[item.productId]),
+    }));
+
     try {
       const res = await fetch(`/api/orders/${discountOrder._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "confirmed",
-          totalPrice: finalTotal,
+          totalPrice: newTotalPrice,
+          items: updatedItems,
           discountDetails,
         }),
       });
@@ -222,7 +241,7 @@ export default function AdminOrdersPage() {
         setOrders((prev) =>
           prev.map((o) =>
             o._id === discountOrder._id
-              ? { ...o, status: "confirmed", totalPrice: finalTotal }
+              ? { ...o, status: "confirmed", totalPrice: newTotalPrice, items: updatedItems, discountDetails }
               : o
           )
         );
@@ -725,6 +744,33 @@ ${itemLines}
                   ))}
                 </div>
               </div>
+
+              {/* Discount details breakdown if present */}
+              {selectedOrder.discountDetails && (
+                <div className="rounded-xl border border-border bg-surface/50 p-3 space-y-1.5 text-xs">
+                  {selectedOrder.discountDetails.originalTotal && (
+                    <div className="flex justify-between text-muted">
+                      <span>المجموع قبل الخصم:</span>
+                      <span>EGP {selectedOrder.discountDetails.originalTotal.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {selectedOrder.discountDetails.orderDiscountValue && selectedOrder.discountDetails.orderDiscountValue > 0 && (
+                    <div className="flex justify-between text-amber-500">
+                      <span>خصم الفاتورة:</span>
+                      <span>
+                        -{selectedOrder.discountDetails.orderDiscountValue}
+                        {selectedOrder.discountDetails.orderDiscountType === "percentage" ? "%" : " EGP"}
+                      </span>
+                    </div>
+                  )}
+                  {selectedOrder.discountDetails.originalTotal && selectedOrder.discountDetails.finalTotal && selectedOrder.discountDetails.originalTotal > selectedOrder.discountDetails.finalTotal && (
+                    <div className="flex justify-between text-green-500 font-semibold">
+                      <span>إجمالي الخصم المطبق:</span>
+                      <span>-EGP {(selectedOrder.discountDetails.originalTotal - selectedOrder.discountDetails.finalTotal).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Total */}
               <div className="flex justify-between items-center pt-2 border-t border-border">

@@ -109,7 +109,7 @@ export default function POSCartPanel({
   // Calculate totals via DiscountEngine
   const totals = useMemo(() => {
     const discountItemsInput = items.map((item) => ({
-      basePrice: item.price,
+      basePrice: item.basePrice ?? item.price,
       priorPrice: item.overridePrice !== undefined ? item.overridePrice : item.price,
       quantity: item.quantity,
       newDiscountType: item.itemDiscount?.type,
@@ -146,13 +146,21 @@ export default function POSCartPanel({
             productId: item.productId,
             name: item.name,
             price: item.overridePrice !== undefined ? item.overridePrice : item.price,
-            basePrice: item.basePrice,
+            basePrice: item.basePrice ?? item.price,
             costPrice: item.costPrice || 0,
             quantity: item.quantity,
+            image: item.image || "",
+            discountType: item.itemDiscount?.type,
+            discountValue: item.itemDiscount?.value,
+            stacked: true,
             finalUnitPrice: adj ? adj.finalUnitPrice : item.price,
           };
         }),
         paymentMethod,
+        orderDiscount:
+          orderDiscount.value > 0
+            ? { type: orderDiscount.type, value: orderDiscount.value }
+            : undefined,
         discountDetails: {
           originalTotal: totals.originalTotal,
           itemsTotal: totals.itemsTotal,
@@ -187,7 +195,16 @@ export default function POSCartPanel({
         setReceiptData({
           orderId: data.orderId || data.order?._id || "POS-" + Date.now().toString().slice(-6),
           receiptText: data.receiptText,
-          items: [...items],
+          items: items.map((it, idx) => {
+            const adj = totals.itemAdjustments[idx];
+            const finalUnitPrice = adj ? adj.finalUnitPrice : (it.overridePrice !== undefined ? it.overridePrice : it.price);
+            const subtotal = adj ? adj.subtotal : (finalUnitPrice * it.quantity);
+            return {
+              ...it,
+              finalUnitPrice,
+              subtotal,
+            };
+          }),
           totals,
           paymentMethod,
           customerPhone,
@@ -294,9 +311,13 @@ export default function POSCartPanel({
             </div>
           </div>
         ) : (
-          items.map((item) => {
-            const effectiveUnitPrice = item.overridePrice !== undefined ? item.overridePrice : item.price;
+          items.map((item, index) => {
+            const adj = totals.itemAdjustments[index];
+            const originalUnitPrice = item.overridePrice !== undefined ? item.overridePrice : item.price;
+            const effectiveUnitPrice = adj ? adj.finalUnitPrice : originalUnitPrice;
             const hasPriceOverride = item.overridePrice !== undefined && item.overridePrice !== item.price;
+            const hasItemDiscount = Boolean(item.itemDiscount && item.itemDiscount.value > 0);
+            const itemSubtotal = adj ? adj.subtotal : (effectiveUnitPrice * item.quantity);
 
             return (
               <div
@@ -310,15 +331,15 @@ export default function POSCartPanel({
                       <span className="text-amber-400 font-bold">
                         {effectiveUnitPrice.toLocaleString()} ج.م
                       </span>
-                      {hasPriceOverride && (
+                      {(hasItemDiscount || hasPriceOverride) && (
                         <span className="line-through text-slate-500 text-[10px]">
-                          {item.price.toLocaleString()} ج.م
+                          {(hasItemDiscount ? originalUnitPrice : item.price).toLocaleString()} ج.م
                         </span>
                       )}
                       <button
                         onClick={() => {
                           setEditingPriceProductId(item.productId);
-                          setTempOverridePrice(effectiveUnitPrice.toString());
+                          setTempOverridePrice(originalUnitPrice.toString());
                         }}
                         className="text-slate-400 hover:text-amber-400 flex items-center gap-0.5 text-[10px] font-medium"
                         title="تعديل سعر الوحدة"
@@ -513,7 +534,7 @@ export default function POSCartPanel({
                   </div>
 
                   <span className="text-xs font-extrabold text-slate-200">
-                    {(effectiveUnitPrice * item.quantity).toLocaleString()} ج.م
+                    {itemSubtotal.toLocaleString()} ج.م
                   </span>
                 </div>
               </div>
@@ -785,7 +806,9 @@ export default function POSCartPanel({
                   </thead>
                   <tbody>
                     {items.map((it, idx) => {
-                      const itemTotal = (it.overridePrice ?? it.price) * it.quantity;
+                      const adj = totals.itemAdjustments[idx];
+                      const finalPrice = adj ? adj.finalUnitPrice : (it.overridePrice ?? it.price);
+                      const itemTotal = adj ? adj.subtotal : (finalPrice * it.quantity);
                       return (
                         <tr key={idx} className="border-b border-slate-100">
                           <td className="py-1 font-sans">
@@ -793,6 +816,11 @@ export default function POSCartPanel({
                             {it.overridePrice !== undefined && it.overridePrice !== it.price && (
                               <span className="text-[9px] text-amber-600 block">
                                 (سعر مخصص: {it.overridePrice} ج.م)
+                              </span>
+                            )}
+                            {it.itemDiscount && it.itemDiscount.value > 0 && (
+                              <span className="text-[9px] text-rose-600 block">
+                                (خصم: {it.itemDiscount.value}{it.itemDiscount.type === "percentage" ? "%" : " ج.م"})
                               </span>
                             )}
                           </td>
@@ -934,13 +962,21 @@ export default function POSCartPanel({
                 </thead>
                 <tbody>
                   {receiptData.items.map((it: any, i: number) => {
-                    const price = it.overridePrice !== undefined ? it.overridePrice : it.price;
+                    const price = it.finalUnitPrice !== undefined ? it.finalUnitPrice : (it.overridePrice !== undefined ? it.overridePrice : it.price);
+                    const lineSubtotal = it.subtotal !== undefined ? it.subtotal : (price * it.quantity);
                     return (
                       <tr key={i} className="border-b border-slate-100">
-                        <td className="py-1 font-sans">{it.name}</td>
+                        <td className="py-1 font-sans">
+                          {it.name}
+                          {it.itemDiscount && it.itemDiscount.value > 0 && (
+                            <span className="text-[9px] text-rose-600 block">
+                              (خصم: {it.itemDiscount.value}{it.itemDiscount.type === "percentage" ? "%" : " ج.م"})
+                            </span>
+                          )}
+                        </td>
                         <td className="py-1 text-center font-bold">{it.quantity}</td>
                         <td className="py-1 text-left font-bold">
-                          {(price * it.quantity).toLocaleString()} ج.م
+                          {lineSubtotal.toLocaleString()} ج.م
                         </td>
                       </tr>
                     );

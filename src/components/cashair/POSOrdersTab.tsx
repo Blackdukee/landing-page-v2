@@ -744,6 +744,27 @@ export default function POSOrdersTab({ onInitiateReturn }: POSOrdersTabProps = {
                   </table>
 
                   <div className="border-t border-slate-800 pt-3 mt-3 space-y-1 text-left">
+                    {selectedOrder.discountDetails?.originalTotal && selectedOrder.discountDetails.originalTotal > (selectedOrder.discountDetails.finalTotal || selectedOrder.totalPrice) && (
+                      <>
+                        <div className="flex justify-between text-slate-400">
+                          <span>المجموع قبل الخصم:</span>
+                          <span className="line-through">{selectedOrder.discountDetails.originalTotal.toLocaleString()} ج.م</span>
+                        </div>
+                        {selectedOrder.discountDetails.orderDiscountValue && selectedOrder.discountDetails.orderDiscountValue > 0 && (
+                          <div className="flex justify-between text-amber-400">
+                            <span>خصم الفاتورة:</span>
+                            <span>
+                              -{selectedOrder.discountDetails.orderDiscountValue}
+                              {selectedOrder.discountDetails.orderDiscountType === "percentage" ? "%" : " ج.م"}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between text-rose-400 font-semibold">
+                          <span>إجمالي الخصومات:</span>
+                          <span>-{(selectedOrder.discountDetails.originalTotal - (selectedOrder.discountDetails.finalTotal || selectedOrder.totalPrice)).toLocaleString()} ج.م</span>
+                        </div>
+                      </>
+                    )}
                     <div className="flex justify-between text-slate-400">
                       <span>إجمالي الفاتورة:</span>
                       <span>{(selectedOrder.totalPrice || 0).toLocaleString()} ج.م</span>
@@ -812,6 +833,18 @@ export default function POSOrdersTab({ onInitiateReturn }: POSOrdersTabProps = {
               </table>
 
               <div className="border-t border-slate-300 pt-2 space-y-1 text-left">
+                {selectedOrder.discountDetails?.originalTotal && selectedOrder.discountDetails.originalTotal > (selectedOrder.discountDetails.finalTotal || selectedOrder.totalPrice) && (
+                  <>
+                    <div className="flex justify-between">
+                      <span>المجموع:</span>
+                      <span>{selectedOrder.discountDetails.originalTotal.toLocaleString()} ج.م</span>
+                    </div>
+                    <div className="flex justify-between text-rose-600">
+                      <span>الخصم:</span>
+                      <span>-{(selectedOrder.discountDetails.originalTotal - (selectedOrder.discountDetails.finalTotal || selectedOrder.totalPrice)).toLocaleString()} ج.م</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between text-sm font-black pt-1 border-t border-slate-300">
                   <span>الإجمالي النهائي:</span>
                   <span>{(selectedOrder.totalPrice || 0).toLocaleString()} ج.م</span>

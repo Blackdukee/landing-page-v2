@@ -174,6 +174,43 @@ describe("DiscountEngine", () => {
     expect(res.itemAdjustments[0].finalUnitPrice).toBe(0);
   });
 
+  it("should calculate mixed item-level discounts with order-level discount correctly", () => {
+    const items: DiscountItemInput[] = [
+      {
+        basePrice: 100,
+        priorPrice: 100,
+        quantity: 2,
+        newDiscountType: "percentage",
+        newDiscountValue: 10, // 90 each -> subtotal 180
+      },
+      {
+        basePrice: 50,
+        priorPrice: 50,
+        quantity: 1,
+        newDiscountType: "fixed",
+        newDiscountValue: 15, // 35 each -> subtotal 35
+      },
+    ];
+    const orderDiscount: OrderDiscountInput = {
+      type: "fixed",
+      value: 15,
+    };
+
+    const res = calculatePOSDiscounts(items, orderDiscount);
+    // originalTotal = 100 * 2 + 50 * 1 = 250
+    // itemsTotal = 180 + 35 = 215
+    // finalTotal = 215 - 15 = 200
+    // totalDiscount = 250 - 200 = 50
+    expect(res.originalTotal).toBe(250);
+    expect(res.itemsTotal).toBe(215);
+    expect(res.finalTotal).toBe(200);
+    expect(res.totalDiscount).toBe(50);
+    expect(res.itemAdjustments[0].finalUnitPrice).toBe(90);
+    expect(res.itemAdjustments[0].subtotal).toBe(180);
+    expect(res.itemAdjustments[1].finalUnitPrice).toBe(35);
+    expect(res.itemAdjustments[1].subtotal).toBe(35);
+  });
+
   it("should handle empty items array gracefully", () => {
     const res = calculatePOSDiscounts([]);
 

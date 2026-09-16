@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import POSProductGrid, { POSProduct } from "@/components/cashair/POSProductGrid";
 import POSCartPanel, { CartItemWithOverride } from "@/components/cashair/POSCartPanel";
 import ReturnsModal from "@/components/cashair/ReturnsModal";
@@ -12,6 +12,7 @@ import POSProductsTab from "@/components/cashair/POSProductsTab";
 import POSInstaPayTab from "@/components/cashair/POSInstaPayTab";
 import POSExpensesTab from "@/components/cashair/POSExpensesTab";
 import { useCartStore } from "@/store/cart";
+import { calculatePOSDiscounts } from "@/modules/cashair/DiscountEngine";
 import {
   Monitor,
   TrendingUp,
@@ -59,7 +60,17 @@ export default function CashierPOSPage() {
 
   // Totals for mobile floating action bar
   const totalCartItemsCount = storeItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalCartPrice = storeItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalCartPrice = useMemo(() => {
+    const discountInputs = storeItems.map((item) => ({
+      basePrice: item.basePrice ?? item.price,
+      priorPrice: item.price,
+      quantity: item.quantity,
+      newDiscountType: item.discountType,
+      newDiscountValue: item.discountValue,
+      stacked: true,
+    }));
+    return calculatePOSDiscounts(discountInputs).finalTotal;
+  }, [storeItems]);
 
   // Catalog real-time stock refresh trigger
   const [catalogRefreshTrigger, setCatalogRefreshTrigger] = useState<number>(0);
